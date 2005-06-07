@@ -1,0 +1,107 @@
+start = 
+  element snmptrace {
+    packet.elem*
+  }
+
+packet.elem = 
+  element packet {
+    attribute date { xsd:dateTime },
+    attribute delta { xsd:unsignedInt },
+    element src { addr.attrs },
+    element dst { addr.attrs },
+    snmp.elem
+  }
+
+snmp.elem = 
+  element snmp {
+    length.attrs?,
+    message.elem
+  }
+
+message.elem =
+  element version { length.attrs, xsd:int },
+  element community { length.attrs, text },
+  pdu.elem
+
+message.elem |=
+  element version { length.attrs, xsd:int },
+  element message {
+    length.attrs,
+    element msg-id { length.attrs, xsd:unsignedInt },
+    element max-size { length.attrs, xsd:unsignedInt },
+    element flags { length.attrs, text },
+    element security-model { length.attrs, xsd:unsignedInt },
+    usm.elem?
+  },
+  element scoped-pdu {
+    length.attrs,
+    element context-engine-id { length.attrs, text },
+    element context-name { length.attrs, text },
+    pdu.elem
+  }
+
+usm.elem =
+  element auth-engine-id { length.attrs, text },
+  element auth-engine-boots { length.attrs, xsd:unsignedInt },
+  element auth-engine-time { length.attrs, xsd:unsignedInt },
+  element user { length.attrs, text },
+  element auth-params { length.attrs, text },
+  element priv-params { length.attrs, text }
+
+pdu.elem =
+  element trap { 
+    length.attrs,
+    element enterprise { length.attrs, oid.type },
+    element agent-addr { length.attrs, ipaddress.type },
+    element generic-trap { length.attrs, xsd:int },
+    element specific-trap { length.attrs, xsd:int },
+    element time-stamp { length.attrs, xsd:int },
+    element variable-bindings { length.attrs, varbind.elem* }
+  }
+
+pdu.elem |=
+  element (get-request | get-next-request | get-bulk-request |
+	   set-request | inform | trap2 | response | report) { 
+    length.attrs,
+    element request-id { length.attrs, xsd:int },
+    element error-status { length.attrs, xsd:int },
+    element error-index { length.attrs, xsd:int },
+    element variable-bindings { length.attrs, varbind.elem* }
+  }
+
+varbind.elem = 
+  element varbind { length.attrs, name.elem, value.elem }
+
+name.elem =
+  element name { length.attrs, oid.type }
+
+value.elem =
+  element null { length.attrs, empty } |
+  element integer32 { length.attrs, xsd:int } |
+  element unsigned32 { length.attrs, xsd:unsignedInt } |
+  element unsigned64 { length.attrs, xsd:unsignedLong } |
+  element ipaddress { length.attrs, ipaddress.type } |
+  element octet-string { length.attrs, text } |
+  element object-identifier { length.attrs, oid.type } |
+  element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
+  element value { empty }
+
+length.attrs =
+  ( attribute blen { xsd:unsignedShort },
+    attribute vlen { xsd:unsignedShort } )?
+
+addr.attrs =
+  attribute ip { ipaddress.type },
+  attribute port { xsd:unsignedShort }
+
+oid.type =
+  xsd:string {
+    pattern =
+      """[0-2](\.[0-9]+)+"""
+  }
+
+ipaddress.type =
+  xsd:string {
+    pattern =
+      """[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"""
+  }

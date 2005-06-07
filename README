@@ -1,0 +1,9 @@
+       snmpdump - extract SNMP messages out of pcap trace files
+
+Copyright (c) 2004 Juergen Schoenwaelder, International University Bremen
+
+See the file "COPYING" for information on usage and redistribution
+of this file, and for a DISCLAIMER OF ALL WARRANTITIES.
+
+$Id$
+

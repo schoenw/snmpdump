@@ -1,0 +1,79 @@
+Copyright (c) 2004 Juergen Schoenwaeder, International University Bremen
+
+The authors hereby grant permission to use, copy, modify, distribute,
+and license this software and its documentation for any purpose, provided
+that existing copyright notices are retained in all copies and that this
+notice is included verbatim in any distributions. No written agreement,
+license, or royalty fee is required for any of the authorized uses.
+Modifications to this software may be copyrighted by their authors
+and need not follow the licensing terms described here, provided that
+the new terms are clearly indicated on the first page of each file where
+they apply.
+
+IN NO EVENT SHALL THE AUTHORS OR DISTRIBUTORS BE LIABLE TO ANY PARTY
+FOR DIRECT, INDIRECT, SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES
+ARISING OUT OF THE USE OF THIS SOFTWARE, ITS DOCUMENTATION, OR ANY
+DERIVATIVES THEREOF, EVEN IF THE AUTHORS HAVE BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+
+The BER parsing code is taken from tcpdump's print-snmp.c module which
+has the following copyright conditions:
+
+/*
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
+ *     John Robert LoVerso. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ *
+ * This implementation has been influenced by the CMU SNMP release,
+ * by Steve Waldbusser.  However, this shares no code with that system.
+ * Additional ASN.1 insight gained from Marshall T. Rose's _The_Open_Book_.
+ * Earlier forms of this implementation were derived and/or inspired by an
+ * awk script originally written by C. Philip Wood of LANL (but later
+ * heavily modified by John Robert LoVerso).  The copyright notice for
+ * that work is preserved below, even though it may not rightly apply
+ * to this file.
+ *
+ * Support for SNMPv2c/SNMPv3 and the ability to link the module against
+ * the libsmi was added by J. Schoenwaelder, Copyright (c) 1999.
+ *
+ * This started out as a very simple program, but the incremental decoding
+ * (into the BE structure) complicated things.
+ *
+ #			Los Alamos National Laboratory
+ #
+ #	Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
+ #	This software was produced under a U.S. Government contract
+ #	(W-7405-ENG-36) by Los Alamos National Laboratory, which is
+ #	operated by the	University of California for the U.S. Department
+ #	of Energy.  The U.S. Government is licensed to use, reproduce,
+ #	and distribute this software.  Permission is granted to the
+ #	public to copy and use this software without charge, provided
+ #	that this Notice and any statement of authorship are reproduced
+ #	on all copies.  Neither the Government nor the University makes
+ #	any warranty, express or implied, or assumes any liability or
+ #	responsibility for the use of this software.
+ #	@(#)snmp.awk.x	1.1 (LANL) 1/15/90
+ */
+
