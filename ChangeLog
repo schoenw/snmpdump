@@ -1,4 +1,25 @@
-2004-12-24  Juergen Schoenwaelder  <j.schoenwaelder@iu-bremen.de>
+2005-06-12 23:49  schoenw
 
-	* snmpdump: initial version.
+	* Makefile.in, acinclude.m4, aclocal.m4, autogen.sh, config.guess,
+	  config.sub, configure, depcomp, doc/Makefile.in, install-sh,
+	  missing, mkinstalldirs, src/Makefile.in, test/Makefile.in: Added
+	  autogen.sh and removed all autoconf related files from the
+	  repository.
+
+2005-06-07 19:57  schoenw
+
+	* AUTHORS, COPYING, ChangeLog, INSTALL, Makefile.am, Makefile.in,
+	  NEWS, README, acinclude.m4, aclocal.m4, autom4te.cache,
+	  autom4te.cache/output.0, autom4te.cache/requests,
+	  autom4te.cache/traces.0, config.guess, config.sub, configure,
+	  configure.in, depcomp, doc, doc/Makefile.am, doc/Makefile.in,
+	  doc/snmptrace.rnc, install-sh, missing, mkinstalldirs, src,
+	  src/Makefile.am, src/Makefile.in, src/config.h.in, src/snmpdump.1,
+	  src/snmpdump.c, test, test/Makefile.am, test/Makefile.in,
+	  test/frags.pcap, test/misc.pcap, test/scli.pcap, test/traps.pcap:
+	  import snmpdump sources
+
+2005-06-07 19:51  root
+
+	* .: snmpdump project trunk
 
