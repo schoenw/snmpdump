@@ -1,4 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
+dnl
+dnl $Id$
 
 AC_INIT(src/snmpdump.c)
 dnl Every other copy of the package version number gets its value from here
@@ -19,8 +21,10 @@ AC_PROG_INSTALL
 AC_PROG_CC
 
 dnl Checks for libraries.
-
 AM_PATH_XML2(2.0.0, [], AC_MSG_ERROR(snmpdump requires libxml2))
+PKG_CHECK_MODULES(OPENSSL, openssl)
+AC_SUBST(OPENSSL_CFLAGS)
+AC_SUBST(OPENSSL_LIBS)
 
 dnl Checks for header files.
 AC_HEADER_STDC
