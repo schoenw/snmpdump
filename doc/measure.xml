@@ -1,0 +1,471 @@
+<?xml version="1.0"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc compact="yes"?>
+<?rfc symrefs="yes" ?> 
+<rfc ipr="full3667"
+     docName="draft-schoenw-snmp-measurements-00.txt"
+     category="info">
+
+  <!--
+  $Id: im-dm.xml,v 1.2 2003/01/17 08:37:56 schoenw Exp $
+  -->
+
+  <front>
+
+    <title>
+      SNMP Traffic Measurements
+    </title>
+    
+    <author initials="J." surname="Schoenwaelder"
+            fullname="Juergen Schoenwaelder"
+	    role = "editor">
+      <organization>International University Bremen</organization>
+      <address>
+        <postal>
+          <street>Campus Ring 1</street>
+          <city>28725 Bremen</city>
+          <country>Germany</country>
+        </postal>
+        <phone>+49 421 200-3587</phone>
+        <email>j.schoenwaelder@iu-bremen.de</email>
+      </address>
+    </author>
+
+    <date month="July" year="2005"/>
+
+      <area>Operations and Management</area>
+
+      <workgroup>NMRG</workgroup>
+
+      <keyword>Network Management</keyword>
+      <keyword>Simple Network Management Protocol</keyword>
+      <keyword>SNMP</keyword>
+
+      <abstract>
+        <t>
+	  The Simple Network Management Protocol (SNMP) is widely
+	  deployed to monitor, control and configure network elements.
+	  Even though the principal behavior of SNMP is well
+	  understood, it remains unclear how SNMP is used in
+	  practice. In particular, it is not clear which features are
+	  being used, how SNMP usage differs in different types of
+	  organizations, which information is frequently queried, and
+	  what typical SNMP interactions patterns are in real world
+	  networks. These questions recently became important as
+	  researchers started to investigate the application of other
+	  protocols (such as Web Services) for network management
+	  purposes.
+        </t>
+      </abstract>
+
+  </front>
+
+
+
+  <middle>
+
+
+
+    <section anchor="introduction" title="Introduction">
+      
+      <t>
+	There have been several papers in the recent past dealing with
+	the performance of SNMP in general, the impact of SNMPv3
+	security and the relative performance of SNMP compared to Web
+	Services. While these papers are useful to better understand
+	the impact of various design decisions and technologies, these
+	papers in general lack a strong foundation because authors
+	often typically assume certain SNMP interaction patterns
+	without having experimental evidence that the assumptions are
+	correct. In fact, there are many speculations and opinions how
+	SNMP is being used and how it performs, but no systematic
+	measurements have been done and published so far.
+      </t>
+      <t>
+	Many authors have used the ifTable of the IF-MIB or the
+	tcpConnTable of the TCP-MIB as a foundation for their analysis
+	and comparisons. Despite the fact that it is not even clear
+	that these tables dominate the SNMP traffic, it is even more
+	unclear how these tables are read and which optimizations are
+	done (or not done) by real world applications. It is also
+	unclear what the actual traffic trade-off between periodic
+	polling and bulk data retrieval really is. Furthermore, we do
+	not generally understand how much traffic is devoted to
+	standardized MIB objects and how much traffic deals with
+	proprietary MIB objects and whether the operation mix differes
+	between those object classes or between different operational
+	environments.
+      </t>
+      <t>
+	This document describes an effort to collect SNMP traffic
+	traces for analysis. It also describes the tools that have
+	been developed to allow network operators to collect traffic
+	traces and to share them with research groups.
+      </t>
+
+    </section>
+
+    <section title="Measurement Approach">
+
+      <t>
+	The process of doing SNMP measurements is outlined below. It
+	consists of the following steps:
+      </t>
+      <t>
+      <list style="numbers">
+	<t>
+	  Capture the SNMP traffic into a pcap capture file. This can
+	  be easily done by using tools such as tcpdump or ethereal.
+	</t>
+	<t>
+	  Convert the pcap traffic traces into a structured machine
+	  and human readable file format. The natural choice here is
+	  to use XML. <xref target="schema"/> contains the RELAX NG
+	  schema definition for this purpose. During the conversion
+	  process, data may be anonymized in order to reduce the
+	  likelihood that sensitive data leaks into places where it
+	  does not belong.
+	</t>
+	<t>
+	  Filter the converted traffic XML traces to hide information
+	  that is considered sensitive. This filterting can be
+	  accomplished by running an xslt processor such as xsltproc
+	  on the XML traffic trace.
+	</t>
+	<t>
+	  Submit the filtered traffic traces to a central repository,
+	  allowing researchers to retrieve traffic traces from the
+	  central repository and to post-process them in order to
+	  produce meaningful results. An alternative option is to keep
+	  the data on the operators side and to run cooperate with
+	  researches by running their analysis scripts on the
+	  converted XML traffic traces.
+	</t>
+      </list>
+      </t>
+
+      <t>
+	Most of the steps listed above require involvement of the
+	network operators supporting the SNMP measurement project.  In
+	most cases, the XML notation of the SNMP traces will be the
+	binding interface between the researchers providing analysis
+	scripts and the operators involved in the measurement
+	activity.
+      </t>
+      <t>
+	This document provides advise and hints for network operators
+	how the steps listed above can be carried out efficiently.
+	Some special tools have been developed to assist operators so
+	that the time spend on supporting this project is limited. The
+	following sections will describe the various steps and tools
+	in more detail.
+      </t>
+
+      <section title="Capturing Traffic Traces">
+	<t>
+	  Capturing SNMP traffic traces can be done by using <eref
+	  target="http://www.tcpdump.org/">tcpdump</eref> or similar
+	  applications.  Note, care must be taken to specify a filter
+	  expression that matches the SNMP transport endpoints used
+	  for SNMP (typically 'udp and (port 161 or port 162)').
+	  Furthermore, it is necessary to ensure that packets are not
+	  truncated (tcpdump option -s 0). Finally, it is necessary to
+	  carefully select the placement of the probe within the
+	  network. Especially on bridged LANs, it is important to
+	  ensure that all management traffic is captured and that the
+	  probe has access to the virtual lans carrying management
+	  traffic. This usually requires to place the probe(s) close
+	  to the management system(s).
+	</t>
+	<t>
+	  It is recommended to capture at least a full week of data.
+	  But operators are encourages to capture longer traffic
+	  traces. Tools such as <eref
+	  target="http://www.tcpdump.org/">tcpslice</eref> or <eref
+	  target="http://indev.insu.com/Fwctl/pcapmerge.html">pcapmerge</eref>
+	  can be used to merge or split trace files.
+        </t> 
+      </section>
+
+      <section title="Converting Traffic Traces">
+        <t>
+	  Raw traffic traces in pcap format must be converted into an
+	  XML representation. The <eref
+	  target="https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump">snmpdump</eref>
+	  package has been developed for this purpose. The snmpdump
+	  program reads pcap files and produces an XML document which
+	  lists the details of the SNMP packets contained in the
+	  traffic trace. The Relax NG schema definition of the XML
+	  format can be found in <xref target="schema"/>.
+	</t>
+	<t>
+	  The snmpdump program can filter out sensitive
+	  information. Work is in progress to provide data type
+	  specific anonymization capabilities which maintain the
+	  semantic meaning of the values and maintain the
+	  lexicographic ordering property.
+	</t>
+      </section>
+
+      <section title="Filtering Traffic Traces">
+	<t>
+	  Some additional filtering can be implemented by manipulating
+	  the XML representation of an SNMP trace. Standard XSLT
+	  processors such as <eref
+	  target="http://xmlsoft.org/XSLT/">xsltproc</eref> can be used
+	  for this purpose. People familiar with Perl might also be
+	  interested in using the <eref
+	  target="http://www.cpan.org/">XML::LibXML</eref> Perl
+	  package to manipulate XML documents from within Perl.
+	</t>
+      </section>
+
+      <section title="Submitting/Analyzing Traffic Traces">
+	<t>
+	  The pcap traces together with the XML traces should be
+	  stored in an archive. Such an archive might either be
+	  maintained by researchers or research groups (e.g. the NMRG)
+	  or by the operators themself. It is however of key
+	  importance that captured traces are not lost or modified as
+	  they form the basis of future research projects and may also
+	  be needed to verify published research results.  Access to
+	  the archive might be restricted to those who have signed
+	  some sort of a non-disclosure agreement.
+	</t>
+      </section>
+
+      <section title="Processing Traffic Traces">
+	<t>
+	  Trace files can be processed with tools written in almost
+	  any programming language. However, in order to facilitate a
+	  common vocabulary and to allow operators to easily read
+	  scripts they execute on trace files, it is suggested that
+	  analysis scripts are written in the Perl programming
+	  language using the <eref
+	  target="http://www.cpan.org/">XML::LibXML</eref> Perl
+	  package to read the XML format of the trace files.
+	</t>
+	<t>
+	  TBD: show a skeleton of a Perl script file; put a full
+	  working example into the appendix.
+	</t>
+      </section>
+
+    </section>
+
+    <section title="Preliminary Results">
+    </section>
+
+    <section title="Security Considerations">
+      <t>
+	[...]
+      </t>
+    </section>
+
+    <section title="Acknowledgements">
+      <t>
+        This document was influenced by discussions within the Network
+        Management Research Group (NMRG). Special thanks go to [your
+        name here].
+      </t>
+    </section>
+
+  </middle>
+
+
+
+  <back>
+
+
+    <references title="Normative References">
+
+      <reference anchor="RFC3411">
+        <front>
+          <title>
+            An Architecture for Describing Simple Network Management
+            Protocol (SNMP) Management Frameworks
+          </title>
+          <author initials="D." surname="Harrington" fullname="David Harrington">
+            <organization>Enterasys Networks</organization>
+          </author>
+          <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <author initials="B." surname="Wijnen" fullname="Bert Wijnen">
+            <organization>Lucent Technologies</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="STD" value="62"/>
+        <seriesInfo name="RFC" value="3411"/>
+      </reference>
+
+      <reference anchor="RFC3416">
+        <front>
+          <title>
+            Version 2 of the Protocol Operations for the Simple 
+            Network Management Protocol (SNMP)
+          </title>
+          <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <author initials="J." surname="Case" fullname="Jeff Case">
+            <organization>SNMP Research, Inc.</organization>
+          </author>
+          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
+            <organization>Cisco Systems, Inc.</organization>
+          </author>
+          <author initials="M." surname="Rose" fullname="Marshall Rose">
+            <organization>Dover Beach Consulting, Inc.</organization>
+          </author>
+          <author initials="S." surname="Waldbusser" fullname="Steve Waldbusser">
+            <organization>International Network Services</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="STD" value="62"/>
+        <seriesInfo name="RFC" value="3416"/>
+      </reference>
+
+      <reference anchor="RFC3418">
+        <front>
+          <title>
+            Management Information Base (MIB) for the
+	    Simple Network Management Protocol (SNMP)
+          </title>
+          <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <author initials="J." surname="Case" fullname="Jeff Case">
+            <organization>SNMP Research, Inc.</organization>
+          </author>
+          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
+            <organization>Cisco Systems, Inc.</organization>
+          </author>
+          <author initials="M." surname="Rose" fullname="Marshall Rose">
+            <organization>Dover Beach Consulting, Inc.</organization>
+          </author>
+          <author initials="S." surname="Waldbusser" fullname="Steve Waldbusser">
+            <organization>International Network Services</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="STD" value="62"/>
+        <seriesInfo name="RFC" value="3418"/>
+      </reference>
+
+    </references>
+
+
+    <references title="Informative References">
+
+      <reference anchor="STBULK">
+        <front>
+          <title>
+            Bulk Transfers of MIB Data
+          </title>
+          <author initials="R." surname="Sprenkels" fullname="R. Sprenkels">
+            <organization>Twente University</organization>
+          </author>
+          <author initials="J.P." surname="Martin-Flatin" fullname="J.P. Martin-Flatin">
+            <organization>EPFL</organization>
+          </author>
+          <date month="March" year="1999"/>
+        </front>
+        <seriesInfo name="Simple Times" value="7(1)"/>
+      </reference>
+
+      <reference anchor="STBUMP">
+        <front>
+          <title>
+            GetBulk Worth Fixing
+          </title>
+          <author initials="M." surname="Malowidzki" fullname="M. Malowidzki">
+            <organization>Military Communication Institute</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="Simple Times" value="10(1)"/>
+      </reference>
+
+      <reference anchor="RFC2863">
+        <front>
+          <title>
+            The Interfaces Group MIB
+          </title>
+          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
+            <organization>Cisco Systems</organization>
+          </author>
+          <author initials="F." surname="Kastenholz" fullname="Frank Kastenholz">
+            <organization>Argon Networks</organization>
+          </author>
+          <date month="June" year="2000"/>
+        </front>
+        <seriesInfo name="RFC" value="2863"/>
+      </reference>
+
+      <reference anchor="RFC2011">
+        <front>
+          <title>
+            SNMPv2 Management Information Base for the Internet 
+            Protocol using SMIv2
+          </title>
+          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
+            <organization>Cisco Systems</organization>
+          </author>
+          <date month="November" year="1996"/>
+        </front>
+        <seriesInfo name="RFC" value="2011"/>
+      </reference>
+
+      <reference anchor="RFC3430">
+        <front>
+          <title>
+            Simple Network Management Protocol (SNMP) over Transmission 
+	    Control Protocol (TCP) Transport Mapping
+          </title>
+          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
+            <organization>TU Braunschweig</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3430"/>
+      </reference>
+
+    </references>
+
+    <section anchor="schema" title="RELAX NG Schema Definition">
+
+      <figure>
+        <artwork>
+	  <?rfc include='snmptrace.rnc'?>
+	</artwork>
+      </figure>
+
+
+
+    </section>
+
+
+  </back>
+    
+
+</rfc>
+
+<!-- Local Variables:                                           -->
+<!-- compile-command: "xml2rfc measure.xml"                     -->
+<!-- ispell-local-dictionary: "american"                        -->
+<!-- sgml-declaration: "/usr/lib/sgml/declaration/xml.decl"     -->
+<!-- sgml-omittag:nil                                           -->
+<!-- sgml-shorttag:t                                            -->
+<!-- sgml-namecase-general:t                                    -->
+<!-- sgml-minimize-attributes:nil                               -->
+<!-- sgml-always-quote-attributes:t                             -->
+<!-- sgml-indent-step:2                                         -->
+<!-- sgml-indent-data:t                                         -->
+<!-- sgml-parent-document:nil                                   -->
+<!-- sgml-exposed-tags:nil                                      -->
+<!-- sgml-local-catalogs:nil                                    -->
+<!-- sgml-local-ecat-files:nil                                  -->
+<!-- End:                                                       -->

@@ -1,0 +1,560 @@
+
+
+
+NMRG                                               J. Schoenwaelder, Ed.
+Internet-Draft                           International University Bremen
+Expires: January 13, 2006                                  July 12, 2005
+
+
+                       SNMP Traffic Measurements
+                 draft-schoenw-snmp-measurements-00.txt
+
+Status of this Memo
+
+   This document is an Internet-Draft and is subject to all provisions
+   of Section 3 of RFC 3667.  By submitting this Internet-Draft, each
+   author represents that any applicable patent or other IPR claims of
+   which he or she is aware have been or will be disclosed, and any of
+   which he or she become aware will be disclosed, in accordance with
+   RFC 3668.
+
+   Internet-Drafts are working documents of the Internet Engineering
+   Task Force (IETF), its areas, and its working groups.  Note that
+   other groups may also distribute working documents as Internet-
+   Drafts.
+
+   Internet-Drafts are draft documents valid for a maximum of six months
+   and may be updated, replaced, or obsoleted by other documents at any
+   time.  It is inappropriate to use Internet-Drafts as reference
+   material or to cite them other than as "work in progress."
+
+   The list of current Internet-Drafts can be accessed at
+   http://www.ietf.org/ietf/1id-abstracts.txt.
+
+   The list of Internet-Draft Shadow Directories can be accessed at
+   http://www.ietf.org/shadow.html.
+
+   This Internet-Draft will expire on January 13, 2006.
+
+Copyright Notice
+
+   Copyright (C) The Internet Society (2005).
+
+Abstract
+
+   The Simple Network Management Protocol (SNMP) is widely deployed to
+   monitor, control and configure network elements.  Even though the
+   principal behavior of SNMP is well understood, it remains unclear how
+   SNMP is used in practice.  In particular, it is not clear which
+   features are being used, how SNMP usage differs in different types of
+   organizations, which information is frequently queried, and what
+   typical SNMP interactions patterns are in real world networks.  These
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 1]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+   questions recently became important as researchers started to
+   investigate the application of other protocols (such as Web Services)
+   for network management purposes.
+
+Table of Contents
+
+   1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
+   2.  Measurement Approach . . . . . . . . . . . . . . . . . . . . .  3
+     2.1   Capturing Traffic Traces . . . . . . . . . . . . . . . . .  4
+     2.2   Converting Traffic Traces  . . . . . . . . . . . . . . . .  4
+     2.3   Filtering Traffic Traces . . . . . . . . . . . . . . . . .  5
+     2.4   Submitting/Analyzing Traffic Traces  . . . . . . . . . . .  5
+     2.5   Processing Traffic Traces  . . . . . . . . . . . . . . . .  5
+   3.  Preliminary Results  . . . . . . . . . . . . . . . . . . . . .  5
+   4.  Security Considerations  . . . . . . . . . . . . . . . . . . .  5
+   5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  5
+   6.  References . . . . . . . . . . . . . . . . . . . . . . . . . .  6
+     6.1   Normative References . . . . . . . . . . . . . . . . . . .  6
+     6.2   Informative References . . . . . . . . . . . . . . . . . .  6
+       Author's Address . . . . . . . . . . . . . . . . . . . . . . .  7
+   A.  RELAX NG Schema Definition . . . . . . . . . . . . . . . . . .  7
+       Intellectual Property and Copyright Statements . . . . . . . . 10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 2]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+1.  Introduction
+
+   There have been several papers in the recent past dealing with the
+   performance of SNMP in general, the impact of SNMPv3 security and the
+   relative performance of SNMP compared to Web Services.  While these
+   papers are useful to better understand the impact of various design
+   decisions and technologies, these papers in general lack a strong
+   foundation because authors often typically assume certain SNMP
+   interaction patterns without having experimental evidence that the
+   assumptions are correct.  In fact, there are many speculations and
+   opinions how SNMP is being used and how it performs, but no
+   systematic measurements have been done and published so far.
+
+   Many authors have used the ifTable of the IF-MIB or the tcpConnTable
+   of the TCP-MIB as a foundation for their analysis and comparisons.
+   Despite the fact that it is not even clear that these tables dominate
+   the SNMP traffic, it is even more unclear how these tables are read
+   and which optimizations are done (or not done) by real world
+   applications.  It is also unclear what the actual traffic trade-off
+   between periodic polling and bulk data retrieval really is.
+   Furthermore, we do not generally understand how much traffic is
+   devoted to standardized MIB objects and how much traffic deals with
+   proprietary MIB objects and whether the operation mix differes
+   between those object classes or between different operational
+   environments.
+
+   This document describes an effort to collect SNMP traffic traces for
+   analysis.  It also describes the tools that have been developed to
+   allow network operators to collect traffic traces and to share them
+   with research groups.
+
+2.  Measurement Approach
+
+   The process of doing SNMP measurements is outlined below.  It
+   consists of the following steps:
+
+   1.  Capture the SNMP traffic into a pcap capture file.  This can be
+       easily done by using tools such as tcpdump or ethereal.
+   2.  Convert the pcap traffic traces into a structured machine and
+       human readable file format.  The natural choice here is to use
+       XML.  Appendix A contains the RELAX NG schema definition for this
+       purpose.  During the conversion process, data may be anonymized
+       in order to reduce the likelihood that sensitive data leaks into
+       places where it does not belong.
+   3.  Filter the converted traffic XML traces to hide information that
+       is considered sensitive.  This filterting can be accomplished by
+       running an xslt processor such as xsltproc on the XML traffic
+       trace.
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 3]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+   4.  Submit the filtered traffic traces to a central repository,
+       allowing researchers to retrieve traffic traces from the central
+       repository and to post-process them in order to produce
+       meaningful results.  An alternative option is to keep the data on
+       the operators side and to run cooperate with researches by
+       running their analysis scripts on the converted XML traffic
+       traces.
+
+   Most of the steps listed above require involvement of the network
+   operators supporting the SNMP measurement project.  In most cases,
+   the XML notation of the SNMP traces will be the binding interface
+   between the researchers providing analysis scripts and the operators
+   involved in the measurement activity.
+
+   This document provides advise and hints for network operators how the
+   steps listed above can be carried out efficiently.  Some special
+   tools have been developed to assist operators so that the time spend
+   on supporting this project is limited.  The following sections will
+   describe the various steps and tools in more detail.
+
+2.1  Capturing Traffic Traces
+
+   Capturing SNMP traffic traces can be done by using tcpdump [1] or
+   similar applications.  Note, care must be taken to specify a filter
+   expression that matches the SNMP transport endpoints used for SNMP
+   (typically 'udp and (port 161 or port 162)').  Furthermore, it is
+   necessary to ensure that packets are not truncated (tcpdump option -s
+   0).  Finally, it is necessary to carefully select the placement of
+   the probe within the network.  Especially on bridged LANs, it is
+   important to ensure that all management traffic is captured and that
+   the probe has access to the virtual lans carrying management traffic.
+   This usually requires to place the probe(s) close to the management
+   system(s).
+
+   It is recommended to capture at least a full week of data.  But
+   operators are encourages to capture longer traffic traces.  Tools
+   such as tcpslice [1] or pcapmerge [2] can be used to merge or split
+   trace files.
+
+2.2  Converting Traffic Traces
+
+   Raw traffic traces in pcap format must be converted into an XML
+   representation.  The snmpdump [3] package has been developed for this
+   purpose.  The snmpdump program reads pcap files and produces an XML
+   document which lists the details of the SNMP packets contained in the
+   traffic trace.  The Relax NG schema definition of the XML format can
+   be found in Appendix A.
+
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 4]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+   The snmpdump program can filter out sensitive information.  Work is
+   in progress to provide data type specific anonymization capabilities
+   which maintain the semantic meaning of the values and maintain the
+   lexicographic ordering property.
+
+2.3  Filtering Traffic Traces
+
+   Some additional filtering can be implemented by manipulating the XML
+   representation of an SNMP trace.  Standard XSLT processors such as
+   xsltproc [4] can be used for this purpose.  People familiar with Perl
+   might also be interested in using the XML::LibXML [5] Perl package to
+   manipulate XML documents from within Perl.
+
+2.4  Submitting/Analyzing Traffic Traces
+
+   The pcap traces together with the XML traces should be stored in an
+   archive.  Such an archive might either be maintained by researchers
+   or research groups (e.g. the NMRG) or by the operators themself.  It
+   is however of key importance that captured traces are not lost or
+   modified as they form the basis of future research projects and may
+   also be needed to verify published research results.  Access to the
+   archive might be restricted to those who have signed some sort of a
+   non-disclosure agreement.
+
+2.5  Processing Traffic Traces
+
+   Trace files can be processed with tools written in almost any
+   programming language.  However, in order to facilitate a common
+   vocabulary and to allow operators to easily read scripts they execute
+   on trace files, it is suggested that analysis scripts are written in
+   the Perl programming language using the XML::LibXML [5] Perl package
+   to read the XML format of the trace files.
+
+   TBD: show a skeleton of a Perl script file; put a full working
+   example into the appendix.
+
+3.  Preliminary Results
+
+4.  Security Considerations
+
+   [...]
+
+5.  Acknowledgements
+
+   This document was influenced by discussions within the Network
+   Management Research Group (NMRG).  Special thanks go to [your name
+   here].
+
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 5]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+6.  References
+
+6.1  Normative References
+
+   [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
+              Architecture for Describing Simple Network Management
+              Protocol (SNMP) Management Frameworks", STD 62, RFC 3411,
+              December 2002.
+
+   [RFC3416]  Presuhn, R., Case, J., McCloghrie, K., Rose, M., and S.
+              Waldbusser, "Version 2 of the Protocol Operations for the
+              Simple  Network Management Protocol (SNMP)", STD 62,
+              RFC 3416, December 2002.
+
+   [RFC3418]  Presuhn, R., Case, J., McCloghrie, K., Rose, M., and S.
+              Waldbusser, "Management Information Base (MIB) for the
+              Simple Network Management Protocol (SNMP)", STD 62,
+              RFC 3418, December 2002.
+
+6.2  Informative References
+
+   [STBULK]   Sprenkels, R. and J. Martin-Flatin, "Bulk Transfers of MIB
+              Data", Simple Times 7(1), March 1999.
+
+   [STBUMP]   Malowidzki, M., "GetBulk Worth Fixing", Simple
+              Times 10(1), December 2002.
+
+   [RFC2863]  McCloghrie, K. and F. Kastenholz, "The Interfaces Group
+              MIB", RFC 2863, June 2000.
+
+   [RFC2011]  McCloghrie, K., "SNMPv2 Management Information Base for
+              the Internet  Protocol using SMIv2", RFC 2011,
+              November 1996.
+
+   [RFC3430]  Schoenwaelder, J., "Simple Network Management Protocol
+              (SNMP) over Transmission  Control Protocol (TCP) Transport
+              Mapping", RFC 3430, December 2002.
+
+URIs
+
+   [1]  <http://www.tcpdump.org/>
+
+   [2]  <http://indev.insu.com/Fwctl/pcapmerge.html>
+
+   [3]  <https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump>
+
+   [4]  <http://xmlsoft.org/XSLT/>
+
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 6]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+   [5]  <http://www.cpan.org/>
+
+
+Author's Address
+
+   Juergen Schoenwaelder (editor)
+   International University Bremen
+   Campus Ring 1
+   28725 Bremen
+   Germany
+
+   Phone: +49 421 200-3587
+   Email: j.schoenwaelder@iu-bremen.de
+
+Appendix A.  RELAX NG Schema Definition
+
+
+   start =
+     element snmptrace {
+       packet.elem*
+     }
+
+   packet.elem =
+     element packet {
+       attribute date { xsd:dateTime },
+       attribute delta { xsd:unsignedInt },
+       element src { addr.attrs },
+       element dst { addr.attrs },
+       snmp.elem
+     }
+
+   snmp.elem =
+     element snmp {
+       length.attrs?,
+       message.elem
+     }
+
+   message.elem =
+     element version { length.attrs, xsd:int },
+     element community { length.attrs, text },
+     pdu.elem
+
+   message.elem |=
+     element version { length.attrs, xsd:int },
+     element message {
+       length.attrs,
+       element msg-id { length.attrs, xsd:unsignedInt },
+       element max-size { length.attrs, xsd:unsignedInt },
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 7]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+       element flags { length.attrs, text },
+       element security-model { length.attrs, xsd:unsignedInt },
+       usm.elem?
+     },
+     element scoped-pdu {
+       length.attrs,
+       element context-engine-id { length.attrs, text },
+       element context-name { length.attrs, text },
+       pdu.elem
+     }
+
+   usm.elem =
+     element auth-engine-id { length.attrs, text },
+     element auth-engine-boots { length.attrs, xsd:unsignedInt },
+     element auth-engine-time { length.attrs, xsd:unsignedInt },
+     element user { length.attrs, text },
+     element auth-params { length.attrs, text },
+     element priv-params { length.attrs, text }
+
+   pdu.elem =
+     element trap {
+       length.attrs,
+       element enterprise { length.attrs, oid.type },
+       element agent-addr { length.attrs, ipaddress.type },
+       element generic-trap { length.attrs, xsd:int },
+       element specific-trap { length.attrs, xsd:int },
+       element time-stamp { length.attrs, xsd:int },
+       element variable-bindings { length.attrs, varbind.elem* }
+     }
+
+   pdu.elem |=
+     element (get-request | get-next-request | get-bulk-request |
+              set-request | inform | trap2 | response | report) {
+       length.attrs,
+       element request-id { length.attrs, xsd:int },
+       element error-status { length.attrs, xsd:int },
+       element error-index { length.attrs, xsd:int },
+       element variable-bindings { length.attrs, varbind.elem* }
+     }
+
+   varbind.elem =
+     element varbind { length.attrs, name.elem, value.elem }
+
+   name.elem =
+     element name { length.attrs, oid.type }
+
+   value.elem =
+     element null { length.attrs, empty } |
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 8]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+     element integer32 { length.attrs, xsd:int } |
+     element unsigned32 { length.attrs, xsd:unsignedInt } |
+     element unsigned64 { length.attrs, xsd:unsignedLong } |
+     element ipaddress { length.attrs, ipaddress.type } |
+     element octet-string { length.attrs, text } |
+     element object-identifier { length.attrs, oid.type } |
+     element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
+     element value { empty }
+
+   length.attrs =
+     ( attribute blen { xsd:unsignedShort },
+       attribute vlen { xsd:unsignedShort } )?
+
+   addr.attrs =
+     attribute ip { ipaddress.type },
+     attribute port { xsd:unsignedShort }
+
+   oid.type =
+     xsd:string {
+       pattern =
+         """[0-2](\.[0-9]+)+"""
+     }
+
+   ipaddress.type =
+     xsd:string {
+       pattern =
+         """[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"""
+     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder           Expires January 13, 2006                [Page 9]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
+Intellectual Property Statement
+
+   The IETF takes no position regarding the validity or scope of any
+   Intellectual Property Rights or other rights that might be claimed to
+   pertain to the implementation or use of the technology described in
+   this document or the extent to which any license under such rights
+   might or might not be available; nor does it represent that it has
+   made any independent effort to identify any such rights.  Information
+   on the procedures with respect to rights in RFC documents can be
+   found in BCP 78 and BCP 79.
+
+   Copies of IPR disclosures made to the IETF Secretariat and any
+   assurances of licenses to be made available, or the result of an
+   attempt made to obtain a general license or permission for the use of
+   such proprietary rights by implementers or users of this
+   specification can be obtained from the IETF on-line IPR repository at
+   http://www.ietf.org/ipr.
+
+   The IETF invites any interested party to bring to its attention any
+   copyrights, patents or patent applications, or other proprietary
+   rights that may cover technology that may be required to implement
+   this standard.  Please address the information to the IETF at
+   ietf-ipr@ietf.org.
+
+
+Disclaimer of Validity
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
+   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
+   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
+   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Copyright Statement
+
+   Copyright (C) The Internet Society (2005).  This document is subject
+   to the rights, licenses and restrictions contained in BCP 78, and
+   except as set forth therein, the authors retain all their rights.
+
+
+Acknowledgment
+
+   Funding for the RFC Editor function is currently provided by the
+   Internet Society.
+
+
+
+
+Schoenwaelder           Expires January 13, 2006               [Page 10]
+
