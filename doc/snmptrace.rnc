@@ -61,7 +61,7 @@ pdu.elem =
 
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
-	   set-request | inform | trap2 | response | report) { 
+           set-request | inform | trap2 | response | report) { 
     length.attrs,
     element request-id { length.attrs, xsd:int },
     element error-status { length.attrs, xsd:int },
