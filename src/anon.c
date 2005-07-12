@@ -213,7 +213,7 @@ cmd_help(int argc, char **argv)
 	   "\n"
 	   "Most subcommands take a file as an argument.\n"
 	   "\n"
-	   "Available subcomands:\n",
+	   "Available subcommands:\n",
 	   progname);
 
     for (i = 0; cmds[i].name; i++) {

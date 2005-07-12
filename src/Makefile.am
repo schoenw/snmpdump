@@ -10,7 +10,7 @@ snmpdump_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) -lnids -lpcap
 anon_SOURCES		= anon.c
 anon_LDADD		= libanon.la $(OPENSSL_LIBS)
 
-man_MANS		= snmpdump.1
+man_MANS		= snmpdump.1 anon.1
 
 include_HEADERS		= libanon.h
 lib_LTLIBRARIES		= libanon.la
