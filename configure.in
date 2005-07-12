@@ -3,8 +3,18 @@ dnl
 dnl $Id$
 
 AC_INIT(src/snmpdump.c)
-dnl Every other copy of the package version number gets its value from here
-AM_INIT_AUTOMAKE(snmpdump, 0.1.0)
+
+LIBANON_MAJOR=0
+LIBANON_MINOR=1
+LIBANON_PATCHLEVEL=0
+LIBTOOL_VERSION=2
+LIBTOOL_REVISION=23
+LIBTOOL_AGE=0
+
+VERSION_STRING="$LIBANON_MAJOR.$LIBANON_MINOR.$LIBANON_PATCHLEVEL"
+VERSION_LIBTOOL="$LIBTOOL_VERSION:$LIBTOOL_REVISION:$LIBTOOL_AGE"
+
+AM_INIT_AUTOMAKE(snmpdump, $VERSION_STRING)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(src/config.h)
@@ -19,6 +29,7 @@ AC_CANONICAL_HOST
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_CC
+AM_PROG_LIBTOOL
 
 dnl Checks for libraries.
 AM_PATH_XML2(2.0.0, [], AC_MSG_ERROR(snmpdump requires libxml2))
@@ -36,4 +47,9 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 
 dnl Checks for library functions.
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile test/Makefile)
+dnl Further substitutions
+
+AC_SUBST(VERSION_STRING)
+AC_SUBST(VERSION_LIBTOOL)
+
+AC_OUTPUT(Makefile src/Makefile doc/Makefile test/Makefile libanon.pc)

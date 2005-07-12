@@ -8,9 +8,15 @@
 # See the file "COPYING" for information on usage and redistribution
 # of this file, and for a DISCLAIMER OF ALL WARRANTIES.
 #
-# @(#) $Id: Makefile.am 1670 2004-08-09 14:06:04Z strauss $
+# @(#) $Id$
 #
 
 AUTOMAKE_OPTIONS        = no-dependencies foreign
 
+EXTRA_DIST		= libanon.pc
+
 SUBDIRS			= src doc test
+
+pkgconfigdir		= $(libdir)/pkgconfig
+pkgconfig_DATA		= libanon.pc
+$(pkgconfig_DATA):	config.status

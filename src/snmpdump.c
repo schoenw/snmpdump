@@ -38,9 +38,12 @@
 
 #include <nids.h>
 
+#include "libanon.h"
+
+#if 0
 /* needed to work around a bug in libnids */
 extern struct pcap_pkthdr *nids_last_pcap_header;
-
+#endif
 
 static const char *progname = "snmpdump";
 
@@ -1092,7 +1095,7 @@ scopedpdu_print(const u_char *np, u_int length, int version,
 	xmlNodePtr xml_scopedpdu, xml_ctxtengid, xml_ctxtname;
 	
 	struct be elem;
-	int i, count = 0;
+	int count = 0;
 	const char *val;
 
 	/* Sequence */
