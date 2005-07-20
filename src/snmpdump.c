@@ -10,9 +10,15 @@
  *
  *    snmpdump <filename>
  *
- * The XML output will be written to stdout.
+ * The XML output will be written to stdout. Before this XML output is
+ * written to stdout, it might be transformed in order to anonymize
+ * important recognized data types while filtering away everything
+ * else. For simplicity and clarity, this anonymization transformation
+ * operates on the XML instead of mixing it into the creation of the
+ * XML tree (since that makes the BER code almost unreadable and even
+ * more difficult to get right).
  *
- * (c) 2004 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
+ * (c) 2004-2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
  *
  */
 
@@ -35,8 +41,10 @@
 
 #include <libxml/xmlmemory.h>
 #include <libxml/tree.h>
+#include <libxml/xpath.h>
 
 #include <nids.h>
+#include <smi.h>
 
 #include "libanon.h"
 
@@ -53,6 +61,13 @@ static xmlNodePtr xml_root;
 static int s_length = 0;
 static int s_community = 0;
 static int s_values = 0;
+static int a_flag = 0;
+
+static unsigned char my_key[32] = 
+{
+     21, 34, 23,141, 51,164,207,128, 19, 10, 91, 22, 73,144,125, 16,
+    216,152,143,131,121,121,101, 39, 98, 87, 76, 45, 42,132, 34,  2
+};
 
 struct timeval start = { 0, 0 };
 
@@ -1424,7 +1439,7 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 static void
 snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
 {
-	xmlNodePtr xml_snmp, xml_version;
+	xmlNodePtr xml_snmp = NULL, xml_version;
 	
 	struct be elem;
 	int count = 0;
@@ -1507,23 +1522,114 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 	start = nids_last_pcap_header->ts;
     }
 
-    xml_pkt = xml_new_child(xml_root, NULL, "packet", NULL);
 
+    xml_pkt = xml_new_child(xml_root, NULL, "packet", NULL);
+    
     tm = gmtime(&nids_last_pcap_header->ts.tv_sec);
     strftime(buffer, sizeof(buffer), "%FT%H:%M:%S", tm);
     xml_set_prop(xml_pkt, "date", "%s", buffer);
-
+    
     delta = time_diff(start, nids_last_pcap_header->ts);
     xml_set_prop(xml_pkt, "delta", "%u", delta);
-
+    
     xml_src = xml_new_child(xml_pkt, NULL, "src", NULL);
     xml_set_addr(xml_src, addr->saddr, addr->source);
-
+    
     xml_dst = xml_new_child(xml_pkt, NULL, "dst", NULL);
     xml_set_addr(xml_dst, addr->daddr, addr->dest);
 
     snmp_print(buf, len, xml_pkt);
 }
+
+/*
+ *
+ */
+
+static void
+mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+{
+    xmlXPathObjectPtr obj;
+    xmlChar *content;
+    int i;
+    in_addr_t ip;
+
+    obj = xmlXPathEval(xpath, ctxt);
+    if (obj) {
+	if (obj->type == XPATH_NODESET) {
+	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
+		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
+		if (inet_pton(AF_INET, content, &ip) > 0) {
+		    anon_ip_set_used(an_ip, ip, 32);
+		}
+	    }
+	}
+	xmlXPathFreeObject(obj);
+    }
+}
+
+static void
+repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+{
+    xmlXPathObjectPtr obj;
+    xmlChar *content;
+    int i;
+    in_addr_t ip;
+
+    obj = xmlXPathEval(xpath, ctxt);
+    if (obj) {
+	if (obj->type == XPATH_NODESET) {
+	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
+		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
+		if (inet_pton(AF_INET, content, &ip) > 0) {
+		    char buf[INET_ADDRSTRLEN];
+		    ip = anon_ip_map_pref_lex(an_ip, ip);
+		    if (inet_ntop(AF_INET, &ip, buf, sizeof(buf))) {
+			fprintf(stderr, "** %s -> %s\n", content, buf);
+			xmlNodeSetContent(obj->nodesetval->nodeTab[i], buf);
+		    }
+		}
+	    }
+	}
+	xmlXPathFreeObject(obj);
+    }
+}
+
+/*
+ * First anonymization transformation pass: collect all the data
+ * values that need anonymization and clear the rest.
+ */
+
+static void
+anon_pass1(anon_ip_t *an_ip)
+{
+    xmlXPathContextPtr ctxt;
+
+    ctxt = xmlXPathNewContext(xml_doc);
+    ctxt->node = xmlDocGetRootElement(xml_doc);
+
+    mark_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
+
+    xmlXPathFreeContext(ctxt);
+}
+
+/*
+ * Second anonymization transformation pass: replace the data
+ * looking for anonymization.
+ */
+
+static void
+anon_pass2(anon_ip_t *an_ip)
+{
+    xmlXPathContextPtr ctxt;
+
+    ctxt = xmlXPathNewContext(xml_doc);
+    ctxt->node = xmlDocGetRootElement(xml_doc);
+
+    repl_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
+    
+    xmlXPathFreeContext(ctxt);
+}
+
 
 /*
  * The main function to parse arguments, initialize the libraries
@@ -1548,8 +1654,11 @@ main(int argc, char **argv)
 	{ NULL,		NULL }
     };
 
-    while ((c = getopt(argc, argv, "Vf:hs:")) != -1) {
+    while ((c = getopt(argc, argv, "Vaf:hs:")) != -1) {
 	switch (c) {
+	case 'a':
+	    a_flag = 1;
+	    break;
 	case 's':
 	    for (i = 0; strip_options[i].name; i++) {
 		if (strcmp(strip_options[i].name, optarg) == 0) {
@@ -1596,8 +1705,27 @@ main(int argc, char **argv)
 
 	start.tv_sec = start.tv_usec = 0;
 	
-	nids_register_udp(udp_callback);
+	nids_register_udp(udp_callback);	/* xml_root passed as global */
 	nids_run();
+    }
+
+    if (a_flag) {
+	anon_ip_t *an_ip;
+
+	xmlXPathInit();
+
+	an_ip = anon_ip_new();
+	if (! an_ip) {
+	    fprintf(stderr, "%s: initialization of IP anonymization failed\n",
+		    progname);
+	    exit(1);
+	}
+	anon_ip_set_key(an_ip, my_key); 
+
+	anon_pass1(an_ip);	/* xml_root passed as global */
+	anon_pass2(an_ip);	/* xml_root passed as global */
+
+	anon_ip_delete(an_ip);
     }
 
     if (xmlDocFormatDump(stdout, xml_doc, 1) == -1) {
