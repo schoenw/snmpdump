@@ -28,6 +28,19 @@ in_addr_t	anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t ip);
 void		anon_ip_delete(anon_ip_t *a);
 
 /*
+ * IEEE MAC address anonymization API.
+ */
+
+typedef struct _anon_mac anon_mac_t;
+
+anon_mac_t*	anon_mac_new();
+void		anon_mac_set_key(anon_mac_t *a, const uint8_t *key);
+void		anon_mac_set_used(anon_mac_t *a, const uint8_t *mac);
+void		anon_mac_map(anon_mac_t *a, const uint8_t *mac);
+void		anon_mac_map_lex(anon_mac_t *a, const uint8_t *mac);
+void		anon_mac_delete(anon_mac_t *a);
+
+/*
  * Other stuff goes here...
  */
 
