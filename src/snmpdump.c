@@ -1060,7 +1060,7 @@ pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
 		return;
 	}
 	if ((u_int)count < length)
-		fprintf(stderr, "[%d extra after PDU]", length - count);
+		fprintf(stderr, "[%d extra after PDU]\n", length - count);
 
 	xml_pdu = xml_new_child(xml_node, NULL,
 				Class[CONTEXT].Id[pdu.id], NULL);
@@ -1286,7 +1286,7 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
         np += count;
 
 	if ((u_int)count < length)
-		fprintf(stderr, "[%d extra after usm SEQ]", length - count);
+		fprintf(stderr, "[%d extra after usm SEQ]\n", length - count);
 }
 
 /*
@@ -1584,7 +1584,6 @@ repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 		    char buf[INET_ADDRSTRLEN];
 		    ip = anon_ip_map_pref_lex(an_ip, ip);
 		    if (inet_ntop(AF_INET, &ip, buf, sizeof(buf))) {
-			fprintf(stderr, "** %s -> %s\n", content, buf);
 			xmlNodeSetContent(obj->nodesetval->nodeTab[i], buf);
 		    }
 		}
