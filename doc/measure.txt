@@ -3,7 +3,7 @@
 
 NMRG                                               J. Schoenwaelder, Ed.
 Internet-Draft                           International University Bremen
-Expires: January 13, 2006                                  July 12, 2005
+Expires: January 27, 2006                                  July 26, 2005
 
 
                        SNMP Traffic Measurements
@@ -34,7 +34,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on January 13, 2006.
+   This Internet-Draft will expire on January 27, 2006.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Abstract
 
 
 
-Schoenwaelder           Expires January 13, 2006                [Page 1]
+Schoenwaelder           Expires January 27, 2006                [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements              July 2005
 
@@ -72,7 +72,7 @@ Table of Contents
      2.5   Processing Traffic Traces  . . . . . . . . . . . . . . . .  5
    3.  Preliminary Results  . . . . . . . . . . . . . . . . . . . . .  5
    4.  Security Considerations  . . . . . . . . . . . . . . . . . . .  5
-   5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  5
+   5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  6
    6.  References . . . . . . . . . . . . . . . . . . . . . . . . . .  6
      6.1   Normative References . . . . . . . . . . . . . . . . . . .  6
      6.2   Informative References . . . . . . . . . . . . . . . . . .  6
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-Schoenwaelder           Expires January 13, 2006                [Page 2]
+Schoenwaelder           Expires January 27, 2006                [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements              July 2005
 
@@ -164,7 +164,7 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
 
 
-Schoenwaelder           Expires January 13, 2006                [Page 3]
+Schoenwaelder           Expires January 27, 2006                [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements              July 2005
 
@@ -199,7 +199,7 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    0).  Finally, it is necessary to carefully select the placement of
    the probe within the network.  Especially on bridged LANs, it is
    important to ensure that all management traffic is captured and that
-   the probe has access to the virtual lans carrying management traffic.
+   the probe has access to the virtual LANs carrying management traffic.
    This usually requires to place the probe(s) close to the management
    system(s).
 
@@ -215,15 +215,17 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    purpose.  The snmpdump program reads pcap files and produces an XML
    document which lists the details of the SNMP packets contained in the
    traffic trace.  The Relax NG schema definition of the XML format can
-   be found in Appendix A.
+   be found in Appendix A.  The snmpdump implementation is able to
+   reassemble IPv4 fragments.  However, it does current not support
 
 
 
-
-Schoenwaelder           Expires January 13, 2006                [Page 4]
+Schoenwaelder           Expires January 27, 2006                [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements              July 2005
 
+
+   IPv6.
 
    The snmpdump program can filter out sensitive information.  Work is
    in progress to provide data type specific anonymization capabilities
@@ -249,6 +251,11 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    archive might be restricted to those who have signed some sort of a
    non-disclosure agreement.
 
+   Note that lossless compression algorithms embodied in programs such
+   as gzip or bzip2 can be used to compress even large traces files down
+   to a size where they can be burned on DVD roms for cheap longterm
+   storage.
+
 2.5  Processing Traffic Traces
 
    Trace files can be processed with tools written in almost any
@@ -267,19 +274,18 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
    [...]
 
+
+
+Schoenwaelder           Expires January 27, 2006                [Page 5]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
 5.  Acknowledgements
 
    This document was influenced by discussions within the Network
    Management Research Group (NMRG).  Special thanks go to [your name
    here].
-
-
-
-
-Schoenwaelder           Expires January 13, 2006                [Page 5]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
 
 6.  References
 
@@ -323,19 +329,19 @@ URIs
 
    [1]  <http://www.tcpdump.org/>
 
+
+
+
+Schoenwaelder           Expires January 27, 2006                [Page 6]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
    [2]  <http://indev.insu.com/Fwctl/pcapmerge.html>
 
    [3]  <https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump>
 
    [4]  <http://xmlsoft.org/XSLT/>
-
-
-
-
-Schoenwaelder           Expires January 13, 2006                [Page 6]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
 
    [5]  <http://www.cpan.org/>
 
@@ -379,20 +385,20 @@ Appendix A.  RELAX NG Schema Definition
      element community { length.attrs, text },
      pdu.elem
 
+
+
+
+Schoenwaelder           Expires January 27, 2006                [Page 7]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
    message.elem |=
      element version { length.attrs, xsd:int },
      element message {
        length.attrs,
        element msg-id { length.attrs, xsd:unsignedInt },
        element max-size { length.attrs, xsd:unsignedInt },
-
-
-
-Schoenwaelder           Expires January 13, 2006                [Page 7]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
-
        element flags { length.attrs, text },
        element security-model { length.attrs, xsd:unsignedInt },
        usm.elem?
@@ -436,19 +442,18 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    varbind.elem =
      element varbind { length.attrs, name.elem, value.elem }
 
+
+
+Schoenwaelder           Expires January 27, 2006                [Page 8]
+
+Internet-Draft          SNMP Traffic Measurements              July 2005
+
+
    name.elem =
      element name { length.attrs, oid.type }
 
    value.elem =
      element null { length.attrs, empty } |
-
-
-
-Schoenwaelder           Expires January 13, 2006                [Page 8]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
-
      element integer32 { length.attrs, xsd:int } |
      element unsigned32 { length.attrs, xsd:unsignedInt } |
      element unsigned64 { length.attrs, xsd:unsignedLong } |
@@ -495,12 +500,7 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
 
 
-
-
-
-
-
-Schoenwaelder           Expires January 13, 2006                [Page 9]
+Schoenwaelder           Expires January 27, 2006                [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements              July 2005
 
@@ -556,5 +556,5 @@ Acknowledgment
 
 
 
-Schoenwaelder           Expires January 13, 2006               [Page 10]
+Schoenwaelder           Expires January 27, 2006               [Page 10]
 

@@ -8,7 +8,7 @@
      category="info">
 
   <!--
-  $Id: im-dm.xml,v 1.2 2003/01/17 08:37:56 schoenw Exp $
+  $Id$
   -->
 
   <front>
@@ -174,7 +174,7 @@
 	  carefully select the placement of the probe within the
 	  network. Especially on bridged LANs, it is important to
 	  ensure that all management traffic is captured and that the
-	  probe has access to the virtual lans carrying management
+	  probe has access to the virtual LANs carrying management
 	  traffic. This usually requires to place the probe(s) close
 	  to the management system(s).
 	</t>
@@ -197,7 +197,9 @@
 	  program reads pcap files and produces an XML document which
 	  lists the details of the SNMP packets contained in the
 	  traffic trace. The Relax NG schema definition of the XML
-	  format can be found in <xref target="schema"/>.
+	  format can be found in <xref target="schema"/>. The snmpdump
+	  implementation is able to reassemble IPv4 fragments. 
+	  However, it does current not support IPv6.
 	</t>
 	<t>
 	  The snmpdump program can filter out sensitive
@@ -232,6 +234,12 @@
 	  be needed to verify published research results.  Access to
 	  the archive might be restricted to those who have signed
 	  some sort of a non-disclosure agreement.
+	</t>
+	<t>
+	  Note that lossless compression algorithms embodied in
+	  programs such as gzip or bzip2 can be used to compress even
+	  large traces files down to a size where they can be burned
+	  on DVD roms for cheap longterm storage.
 	</t>
       </section>
 
