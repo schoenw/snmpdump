@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 #include <openssl/aes.h>
 
 #include "libanon.h"
@@ -59,6 +60,7 @@ anon_ip_new()
     if (! a) {
 	return NULL;
     }
+    memset(a, 0, sizeof(anon_ip_t));
     a->tree = (struct node*) malloc(sizeof(struct node));
     if (!a->tree) {
 	free(a);
@@ -82,6 +84,7 @@ anon_ip_delete(anon_ip_t *a)
     if (! a) {
 	return;
     }
+
     if (a->tree) {
 	delete_node(a->tree);
     }
@@ -95,6 +98,8 @@ anon_ip_delete(anon_ip_t *a)
 void
 anon_ip_set_key(anon_ip_t *a, const uint8_t *key)
 {
+    assert(a);
+
     /* initialize the 128-bit secret key */
     memcpy(a->m_key, key, 16);
     /* initialize the AES (Rijndael) cipher */
@@ -110,7 +115,7 @@ anon_ip_set_key(anon_ip_t *a, const uint8_t *key)
  * tree and mark the prefix node complete.
  */
 
-void
+int
 anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen) 
 {
     struct node* nodep = a->tree; /* current node */
@@ -119,6 +124,7 @@ anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen)
     int first_bit; /* first (most significant) bit of ip address
 		    * - currently to be considered in traversing the tree
 		    */
+    assert(a);
 
     if (prefixlen > 32) prefixlen = 32;
 
@@ -126,7 +132,7 @@ anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen)
 	// printf("n: %02d, ip: %d\n",n,ip >> n);
 	if (nodep->complete) {
 	    // printf("hit complete...\n");
-	    return;
+	    return 0;
 	}
 	first_bit = ip & (((in_addr_t) 1) << (IPv4LENGTH-1));
 	// printf("going %s\n", first_bit ? "right" : "left");
@@ -138,6 +144,9 @@ anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen)
 	if (!childp) {
 	    // printf("adding new node...\n");
 	    childp = add_new_node(nodep,first_bit);
+	    if (! childp) {
+		return -1;
+	    }
 	    a->nodes++;
 	}
 	nodep = childp;
@@ -145,6 +154,7 @@ anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen)
 	n++;
     }
     nodep->complete = 1;
+    return 0;
 }
 
 /* 
@@ -279,6 +289,8 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
     uint32_t result = 0;
     uint32_t first4bytes_pad, first4bytes_input;
     int pos;
+
+    assert(a);
     
     memcpy(rin_input, a->m_pad, 16);
     first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
@@ -288,7 +300,7 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
 
     /* For each prefix with length from 0 to 31, generate a bit
      * using the Rijndael cipher, which is used as a pseudorandom
-     * function here. The bits generated in every round are combineed
+     * function here. The bits generated in every round are combined
      * into a pseudorandom one-time-pad.
      */
     for (pos = 0; pos <= 31 ; pos++) { 
@@ -338,6 +350,8 @@ anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t orig_addr)
     uint32_t first4bytes_pad, first4bytes_input;
     int pos;
     
+    assert(a);
+
     memcpy(rin_input, a->m_pad, 16);
     first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
 	+ (((uint32_t) a->m_pad[1]) << 16)

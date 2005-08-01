@@ -5,7 +5,7 @@ EXTRA_DIST		= $(man_MANS)
 bin_PROGRAMS		= snmpdump anon
 
 snmpdump_SOURCES	= snmpdump.c
-snmpdump_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) -lnids -lpcap
+snmpdump_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) -lnids -lnet -lpcap
 
 anon_SOURCES		= anon.c
 anon_LDADD		= libanon.la $(OPENSSL_LIBS)

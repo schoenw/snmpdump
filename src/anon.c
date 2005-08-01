@@ -1,19 +1,21 @@
 /*
  * anon.c --
  *
- * Sample program to demonstrate usage of the anonymization library
+ * Sample program to demonstrate usage of the anonymization library.
  *
  * Applies prefix- and lexicographical-order-preserving anonymization
  * to addresses in input file and prints anonymized addresses to
  * standard output.
  *
  * Copyright (c) 2005 Matus Harvan
+ * Copyright (c) 2005 Juergen Schoenwaelder
  */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <getopt.h>
 #include <ctype.h>
 
 #include <sys/types.h>
@@ -24,19 +26,20 @@
 
 static const char *progname = "anon";
 
-static void cmd_help(int argc, char **argv, int flags);
-static void cmd_ip(int argc, char **argv, int flags);
-
-#define ANON_FLAG_LEX	0x01
-
-static struct handler {
+struct cmd {
     const char *name;
-    void (*func)(int argc, char **argv, int);
-    int flags;
-} cmds[] = {
-    { "help",	cmd_help,	0 },
-    { "ip",	cmd_ip,		0 },
-    { "ip-lex",	cmd_ip,		ANON_FLAG_LEX },
+    void (*func)(int argc, char **argv, struct cmd *cmd);
+    const char *usage;
+};
+
+static void cmd_help(int argc, char **argv, struct cmd *cmd);
+static void cmd_ip(int argc, char **argv, struct cmd *cmd);
+static void cmd_mac(int argc, char **argv, struct cmd *cmd);
+
+static struct cmd cmds[] = {
+    { "help",		cmd_help,	"anon help" },
+    { "ip",		cmd_ip,		"anon ip [-hl] file" },
+    { "mac",		cmd_mac,	"anon mac [-hl] file" },
     { NULL, NULL }
 };
 
@@ -57,8 +60,7 @@ xfopen(const char *filename, const char *mode)
 
     f = fopen(filename, mode);
     if (! f) {
-	fprintf(stderr, "%s: Cannot open file \"%s\": %s\n", 
-		progname, filename, strerror(errno));
+	fprintf(stderr, "%s: %s: %s\n", progname, filename, strerror(errno));
 	exit(EXIT_FAILURE);
     }
     return f;
@@ -150,21 +152,39 @@ ip_lex(anon_ip_t *a, FILE *f)
 }
 
 /*
- * Implementation of the 'anon ip' and 'anon ip-lex' commands.
+ * Prefix-preserving and lexicographic-order preserving IP address
+ * anonymization subcommand.
  */
 
 static void
-cmd_ip(int argc, char **argv, int flags)
+cmd_ip(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ip_t *a;
+    int c, lflag = 0;
 
-    if (argc != 3) {
-	fprintf(stderr, "%s: Too few arguments\n", progname);
+    optind = 2;
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+    argc -= optind;
+    argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
 	exit(EXIT_FAILURE);
     }
 
-    in = xfopen(argv[2], "r");
+    in = xfopen(argv[0], "r");
 
     a = anon_ip_new();
     if (! a) {
@@ -172,12 +192,96 @@ cmd_ip(int argc, char **argv, int flags)
 	exit(EXIT_FAILURE);
     }
     anon_ip_set_key(a, my_key);
-    if (flags & ANON_FLAG_LEX) {
-      ip_lex(a, in);
+    if (lflag) {
+	ip_lex(a, in);
     } else {
-      ip_pref(a, in);
+	ip_pref(a, in);
     }
     anon_ip_delete(a);
+
+    fclose(in);
+}
+
+/*
+ *
+ */
+
+static void
+mac_lex(anon_mac_t *a, FILE *f)
+{
+    uint8_t mac[8];
+
+    /*
+     * first pass: read mac addresses (one per input line) and mark
+     * them as used
+     */
+
+    while (fscanf(f, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
+		  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+	anon_mac_set_used(a, mac);
+    }
+
+    /*
+     * second pass: read mac addresses and print the anonymized
+     * addresses
+     */
+
+    fseek(f,0,SEEK_SET);
+    while (fscanf(f, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
+		  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+
+	printf("%2x:%2x:%2x:%2x:%2x:%2x\n",
+	       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    }
+}
+
+/*
+ * Lexicographic-order preserving IEEE 802 MAC address anonymization
+ * subcommand.
+ */
+
+static void
+cmd_mac(int argc, char **argv, struct cmd *cmd)
+{
+    FILE *in;
+    anon_mac_t *a;
+    int c, lflag = 0;
+
+    optind = 2;
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+     argc -= optind;
+     argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[0], "r");
+
+    a = anon_mac_new();
+    if (! a) {
+	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
+	exit(EXIT_FAILURE);
+    }
+    anon_mac_set_key(a, my_key);
+    if (lflag) {
+	mac_lex(a, in);
+    } else {
+	/* xxx */
+    }
+    anon_mac_delete(a);
 
     fclose(in);
 }
@@ -186,8 +290,7 @@ cmd_ip(int argc, char **argv, int flags)
  * Implementation of the 'anon help' command.
  */
 
-static void
-cmd_help(int argc, char **argv, int ignored)
+cmd_help(int argc, char **argv, struct cmd *cmd)
 {
     int i;
 
@@ -229,9 +332,7 @@ int main(int argc, char * argv[]) {
 	return EXIT_FAILURE;
     }
 
-    if (cmds[i].func) {
-	(cmds[i].func) (argc, argv, cmds[i].flags);
-    }
+    (cmds[i].func) (argc, argv, cmds + i);
 
     return EXIT_SUCCESS;
 }
