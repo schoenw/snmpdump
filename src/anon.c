@@ -290,6 +290,7 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
  * Implementation of the 'anon help' command.
  */
 
+static void
 cmd_help(int argc, char **argv, struct cmd *cmd)
 {
     int i;
