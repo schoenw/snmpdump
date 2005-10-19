@@ -106,7 +106,7 @@ ip_pref(anon_ip_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET, buf, &raw_addr) > 0) {
 
-	anon_addr = anon_ip_map_pref(a, raw_addr);
+	(void) anon_ip_map_pref(a, raw_addr, &anon_addr);
 	
 	printf("%s\n", inet_ntop(AF_INET, &anon_addr, buf, sizeof(buf)));
     }
@@ -145,7 +145,7 @@ ip_lex(anon_ip_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET, buf, &raw_addr) > 0) {
 	
-	anon_addr = anon_ip_map_pref_lex(a, raw_addr);
+	(void) anon_ip_map_pref_lex(a, raw_addr, &anon_addr);
 
 	printf("%s\n", inet_ntop(AF_INET, &anon_addr, buf, sizeof(buf)));
     }

@@ -77,7 +77,7 @@ struct timeval start = { 0, 0 };
                            : timediff2(t1,t2))
 
 static void
-xml_set_prop(xmlNodePtr node, const xmlChar *name, const char *format, ...)
+xml_set_prop(xmlNodePtr node, const char *name, const char *format, ...)
 {
     char *s;
     va_list args;
@@ -87,7 +87,7 @@ xml_set_prop(xmlNodePtr node, const xmlChar *name, const char *format, ...)
     va_end(args);
 
     if (s) {
-	xmlSetProp(node, name, s);
+	xmlSetProp(node, BAD_CAST(name), BAD_CAST(s));
 	free(s);
     }
 }
@@ -103,28 +103,28 @@ xml_set_content(xmlNodePtr node, const char *format, ...)
     va_end(args);
 
     if (s) {
-	xmlNodePtr text = xmlNewText(s);
+	xmlNodePtr text = xmlNewText(BAD_CAST(s));
 	if (text) xmlAddChild(node, text);
 	free(s);
     }
 }
 
 static xmlNodePtr
-xml_new_child(xmlNodePtr parent, xmlNsPtr ns, const xmlChar *name,
+xml_new_child(xmlNodePtr parent, xmlNsPtr ns, const char *name,
 	      const char *format, ...)
 {
     char *s;
     va_list args;
     xmlNodePtr node;
 
-    node = xmlNewChild(parent, ns, name, NULL);
+    node = xmlNewChild(parent, ns, BAD_CAST(name), NULL);
     if (node && format) {
 	va_start(args, format);
 	vasprintf(&s, format, args);
 	va_end(args);
 
 	if (s) {
-	    xmlNodePtr text = xmlNewText(s);
+	    xmlNodePtr text = xmlNewText(BAD_CAST(s));
 	    if (text) xmlAddChild(node, text);
 	    free(s);
 	}
@@ -1538,7 +1538,7 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     xml_dst = xml_new_child(xml_pkt, NULL, "dst", NULL);
     xml_set_addr(xml_dst, addr->daddr, addr->dest);
 
-    snmp_print(buf, len, xml_pkt);
+    snmp_print((unsigned char *) buf, len, xml_pkt);
 }
 
 /*
@@ -1553,12 +1553,12 @@ mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
     int i;
     in_addr_t ip;
 
-    obj = xmlXPathEval(xpath, ctxt);
+    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
     if (obj) {
 	if (obj->type == XPATH_NODESET) {
 	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
 		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		if (inet_pton(AF_INET, content, &ip) > 0) {
+		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
 		    anon_ip_set_used(an_ip, ip, 32);
 		}
 	    }
@@ -1574,17 +1574,19 @@ repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
     xmlChar *content;
     int i;
     in_addr_t ip;
+    in_addr_t aip;
 
-    obj = xmlXPathEval(xpath, ctxt);
+    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
     if (obj) {
 	if (obj->type == XPATH_NODESET) {
 	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
 		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		if (inet_pton(AF_INET, content, &ip) > 0) {
+		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
 		    char buf[INET_ADDRSTRLEN];
-		    ip = anon_ip_map_pref_lex(an_ip, ip);
-		    if (inet_ntop(AF_INET, &ip, buf, sizeof(buf))) {
-			xmlNodeSetContent(obj->nodesetval->nodeTab[i], buf);
+		    (void) anon_ip_map_pref_lex(an_ip, ip, &aip);
+		    if (inet_ntop(AF_INET, &aip, buf, sizeof(buf))) {
+			xmlNodeSetContent(obj->nodesetval->nodeTab[i],
+					  BAD_CAST(buf));
 		    }
 		}
 	    }
@@ -1684,8 +1686,8 @@ main(int argc, char **argv)
 	}
     }
 
-    xml_doc = xmlNewDoc("1.0");
-    xml_root = xmlNewDocNode(xml_doc, NULL, "snmptrace", NULL);
+    xml_doc = xmlNewDoc(BAD_CAST("1.0"));
+    xml_root = xmlNewDocNode(xml_doc, NULL, BAD_CAST("snmptrace"), NULL);
     xml_doc->children = xml_root;
 
     for (i = optind; i < argc; i++) {
@@ -1700,7 +1702,7 @@ main(int argc, char **argv)
 	}
 
 	snprintf(buffer, sizeof(buffer), " %s ", argv[i]);
-	xmlAddChild(xml_root, xmlNewComment(buffer));
+	xmlAddChild(xml_root, xmlNewComment(BAD_CAST(buffer)));
 
 	start.tv_sec = start.tv_usec = 0;
 	

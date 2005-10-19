@@ -277,20 +277,21 @@ delete_node(struct node* n) {
 }
 
 /*
- * prefix-preserving anonymization on orig_addr
+ * prefix-preserving anonymization on ip
  * slightly modified version of PAnonymizer::anonymize() from Crypto-PAn
  */
-in_addr_t
-anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
+int
+anon_ip_map_pref(anon_ip_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
     
-    uint32_t result = 0;
     uint32_t first4bytes_pad, first4bytes_input;
     int pos;
 
     assert(a);
+
+    *aip = 0;
     
     memcpy(rin_input, a->m_pad, 16);
     first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
@@ -305,7 +306,7 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
      */
     for (pos = 0; pos <= 31 ; pos++) { 
 	/* Padding: The most significant pos bits are taken from
-	 * orig_addr. The other 128-pos bits are taken from m_pad. The
+	 * ip. The other 128-pos bits are taken from m_pad. The
 	 * variables first4bytes_pad and first4bytes_input are used
 	 * to handle the annoying byte order problem.
 	 */
@@ -313,7 +314,7 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
 	    first4bytes_input =  first4bytes_pad; 
 	}
 	else {
-	    first4bytes_input = ((orig_addr >> (32-pos)) << (32-pos))
+	    first4bytes_input = ((ip >> (32-pos)) << (32-pos))
 		| ((first4bytes_pad<<pos) >> pos);
 	}
 	rin_input[0] = (uint8_t) (first4bytes_input >> 24);
@@ -329,28 +330,30 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t orig_addr)
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad
 	 */
-	result |=  (rin_output[0] >> 7) << (31-pos);
+	*aip |=  (rin_output[0] >> 7) << (31-pos);
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    return result ^ orig_addr;
+    *aip = *aip ^ ip;
+    return 0;
 }
 
 /*
  * prefix- and lexicographical-order-preserving anonymization on
- * orig_addr
+ * ip
  */
 
-in_addr_t
-anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t orig_addr)
+int
+anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
     
-    uint32_t result = 0;
     uint32_t first4bytes_pad, first4bytes_input;
     int pos;
     
     assert(a);
+
+    *aip = 0;
 
     memcpy(rin_input, a->m_pad, 16);
     first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
@@ -365,7 +368,7 @@ anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t orig_addr)
      */
     for (pos = 0; pos <= 31 ; pos++) { 
 	/* Padding: The most significant pos bits are taken from
-	 * orig_addr. The other 128-pos bits are taken from m_pad. The
+	 * ip. The other 128-pos bits are taken from m_pad. The
 	 * variables first4bytes_pad and first4bytes_input are used
 	 * to handle the annoying byte order problem.
 	 */
@@ -373,7 +376,7 @@ anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t orig_addr)
 	    first4bytes_input =  first4bytes_pad; 
 	}
 	else {
-	    first4bytes_input = ((orig_addr >> (32-pos)) << (32-pos))
+	    first4bytes_input = ((ip >> (32-pos)) << (32-pos))
 		| ((first4bytes_pad<<pos) >> pos);
 	}
 	rin_input[0] = (uint8_t) (first4bytes_input >> 24);
@@ -388,15 +391,16 @@ anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t orig_addr)
 	AES_ecb_encrypt(rin_input, rin_output, &(a->aes_key), AES_ENCRYPT);
 
 	/* combine with used_i */
-	if (! canflip(a, orig_addr, pos+1)) {
+	if (! canflip(a, ip, pos+1)) {
 	    rin_output[0] = 0;
 	}
 	
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad
 	 */
-	result |=  (rin_output[0] >> 7) << (31-pos);
+	*aip |=  (rin_output[0] >> 7) << (31-pos);
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    return result ^ orig_addr;
+    *aip = *aip ^ ip;
+    return 0;
 }

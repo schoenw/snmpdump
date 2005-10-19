@@ -1,7 +1,7 @@
 /*
  * anon-mac.c --
  *
- * IEEE MAC address anonymization library.
+ * IEEE MAC address anonymization functions.
  *
  * Copyright (c) 2005 Juergen Schoenwaelder
  */
