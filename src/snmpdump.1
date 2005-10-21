@@ -27,25 +27,46 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-snmpdump \- extract SNMP messages out of pcap trace files.
+snmpdump \- extract SNMP messages from pcap trace files.
 .SH SYNOPSIS
 .B snmpdump
 .RI [ options ]
 .SH DESCRIPTION
 \fBsnmpdump\fP extract SNMP messages out of pcap trace files and
-renders the messages in an XML format.
+renders the messages in an XML format which can be easily processed
+using scripts written in scripting language such as Perl.
 .PP
-It also...
+Data can be optionally anonymized by using the -a option. Note that
+anonymization results can be drastically improved by loading the
+relevant MIB modules using the -m flag. A default MIB module set can
+be specified using the libsmi startup mechanism described in the
+smi_config(3) man page.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
+.TP
+.B \-a, \-\-anonymize
+Anonymize the data. Setting this option will (a) anonymize all
+recognized data types and (b) suppress all other data types. Loading
+the MIB modules will generally improve the anonymization result.
+.TP
+\fB-c \fIfile\fB, --config=\fIfile\fP
+Read \fIfile\fP instead of any other (global and user)
+libsmi configuration file.
+.TP
+\fB-f \fIexpression\fB, --filter=\fIexpression\fP
+Filter the input by applying the pcap filter \fIexpression\fR to the
+packets before they are processed by snmpdump.
 .TP
 .B \-h, \-\-help
 Show summary of options.
 .TP
+\fB-m \fIfile\fB \-\-module \fIfile\fB
+Load SMI MIB module definitions from \fIfile\fR.  This option can be
+used several times to load several MIB modules into snmpdump.
+.TP
 .B \-V, \-\-version
 Show version of program.
-.\" .SH "SEE ALSO"
-.\" .BR foo (1), 
-.\" .BR bar (1).
+.SH "SEE ALSO"
+.BR smi_config(3).
 .SH AUTHOR
 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>.

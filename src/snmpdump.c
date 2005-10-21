@@ -1655,7 +1655,16 @@ main(int argc, char **argv)
 	{ NULL,		NULL }
     };
 
-    while ((c = getopt(argc, argv, "Vaf:hs:")) != -1) {
+    for (i = 1; i < argc; i++)
+	if ((strstr(argv[i], "-c") == argv[i]) ||
+	    (strstr(argv[i], "--config") == argv[i])) break;
+    if (i == argc) {
+	smiInit("smilint");
+    } else {
+	smiInit(NULL);
+    }
+
+    while ((c = getopt(argc, argv, "Vaf:hs:c:m:")) != -1) {
 	switch (c) {
 	case 'a':
 	    a_flag = 1;
@@ -1676,12 +1685,18 @@ main(int argc, char **argv)
 	case 'f':
 	    filter = optarg;
 	    break;
+	case 'c':
+	    smiReadConfig(optarg, "snmpdump");
+	    break;
+	case 'm':
+	    smiLoadModule(optarg);
+	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-s info] [-f filter] [-h] file ... \n", progname);
+	    printf("%s [-a] [-c config] [-s info] [-f filter] [-m module] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
