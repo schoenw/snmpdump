@@ -203,19 +203,19 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 }
 
 /*
- *
+ * Lexicographic order preserving IEEE 802 MAC address anonymization.
  */
 
 static void
 mac_lex(anon_mac_t *a, FILE *f)
 {
     uint8_t mac[8];
+    uint8_t amac[8];
 
     /*
      * first pass: read mac addresses (one per input line) and mark
      * them as used
      */
-
     while (fscanf(f, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
 		  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
 	anon_mac_set_used(a, mac);
@@ -225,13 +225,34 @@ mac_lex(anon_mac_t *a, FILE *f)
      * second pass: read mac addresses and print the anonymized
      * addresses
      */
-
     fseek(f,0,SEEK_SET);
     while (fscanf(f, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
 		  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+	(void) anon_mac_map_lex(a,mac,amac);
+	printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+	       amac[0], amac[1], amac[2], amac[3], amac[4], amac[5]);
+    }
+}
 
-	printf("%2x:%2x:%2x:%2x:%2x:%2x\n",
-	       mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+/*
+ * IEEE 802 MAC address anonymization (not preserving lexicographic order)
+ */
+
+static void
+mac_nolex(anon_mac_t *a, FILE *f)
+{
+    uint8_t mac[8];
+    uint8_t amac[8];
+
+    /*
+     *  read mac addresses and print the anonymized addresses
+     */
+    while (fscanf(f, "%2hhx:%2hhx:%2hhx:%2hhx:%2hhx:%2hhx",
+		  &mac[0], &mac[1], &mac[2], &mac[3], &mac[4], &mac[5]) == 6) {
+
+	(void) anon_mac_map(a,mac,amac);
+	printf("%02x:%02x:%02x:%02x:%02x:%02x\n",
+	       amac[0], amac[1], amac[2], amac[3], amac[4], amac[5]);
     }
 }
 
@@ -279,7 +300,7 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
     if (lflag) {
 	mac_lex(a, in);
     } else {
-	/* xxx */
+	mac_nolex(a, in);
     }
     anon_mac_delete(a);
 
