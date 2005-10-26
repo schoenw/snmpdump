@@ -209,8 +209,8 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 static void
 mac_lex(anon_mac_t *a, FILE *f)
 {
-    uint8_t mac[8];
-    uint8_t amac[8];
+    uint8_t mac[6];
+    uint8_t amac[6];
 
     /*
      * first pass: read mac addresses (one per input line) and mark
@@ -241,8 +241,8 @@ mac_lex(anon_mac_t *a, FILE *f)
 static void
 mac_nolex(anon_mac_t *a, FILE *f)
 {
-    uint8_t mac[8];
-    uint8_t amac[8];
+    uint8_t mac[6];
+    uint8_t amac[6];
 
     /*
      *  read mac addresses and print the anonymized addresses

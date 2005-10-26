@@ -14,16 +14,18 @@
 
 #include "libanon.h"
 
+#define MAC_LENGTH 6
+
 /* node struct for a list */
 struct node {
-    uint8_t mac[8];
+    uint8_t mac[MAC_LENGTH];
     struct node *next;
 };
 
 /* node struct for an lhash table */
 struct hash_node {
-    uint8_t mac[8];
-    uint8_t hash[8];
+    uint8_t mac[MAC_LENGTH];
+    uint8_t hash[MAC_LENGTH];
 };
 
 /* For nonlexicographic order, we are generating hashes on the
@@ -55,7 +57,7 @@ anon_mac_hash(const struct hash_node *tohash)
 {
     long hash = 0;
     int i;
-    for(i=0;i<8;i++) {
+    for(i=0;i<MAC_LENGTH;i++) {
 	hash += tohash->mac[i];
 	hash << 8;
     }
@@ -65,7 +67,7 @@ anon_mac_hash(const struct hash_node *tohash)
 static int
 anon_mac_cmp(const struct hash_node *arg1, const struct hash_node *arg2) {
     int i;
-    for(i=0;i<8;i++) {
+    for(i=0;i<MAC_LENGTH;i++) {
 	if (arg1->mac[i] != arg2->mac[i]) return 1;
     }
     return 0;
@@ -85,7 +87,7 @@ list_insert(struct node **list, const uint8_t *mac)
     assert(mac);
     
     for (p = *list, q = NULL; p; q = p, p = p->next) {
-	c = memcmp(mac, p->mac, 8);
+	c = memcmp(mac, p->mac, MAC_LENGTH);
 	if (c == 0) {
 	    return 1;
 	}
@@ -100,7 +102,7 @@ list_insert(struct node **list, const uint8_t *mac)
     }
     
     memset(n, 0, sizeof(struct node));
-    memcpy(n->mac, mac, 8);
+    memcpy(n->mac, mac, MAC_LENGTH);
     if (! q) {
 	n->next = *list;
 	*list = n;
@@ -119,7 +121,7 @@ list_insert(struct node **list, const uint8_t *mac)
 static int
 anon_mac_set_state(anon_mac_t *a, int state)
 {
-    uint8_t mac[8];
+    uint8_t mac[MAC_LENGTH];
     struct node *p, *q;
     int i, j;
 
@@ -143,8 +145,8 @@ anon_mac_set_state(anon_mac_t *a, int state)
 	struct node* hashlist = NULL;
 	for (p = a->list; p; p = p->next) {
 	    do {
-		memset(mac,0,8);
-		RAND_bytes(mac,6);
+		memset(mac,0,MAC_LENGTH);
+		RAND_bytes(mac,MAC_LENGTH);
 		/* RAND_pseudo_bytes(mac,6); */
 		/* preserve first bit */
 		if (p->mac[0] & 0xFF) {
@@ -160,8 +162,8 @@ anon_mac_set_state(anon_mac_t *a, int state)
 	for (p = a->list, q = hashlist; p; q = q->next, p = p->next) {
 	    node = (struct hash_node*) malloc(sizeof(struct hash_node));
 	    assert(node);
-	    memcpy(node->mac, p->mac, 8);
-	    memcpy(node->hash, q->mac, 8);
+	    memcpy(node->mac, p->mac, MAC_LENGTH);
+	    memcpy(node->hash, q->mac, MAC_LENGTH);
 	    lh_insert(a->hash_table, node);
 	}
 
@@ -311,16 +313,16 @@ anon_mac_map(anon_mac_t *a, const uint8_t *mac,
     (void) anon_mac_set_state(a, NON_LEX);
 
     /* lookup anon. MAC in lhash table */
-    memcpy(node.mac, mac, 8);
+    memcpy(node.mac, mac, MAC_LENGTH);
     p = (struct hash_node *) lh_retrieve(a->hash_table,(void*) &node);
     
     if (p) { /* MAC found in lhash table */
-	memcpy(amac, p->hash, 8);
+	memcpy(amac, p->hash, MAC_LENGTH);
     } else { /* MAC not found in lhash table */
 	/* generate a unique random MAC addresses */
 	do {
-	    memset(amac,0,8);
-	    RAND_bytes(amac,6);
+	    memset(amac,0,MAC_LENGTH);
+	    RAND_bytes(amac,MAC_LENGTH);
 	    /* RAND_pseudo_bytes(amac,6); */
 	    /* preserve first bit */
 	    if (mac[0] & 0xFF) {
@@ -334,8 +336,8 @@ anon_mac_map(anon_mac_t *a, const uint8_t *mac,
 	/* store anon. MAC in lhash table */
 	p = (struct hash_node*) malloc(sizeof(struct hash_node));
 	assert(p);
-	memcpy(p->mac, mac, 8);
-	memcpy(p->hash, amac, 8);
+	memcpy(p->mac, mac, MAC_LENGTH);
+	memcpy(p->hash, amac, MAC_LENGTH);
 	lh_insert(a->hash_table, p);
     }
     return 0;
@@ -354,9 +356,9 @@ anon_mac_map_lex(anon_mac_t *a, const uint8_t *mac,
     
     /* lookup the anonymized mac address in the lhash table */
     memset(&node, 0, sizeof(struct hash_node));
-    memcpy(node.mac, mac, 8);
+    memcpy(node.mac, mac, MAC_LENGTH);
     p = (struct hash_node *) lh_retrieve(a->hash_table,(void*) &node);
     assert(p);
-    memcpy(amac, p->hash, 8);
+    memcpy(amac, p->hash, MAC_LENGTH);
     return 0;
 }
