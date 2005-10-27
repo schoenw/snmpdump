@@ -3,6 +3,9 @@
  *
  * IEEE MAC address anonymization functions.
  *
+ * Broadcast addresses are preserved. Other multicast addresses are
+ * anonymized, but the first bit is preserved.
+ *
  * Copyright (c) 2005 Juergen Schoenwaelder
  */
 
@@ -114,6 +117,22 @@ list_insert(struct node **list, const uint8_t *mac)
     return 0;
 }
 
+/* 
+ * check if MAC address is broadcast (ff:ff:ff:ff:ff:ff)
+ */
+
+static int
+is_mac_broadcast(const uint8_t *mac)
+{
+  int i;
+  for(i=0;i<MAC_LENGTH;i++) {
+      if (mac[i] != 0xFF) {
+	  return 0;
+      }
+  }
+  return 1;
+}
+
 /*
  * Set/change the state of MAC anonymization object. Performs
  * neccessary checks if state change is ok.
@@ -121,7 +140,7 @@ list_insert(struct node **list, const uint8_t *mac)
 static int
 anon_mac_set_state(anon_mac_t *a, int state)
 {
-    uint8_t mac[MAC_LENGTH];
+    uint8_t amac[MAC_LENGTH];
     struct node *p, *q;
     int i, j;
 
@@ -145,16 +164,26 @@ anon_mac_set_state(anon_mac_t *a, int state)
 	struct node* hashlist = NULL;
 	for (p = a->list; p; p = p->next) {
 	    do {
-		memset(mac,0,MAC_LENGTH);
-		RAND_bytes(mac,MAC_LENGTH);
-		/* RAND_pseudo_bytes(mac,6); */
+		memset(amac,0,MAC_LENGTH);
+		RAND_bytes(amac,MAC_LENGTH);
+		/* RAND_pseudo_bytes(amac,6); */
 		/* preserve first bit */
 		if (p->mac[0] & 0xFF) {
-		    mac[0] |= 0x80;
+		    amac[0] |= 0x80;
+		    /* preserve broadcast */
+		    if (is_mac_broadcast(p->mac)) {
+			/* broadcast */
+			amac[0] = amac[1] = amac[2] = amac[3]
+			    = amac[4] = amac[5] = 0xFF;
+		    } else {
+			/* multicast */
+			if (is_mac_broadcast(amac)) continue;
+		    }
 		} else {
-		    mac[0] &= 0x7F;
+		    /* unicast */
+		    amac[0] &= 0x7F;
 		}
-	    } while (list_insert(&hashlist,mac)==1);
+	    } while (list_insert(&hashlist,amac)==1);
 	}
 
 	/* assign anon. macs to real macs in lhash table */
@@ -327,7 +356,17 @@ anon_mac_map(anon_mac_t *a, const uint8_t *mac,
 	    /* preserve first bit */
 	    if (mac[0] & 0xFF) {
 		amac[0] |= 0x80;
+		/* preserve broadcast */
+		if (is_mac_broadcast(mac)) {
+		    /* broadcast */
+		    amac[0] = amac[1] = amac[2] = amac[3]
+			= amac[4] = amac[5] = 0xFF;
+		} else {
+		    /* multicast */
+		    if (is_mac_broadcast(amac)) continue;
+		}
 	    } else {
+		/* unicast */
 		amac[0] &= 0x7F;
 	    }
 	    tmp = list_insert(&(a->list),amac);
