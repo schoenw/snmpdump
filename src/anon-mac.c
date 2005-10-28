@@ -50,7 +50,7 @@ enum anon_mac_state_t {INIT=0, /* MAC anon object initialized,
 				* been anonymized using this object
 				*/
 		       NON_LEX, /* anon_mac_map() has already been used */
-		       LEX}; /* anon_mac_map() has already been used */
+		       LEX}; /* anon_mac_map_lex() has already been used */
 
 
 
@@ -255,7 +255,7 @@ anon_mac_new()
 /*
  * recursively print list nodes
  */
-void
+static void
 print(struct node *p)
 {
     if (p) {

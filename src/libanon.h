@@ -52,9 +52,11 @@ typedef struct _anon_int64 anon_int64_t;
 
 anon_int64_t*	anon_int64_new(const int64_t lower, const int64_t upper);
 void		anon_int64_set_key(anon_int64_t *a, const uint8_t *key);
-int		anon_int64_set_used(anon_int64_t *a, const int64_t n);
-void		anon_int64_map(anon_int64_t *a, const int64_t *n);
-void		anon_int64_map_lex(anon_int64_t *a, const int64_t *n);
+int		anon_int64_set_used(anon_int64_t *a, const int64_t num);
+int		anon_int64_map(anon_int64_t *a, const int64_t num,
+			       int64_t *anum);
+int		anon_int64_map_lex(anon_int64_t *a, const int64_t num,
+				   int64_t *anum);
 void		anon_int64_delete(anon_int64_t *a);
 
 /*
@@ -65,9 +67,11 @@ typedef struct _anon_uint64 anon_uint64_t;
 
 anon_uint64_t*	anon_uint64_new(const uint64_t lower, const uint64_t upper);
 void		anon_uint64_set_key(anon_uint64_t *a, const uint8_t *key);
-int		anon_uint64_set_used(anon_uint64_t *a, const uint64_t n);
-void		anon_uint64_map(anon_uint64_t *a, const uint64_t *n);
-void		anon_uint64_map_lex(anon_uint64_t *a, const uint64_t *n);
+int		anon_uint64_set_used(anon_uint64_t *a, const uint64_t num);
+int		anon_uint64_map(anon_uint64_t *a, const uint64_t num,
+			       uint64_t *anum);
+int		anon_uint64_map_lex(anon_uint64_t *a, const uint64_t num,
+				   uint64_t *anum);
 void		anon_uint64_delete(anon_uint64_t *a);
 
 /*

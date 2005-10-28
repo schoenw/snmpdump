@@ -35,11 +35,15 @@ struct cmd {
 static void cmd_help(int argc, char **argv, struct cmd *cmd);
 static void cmd_ip(int argc, char **argv, struct cmd *cmd);
 static void cmd_mac(int argc, char **argv, struct cmd *cmd);
+static void cmd_int64(int argc, char **argv, struct cmd *cmd);
+static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
     { "help",		cmd_help,	"anon help" },
     { "ip",		cmd_ip,		"anon ip [-hl] file" },
     { "mac",		cmd_mac,	"anon mac [-hl] file" },
+    { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
+    { "uint64",		cmd_uint64,	"anon uint64 lower upper [-hl] file" },
     { NULL, NULL }
 };
 
@@ -303,6 +307,216 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
 	mac_nolex(a, in);
     }
     anon_mac_delete(a);
+
+    fclose(in);
+}
+
+/*
+ * Lexicographic order preserving int64 number anonymization.
+ */
+
+static void
+int64_lex(anon_int64_t *a, FILE *f)
+{
+    int64_t num;
+    int64_t anum;
+    
+    /*
+     * first pass: read numbers (one per input line) and mark
+     * them as used
+     */
+    while (fscanf(f, "%ld", &num) == 1) {
+	anon_int64_set_used(a, num);
+    }
+
+    /*
+     * second pass: read numbers and print the anonymized numbers
+     */
+    fseek(f,0,SEEK_SET);
+    while (fscanf(f, "%ld", &num) == 1) {
+	(void) anon_int64_map_lex(a,num,&anum);
+	printf("%ld\n", anum);
+    }
+}
+
+/*
+ * int64 number anonymization (not preserving lexicographic order)
+ */
+
+static void
+int64_nolex(anon_int64_t *a, FILE *f)
+{
+    int64_t num;
+    int64_t anum;
+
+    /*
+     *  read numbers and print the anonymized numbers
+     */
+    while (fscanf(f, "%ld", &num) == 1) {
+	(void) anon_int64_map(a,num,&anum);
+	printf("%ld\n", anum);
+    }
+}
+
+/*
+ * Lexicographic-order preserving int64 numbers anonymization
+ * subcommand.
+ */
+
+static void
+cmd_int64(int argc, char **argv, struct cmd *cmd)
+{
+    FILE *in;
+    anon_int64_t *a;
+    int c, lflag = 0;
+    int64_t lower, upper;
+
+    if (argc < 4) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+    optind = 4;
+    lower = strtol(argv[2], NULL, 10);
+    upper = strtol(argv[3], NULL, 10);
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+     argc -= optind;
+     argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[0], "r");
+
+    a = anon_int64_new(lower,upper);
+    if (! a) {
+	fprintf(stderr, "%s: Failed to initialize int64 mapping\n", progname);
+	exit(EXIT_FAILURE);
+    }
+    anon_int64_set_key(a, my_key);
+    if (lflag) {
+	int64_lex(a, in);
+    } else {
+	int64_nolex(a, in);
+    }
+    anon_int64_delete(a);
+
+    fclose(in);
+}
+
+/*
+ * Lexicographic order preserving uint64 number anonymization.
+ */
+
+static void
+uint64_lex(anon_uint64_t *a, FILE *f)
+{
+    uint64_t num;
+    uint64_t anum;
+    
+    /*
+     * first pass: read numbers (one per input line) and mark
+     * them as used
+     */
+    while (fscanf(f, "%lu", &num) == 1) {
+	anon_uint64_set_used(a, num);
+    }
+
+    /*
+     * second pass: read numbers and print the anonymized numbers
+     */
+    fseek(f,0,SEEK_SET);
+    while (fscanf(f, "%lu", &num) == 1) {
+	(void) anon_uint64_map_lex(a,num,&anum);
+	printf("%lu\n", anum);
+    }
+}
+
+/*
+ * uint64 number anonymization (not preserving lexicographic order)
+ */
+
+static void
+uint64_nolex(anon_uint64_t *a, FILE *f)
+{
+    uint64_t num;
+    uint64_t anum;
+
+    /*
+     *  read numbers and print the anonymized numbers
+     */
+    while (fscanf(f, "%lu", &num) == 1) {
+	(void) anon_uint64_map(a,num,&anum);
+	printf("%lu\n", anum);
+    }
+}
+
+/*
+ * Lexicographic-order preserving uint64 numbers anonymization
+ * subcommand.
+ */
+
+static void
+cmd_uint64(int argc, char **argv, struct cmd *cmd)
+{
+    FILE *in;
+    anon_uint64_t *a;
+    int c, lflag = 0;
+    uint64_t lower, upper;
+
+    if (argc < 4) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+    optind = 4;
+    lower = strtol(argv[2], NULL, 10);
+    upper = strtol(argv[3], NULL, 10);
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+     argc -= optind;
+     argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[0], "r");
+
+    a = anon_uint64_new(lower,upper);
+    if (! a) {
+	fprintf(stderr, "%s: Failed to initialize uint64 mapping\n", progname);
+	exit(EXIT_FAILURE);
+    }
+    anon_uint64_set_key(a, my_key);
+    if (lflag) {
+	uint64_lex(a, in);
+    } else {
+	uint64_nolex(a, in);
+    }
+    anon_uint64_delete(a);
 
     fclose(in);
 }
