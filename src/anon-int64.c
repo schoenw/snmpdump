@@ -145,7 +145,7 @@ anon_int64_set_state(anon_int64_t *a, int state)
 	    }
 	    do {
 		anum = 0;
-		RAND_bytes(&anum, sizeof(anum));
+		RAND_bytes(&anum, sizeof(anum)-1);
 		/* RAND_pseudo_bytes(anum, sizeof(anum)); */
 		anum %= (a->upper-a->lower+1);
 		anum += a->lower;
@@ -318,7 +318,7 @@ anon_int64_map(anon_int64_t *a, const int64_t num, int64_t *anum)
 	/* generate a unique random number */
 	do {
 	    *anum = 0;
-	    RAND_bytes(anum,sizeof(*anum));
+	    RAND_bytes(anum,sizeof(*anum)-1);
 	    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
 	    *anum %= (a->upper - a->lower + 1);
 	    *anum += a->lower;
