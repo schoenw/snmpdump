@@ -37,6 +37,51 @@ PKG_CHECK_MODULES(OPENSSL, openssl)
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
+dnl Checks for libnids
+AC_MSG_CHECKING(for libnids)
+AC_ARG_WITH(libnids,
+[  --with-libnids=DIR      use libnids in DIR],
+[ case "$withval" in
+  yes|no)
+     AC_MSG_RESULT(no)
+     ;;
+  *)
+     AC_MSG_RESULT($withval)
+     if test -f $withval/src/nids.h -a -f $withval/src/libnids.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NIDSINC="-I$withval/src"
+        NIDSLIB="-L$withval/src -lnids"
+     elif test -f $withval/include/nids.h -a -f $withval/lib/libnids.a; then
+        owd=`pwd`
+        if cd $withval; then withval=`pwd`; cd $owd; fi
+        NIDSINC="-I$withval/include"
+        NIDSLIB="-L$withval/lib -lnids"
+     else
+        AC_ERROR(nids.h or libnids.a not found in $withval)
+     fi
+     ;;
+  esac ],
+[ if test -f ${prefix}/include/nids.h; then
+     NIDSINC="-I${prefix}/include"
+     NIDSLIB="-L${prefix}/lib -lnids"
+  elif test -f /usr/include/nids.h; then
+     NIDSLIB="-lnids"
+  else
+     AC_MSG_RESULT(no)
+     AC_ERROR(libnids not found)
+  fi
+  AC_MSG_RESULT(yes) ]
+)
+save_cppflags="$CPPFLAGS"
+CPPFLAGS="$NIDSINC"
+AC_MSG_CHECKING(whether libnids version is good)
+AC_EGREP_HEADER(pcap_filter, nids.h, AC_MSG_RESULT(yes), 
+   [ AC_MSG_RESULT(no); AC_ERROR(libnids version 1.13 or greater required) ])
+CPPFLAGS="$save_cppflags"
+AC_SUBST(NIDSINC)
+AC_SUBST(NIDSLIB)
+
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(unistd.h time.h string.h)
