@@ -3,7 +3,7 @@
 
 NMRG                                               J. Schoenwaelder, Ed.
 Internet-Draft                           International University Bremen
-Expires: January 27, 2006                                  July 26, 2005
+Expires: May 11, 2006                                   November 7, 2005
 
 
                        SNMP Traffic Measurements
@@ -11,12 +11,10 @@ Expires: January 27, 2006                                  July 26, 2005
 
 Status of this Memo
 
-   This document is an Internet-Draft and is subject to all provisions
-   of Section 3 of RFC 3667.  By submitting this Internet-Draft, each
-   author represents that any applicable patent or other IPR claims of
-   which he or she is aware have been or will be disclosed, and any of
-   which he or she become aware will be disclosed, in accordance with
-   RFC 3668.
+   By submitting this Internet-Draft, each author represents that any
+   applicable patent or other IPR claims of which he or she is aware
+   have been or will be disclosed, and any of which he or she becomes
+   aware will be disclosed, in accordance with Section 6 of BCP 79.
 
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF), its areas, and its working groups.  Note that
@@ -34,7 +32,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on January 27, 2006.
+   This Internet-Draft will expire on May 11, 2006.
 
 Copyright Notice
 
@@ -49,36 +47,38 @@ Abstract
    features are being used, how SNMP usage differs in different types of
    organizations, which information is frequently queried, and what
    typical SNMP interactions patterns are in real world networks.  These
-
-
-
-Schoenwaelder           Expires January 27, 2006                [Page 1]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
-
    questions recently became important as researchers started to
    investigate the application of other protocols (such as Web Services)
+
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 1]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
    for network management purposes.
+
 
 Table of Contents
 
    1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
    2.  Measurement Approach . . . . . . . . . . . . . . . . . . . . .  3
-     2.1   Capturing Traffic Traces . . . . . . . . . . . . . . . . .  4
-     2.2   Converting Traffic Traces  . . . . . . . . . . . . . . . .  4
-     2.3   Filtering Traffic Traces . . . . . . . . . . . . . . . . .  5
-     2.4   Submitting/Analyzing Traffic Traces  . . . . . . . . . . .  5
-     2.5   Processing Traffic Traces  . . . . . . . . . . . . . . . .  5
+     2.1.  Capturing Traffic Traces . . . . . . . . . . . . . . . . .  4
+     2.2.  Converting Traffic Traces  . . . . . . . . . . . . . . . .  4
+     2.3.  Filtering Traffic Traces . . . . . . . . . . . . . . . . .  5
+     2.4.  Submitting/Analyzing Traffic Traces  . . . . . . . . . . .  5
+     2.5.  Processing Traffic Traces  . . . . . . . . . . . . . . . .  5
    3.  Preliminary Results  . . . . . . . . . . . . . . . . . . . . .  5
-   4.  Security Considerations  . . . . . . . . . . . . . . . . . . .  5
+   4.  Security Considerations  . . . . . . . . . . . . . . . . . . .  6
    5.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . .  6
    6.  References . . . . . . . . . . . . . . . . . . . . . . . . . .  6
-     6.1   Normative References . . . . . . . . . . . . . . . . . . .  6
-     6.2   Informative References . . . . . . . . . . . . . . . . . .  6
-       Author's Address . . . . . . . . . . . . . . . . . . . . . . .  7
-   A.  RELAX NG Schema Definition . . . . . . . . . . . . . . . . . .  7
-       Intellectual Property and Copyright Statements . . . . . . . . 10
+     6.1.  Normative References . . . . . . . . . . . . . . . . . . .  6
+     6.2.  Informative References . . . . . . . . . . . . . . . . . .  7
+   Appendix A.  RELAX NG Schema Definition  . . . . . . . . . . . . .  7
+   Appendix B.  Sample Perl Analysis Script . . . . . . . . . . . . . 10
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 13
+   Intellectual Property and Copyright Statements . . . . . . . . . . 14
 
 
 
@@ -108,9 +108,9 @@ Table of Contents
 
 
 
-Schoenwaelder           Expires January 27, 2006                [Page 2]
+Schoenwaelder             Expires May 11, 2006                  [Page 2]
 
-Internet-Draft          SNMP Traffic Measurements              July 2005
+Internet-Draft          SNMP Traffic Measurements          November 2005
 
 
 1.  Introduction
@@ -135,14 +135,14 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    between periodic polling and bulk data retrieval really is.
    Furthermore, we do not generally understand how much traffic is
    devoted to standardized MIB objects and how much traffic deals with
-   proprietary MIB objects and whether the operation mix differes
-   between those object classes or between different operational
-   environments.
+   proprietary MIB objects and whether the operation mix differs between
+   those object classes or between different operational environments.
 
    This document describes an effort to collect SNMP traffic traces for
    analysis.  It also describes the tools that have been developed to
    allow network operators to collect traffic traces and to share them
    with research groups.
+
 
 2.  Measurement Approach
 
@@ -153,20 +153,20 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
        easily done by using tools such as tcpdump or ethereal.
    2.  Convert the pcap traffic traces into a structured machine and
        human readable file format.  The natural choice here is to use
-       XML.  Appendix A contains the RELAX NG schema definition for this
-       purpose.  During the conversion process, data may be anonymized
-       in order to reduce the likelihood that sensitive data leaks into
-       places where it does not belong.
+       XML.  Appendix A contains the RELAX NG [1] schema definition for
+       this purpose.  During the conversion process, data may be
+       anonymized in order to reduce the likelihood that sensitive data
+       leaks into places where it does not belong.
    3.  Filter the converted traffic XML traces to hide information that
-       is considered sensitive.  This filterting can be accomplished by
+       is considered sensitive.  This filtering can be accomplished by
        running an xslt processor such as xsltproc on the XML traffic
        trace.
 
 
 
-Schoenwaelder           Expires January 27, 2006                [Page 3]
+Schoenwaelder             Expires May 11, 2006                  [Page 3]
 
-Internet-Draft          SNMP Traffic Measurements              July 2005
+Internet-Draft          SNMP Traffic Measurements          November 2005
 
 
    4.  Submit the filtered traffic traces to a central repository,
@@ -189,9 +189,9 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    on supporting this project is limited.  The following sections will
    describe the various steps and tools in more detail.
 
-2.1  Capturing Traffic Traces
+2.1.  Capturing Traffic Traces
 
-   Capturing SNMP traffic traces can be done by using tcpdump [1] or
+   Capturing SNMP traffic traces can be done by using tcpdump [2] or
    similar applications.  Note, care must be taken to specify a filter
    expression that matches the SNMP transport endpoints used for SNMP
    (typically 'udp and (port 161 or port 162)').  Furthermore, it is
@@ -205,13 +205,13 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
    It is recommended to capture at least a full week of data.  But
    operators are encourages to capture longer traffic traces.  Tools
-   such as tcpslice [1] or pcapmerge [2] can be used to merge or split
+   such as tcpslice [2] or pcapmerge [3] can be used to merge or split
    trace files.
 
-2.2  Converting Traffic Traces
+2.2.  Converting Traffic Traces
 
    Raw traffic traces in pcap format must be converted into an XML
-   representation.  The snmpdump [3] package has been developed for this
+   representation.  The snmpdump [4] package has been developed for this
    purpose.  The snmpdump program reads pcap files and produces an XML
    document which lists the details of the SNMP packets contained in the
    traffic trace.  The Relax NG schema definition of the XML format can
@@ -220,9 +220,9 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
 
 
-Schoenwaelder           Expires January 27, 2006                [Page 4]
+Schoenwaelder             Expires May 11, 2006                  [Page 4]
 
-Internet-Draft          SNMP Traffic Measurements              July 2005
+Internet-Draft          SNMP Traffic Measurements          November 2005
 
 
    IPv6.
@@ -232,15 +232,15 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    which maintain the semantic meaning of the values and maintain the
    lexicographic ordering property.
 
-2.3  Filtering Traffic Traces
+2.3.  Filtering Traffic Traces
 
    Some additional filtering can be implemented by manipulating the XML
    representation of an SNMP trace.  Standard XSLT processors such as
-   xsltproc [4] can be used for this purpose.  People familiar with Perl
-   might also be interested in using the XML::LibXML [5] Perl package to
+   xsltproc [5] can be used for this purpose.  People familiar with Perl
+   might also be interested in using the XML::LibXML [6] Perl package to
    manipulate XML documents from within Perl.
 
-2.4  Submitting/Analyzing Traffic Traces
+2.4.  Submitting/Analyzing Traffic Traces
 
    The pcap traces together with the XML traces should be stored in an
    archive.  Such an archive might either be maintained by researchers
@@ -256,40 +256,69 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    to a size where they can be burned on DVD roms for cheap longterm
    storage.
 
-2.5  Processing Traffic Traces
+2.5.  Processing Traffic Traces
 
    Trace files can be processed with tools written in almost any
    programming language.  However, in order to facilitate a common
    vocabulary and to allow operators to easily read scripts they execute
    on trace files, it is suggested that analysis scripts are written in
-   the Perl programming language using the XML::LibXML [5] Perl package
+   the Perl programming language using the XML::LibXML [6] Perl package
    to read the XML format of the trace files.
 
-   TBD: show a skeleton of a Perl script file; put a full working
-   example into the appendix.
+   Appendix Appendix B show a simple Perl script which computes some
+   summary statistics.
+
 
 3.  Preliminary Results
 
+
+
+
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 5]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
 4.  Security Considerations
 
-   [...]
+   SNMP traffic traces usually contain sensitive information.  It is
+   therefore necessary to (a) remove unneeded information and (b) to
+   anonymize the remaining necessary information before traces are made
+   available for others.
 
+   Implementations that generate XML traces from raw pcap files should
+   have an option to suppress all values.  Note that instance
+   identifiers of tables also include values and it might be therefore
+   also be necessary to suppress (parts of) the instance identifiers.
+   Similarly, the packet and message headers typically contain sensitive
+   information about the source and destination of SNMP messages as well
+   as authentication information (community strings or user names).
 
-
-Schoenwaelder           Expires January 27, 2006                [Page 5]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
+   Anonymization techniques can be applied to keep some more information
+   in the trace, following the filter-in principle which says that only
+   values are added when their data type is known and an appropriate
+   anonymization transformation is available.  For values appearing in
+   instance identifiers, it is usually desirable to maintain the
+   lexcigraphic order.  Special anonymization transformations which have
+   this property have been developed, although their anonymization
+   strength is usually reduced compared to transformations that do not
+   preserve lexicographic ordering.
 
 
 5.  Acknowledgements
 
    This document was influenced by discussions within the Network
-   Management Research Group (NMRG).  Special thanks go to [your name
-   here].
+   Management Research Group (NMRG).  Special thanks to Remco van de
+   Meent for writing the initial Perl script that lead to the script
+   shown in the Appendix and Matus Harvan for his work on lexicographic
+   order preserving anonymization transformations.
+
 
 6.  References
 
-6.1  Normative References
+6.1.  Normative References
 
    [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
               Architecture for Describing Simple Network Management
@@ -301,12 +330,19 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
               Simple  Network Management Protocol (SNMP)", STD 62,
               RFC 3416, December 2002.
 
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 6]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
    [RFC3418]  Presuhn, R., Case, J., McCloghrie, K., Rose, M., and S.
               Waldbusser, "Management Information Base (MIB) for the
               Simple Network Management Protocol (SNMP)", STD 62,
               RFC 3418, December 2002.
 
-6.2  Informative References
+6.2.  Informative References
 
    [STBULK]   Sprenkels, R. and J. Martin-Flatin, "Bulk Transfers of MIB
               Data", Simple Times 7(1), March 1999.
@@ -327,35 +363,18 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
 URIs
 
-   [1]  <http://www.tcpdump.org/>
+   [1]  <http://www.relaxng.org/>
 
+   [2]  <http://www.tcpdump.org/>
 
+   [3]  <http://indev.insu.com/Fwctl/pcapmerge.html>
 
+   [4]  <https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump>
 
-Schoenwaelder           Expires January 27, 2006                [Page 6]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
+   [5]  <http://xmlsoft.org/XSLT/>
 
+   [6]  <http://www.cpan.org/>
 
-   [2]  <http://indev.insu.com/Fwctl/pcapmerge.html>
-
-   [3]  <https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump>
-
-   [4]  <http://xmlsoft.org/XSLT/>
-
-   [5]  <http://www.cpan.org/>
-
-
-Author's Address
-
-   Juergen Schoenwaelder (editor)
-   International University Bremen
-   Campus Ring 1
-   28725 Bremen
-   Germany
-
-   Phone: +49 421 200-3587
-   Email: j.schoenwaelder@iu-bremen.de
 
 Appendix A.  RELAX NG Schema Definition
 
@@ -366,6 +385,14 @@ Appendix A.  RELAX NG Schema Definition
      }
 
    packet.elem =
+
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 7]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
      element packet {
        attribute date { xsd:dateTime },
        attribute delta { xsd:unsignedInt },
@@ -384,14 +411,6 @@ Appendix A.  RELAX NG Schema Definition
      element version { length.attrs, xsd:int },
      element community { length.attrs, text },
      pdu.elem
-
-
-
-
-Schoenwaelder           Expires January 27, 2006                [Page 7]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
 
    message.elem |=
      element version { length.attrs, xsd:int },
@@ -422,6 +441,14 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
      element trap {
        length.attrs,
        element enterprise { length.attrs, oid.type },
+
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 8]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
        element agent-addr { length.attrs, ipaddress.type },
        element generic-trap { length.attrs, xsd:int },
        element specific-trap { length.attrs, xsd:int },
@@ -442,13 +469,6 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
    varbind.elem =
      element varbind { length.attrs, name.elem, value.elem }
 
-
-
-Schoenwaelder           Expires January 27, 2006                [Page 8]
-
-Internet-Draft          SNMP Traffic Measurements              July 2005
-
-
    name.elem =
      element name { length.attrs, oid.type }
 
@@ -463,6 +483,10 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
      element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
      element value { empty }
 
+   # The blen attribute indicates the number of bytes used by the BER
+   # encoded tag / length / value triple. The vlen attribute indicates
+   # the number of bytes used by the BER encoded value alone.
+
    length.attrs =
      ( attribute blen { xsd:unsignedShort },
        attribute vlen { xsd:unsignedShort } )?
@@ -473,6 +497,14 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
    oid.type =
      xsd:string {
+
+
+
+Schoenwaelder             Expires May 11, 2006                  [Page 9]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
        pattern =
          """[0-2](\.[0-9]+)+"""
      }
@@ -486,23 +518,215 @@ Internet-Draft          SNMP Traffic Measurements              July 2005
 
 
 
+Appendix B.  Sample Perl Analysis Script
+
+
+   #!/usr/bin/perl
+
+   # This script computes basic statistics from SNMP packet trace files.
+   #
+   # To run this script:
+   #    snmpstat.pl [<filename>]
+   #
+   # (x) 2002 Remco van de Meent    <remco@vandemeent.net>
+   # (x) 2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
+
+   use strict;
+   use XML::LibXML;
+
+
+   sub version_stats {
+       my $doc = shift;
+       my @cntr;
+       my $total = 0;
+       foreach my $camelid ($doc->findnodes('//version')) {
+           my $version = $camelid->textContent();
+           $cntr[$version]++;
+           $total++;
+       }
+       printf "SNMP version statistics:\n\n";
+       foreach my $version (0, 1, 2) {
+           printf "%18s: %5d  %3d\%\n", $version,
+               $cntr[$version], $cntr[$version]/$total*100;
+       }
+       printf "    ---------------------------\n";
+       printf "%18s: %5d  %3d\%\n", "total", $total, 100;
+       printf "\n";
+   }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-Schoenwaelder           Expires January 27, 2006                [Page 9]
+Schoenwaelder             Expires May 11, 2006                 [Page 10]
 
-Internet-Draft          SNMP Traffic Measurements              July 2005
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
+   sub operation_stats {
+       my $doc = shift;
+       my @total = $doc->findnodes('//packet/snmp');
+       printf "SNMP PDU type statistics:\n\n";
+       foreach my $op ("get-request", "get-next-request", "get-bulk-request",
+                       "set-request",
+                       "trap", "trap-v2", "inform",
+                       "response",
+                       "report") {
+           my @nodes = $doc->findnodes("//packet/snmp/$op");
+           printf "%18s: %5d  %3d\%\n", $op, $#nodes + 1,
+               ($#nodes+1)/($#total+1)*100;
+       }
+       printf "    ---------------------------\n";
+       printf "%18s: %5d  %3d\%\n", "total", $#total + 1, 100;
+       printf "\n";
+   }
+
+
+   sub oid_stats {
+       my $doc = shift;
+       my $oid_ctr = 0;
+       my $transmission_ctr; # 1.3.6.1.2.1.10
+       my $mib2_ctr;         # 1.3.6.1.2.1
+       my $experiment_ctr;   # 1.3.6.1.3
+       my $enterprise_ctr;   # 1.3.6.1.4.1
+       foreach my $camelid ($doc->findnodes('//varbind/name')) {
+           my $name = $camelid->textContent();
+           for ($name) {
+               if    (/1\.3\.6\.1\.2\.1\.10/) { $transmission_ctr++; }
+               elsif (/1\.3\.6\.1\.2\.1/)     { $mib2_ctr++; }
+               elsif (/1\.3\.6\.1\.3/)        { $experiment_ctr++; }
+               elsif (/1\.3\.6\.1\.4\.1/)     { $enterprise_ctr++; }
+           }
+           $oid_ctr++;
+       }
+       printf "SNMP OID prefix statistics:\n\n";
+       printf "%18s: %5d  %3d\%\n", "transmission",
+           $transmission_ctr, ($transmission_ctr/$oid_ctr*100);
+       printf "%18s: %5d  %3d\%\n", "mib-2",
+           $mib2_ctr, ($mib2_ctr/$oid_ctr*100);
+       printf "%18s: %5d  %3d\%\n", "experimental",
+           $experiment_ctr, ($experiment_ctr/$oid_ctr*100);
+       printf "%18s: %5d  %3d\%\n", "enterprises",
+           $enterprise_ctr, ($enterprise_ctr/$oid_ctr*100);
+       printf "    ---------------------------\n";
+       printf "%18s: %5d  %3d\%\n", "total", $oid_ctr, 100;
+       printf "\n";
+
+
+
+Schoenwaelder             Expires May 11, 2006                 [Page 11]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
+   }
+
+
+
+   @ARGV = ('-') unless @ARGV;
+   while ($ARGV = shift) {
+       my $parser = XML::LibXML->new();
+       my $tree = $parser->parse_file($ARGV);
+       my $doc = $tree->getDocumentElement;
+
+       version_stats($doc);
+       operation_stats($doc);
+       oid_stats($doc);
+   }
+   exit(0);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder             Expires May 11, 2006                 [Page 12]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
+
+
+Author's Address
+
+   Juergen Schoenwaelder (editor)
+   International University Bremen
+   Campus Ring 1
+   28725 Bremen
+   Germany
+
+   Phone: +49 421 200-3587
+   Email: j.schoenwaelder@iu-bremen.de
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder             Expires May 11, 2006                 [Page 13]
+
+Internet-Draft          SNMP Traffic Measurements          November 2005
 
 
 Intellectual Property Statement
@@ -556,5 +780,5 @@ Acknowledgment
 
 
 
-Schoenwaelder           Expires January 27, 2006               [Page 10]
+Schoenwaelder             Expires May 11, 2006                 [Page 14]
 

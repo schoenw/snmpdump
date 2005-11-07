@@ -86,6 +86,10 @@ value.elem =
   element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
   element value { empty }
 
+# The blen attribute indicates the number of bytes used by the BER
+# encoded tag / length / value triple. The vlen attribute indicates
+# the number of bytes used by the BER encoded value alone.
+
 length.attrs =
   ( attribute blen { xsd:unsignedShort },
     attribute vlen { xsd:unsignedShort } )?

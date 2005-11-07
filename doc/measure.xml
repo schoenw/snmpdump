@@ -3,12 +3,25 @@
 <?rfc toc="yes"?>
 <?rfc compact="yes"?>
 <?rfc symrefs="yes" ?> 
-<rfc ipr="full3667"
+<?rfc iprnotified="yes" ?> 
+<rfc ipr='full3978'
      docName="draft-schoenw-snmp-measurements-00.txt"
      category="info">
 
   <!--
   $Id$
+  -->
+
+  <!--
+      TODO:
+
+      - Add appropriate stable references to SNMP, IF-MIB, RELAX-NG, ...
+      - Add a pattern which allows for IPv6 addresses
+      - Explain that storage of raw data in pcap files is needed in 
+        cases when for example a bug in a converter used to produce 
+	XML has been found.
+      - Mandate the usage of the XML format but not necessarily the
+        snmpdump implementation (let others write better ones ;-).
   -->
 
   <front>
@@ -32,7 +45,7 @@
       </address>
     </author>
 
-    <date month="July" year="2005"/>
+    <date month="November" year="2005"/>
 
       <area>Operations and Management</area>
 
@@ -93,7 +106,7 @@
 	polling and bulk data retrieval really is. Furthermore, we do
 	not generally understand how much traffic is devoted to
 	standardized MIB objects and how much traffic deals with
-	proprietary MIB objects and whether the operation mix differes
+	proprietary MIB objects and whether the operation mix differs
 	between those object classes or between different operational
 	environments.
       </t>
@@ -121,15 +134,16 @@
 	<t>
 	  Convert the pcap traffic traces into a structured machine
 	  and human readable file format. The natural choice here is
-	  to use XML. <xref target="schema"/> contains the RELAX NG
-	  schema definition for this purpose. During the conversion
-	  process, data may be anonymized in order to reduce the
-	  likelihood that sensitive data leaks into places where it
-	  does not belong.
+	  to use XML. <xref target="schema"/> contains the <eref
+	  target="http://www.relaxng.org/">RELAX NG</eref> schema
+	  definition for this purpose. During the conversion process,
+	  data may be anonymized in order to reduce the likelihood
+	  that sensitive data leaks into places where it does not
+	  belong.
 	</t>
 	<t>
 	  Filter the converted traffic XML traces to hide information
-	  that is considered sensitive. This filterting can be
+	  that is considered sensitive. This filtering can be
 	  accomplished by running an xslt processor such as xsltproc
 	  on the XML traffic trace.
 	</t>
@@ -255,8 +269,8 @@
 	  package to read the XML format of the trace files.
 	</t>
 	<t>
-	  TBD: show a skeleton of a Perl script file; put a full
-	  working example into the appendix.
+	  Appendix <xref target="snmpstat"/> show a simple Perl script
+	  which computes some summary statistics.
 	</t>
       </section>
 
@@ -267,15 +281,42 @@
 
     <section title="Security Considerations">
       <t>
-	[...]
+	SNMP traffic traces usually contain sensitive information. It
+	is therefore necessary to (a) remove unneeded information and
+	(b) to anonymize the remaining necessary information before
+	traces are made available for others.
+      </t>
+      <t>
+	Implementations that generate XML traces from raw pcap files
+	should have an option to suppress all values. Note that
+	instance identifiers of tables also include values and it
+	might be therefore also be necessary to suppress (parts of)
+	the instance identifiers. Similarly, the packet and message
+	headers typically contain sensitive information about the
+	source and destination of SNMP messages as well as
+	authentication information (community strings or user names).
+      </t>
+      <t>
+	Anonymization techniques can be applied to keep some more
+	information in the trace, following the filter-in principle
+	which says that only values are added when their data type is
+	known and an appropriate anonymization transformation is
+	available. For values appearing in instance identifiers, it is
+	usually desirable to maintain the lexcigraphic order. Special
+	anonymization transformations which have this property have
+	been developed, although their anonymization strength is
+	usually reduced compared to transformations that do not
+	preserve lexicographic ordering.
       </t>
     </section>
 
     <section title="Acknowledgements">
       <t>
         This document was influenced by discussions within the Network
-        Management Research Group (NMRG). Special thanks go to [your
-        name here].
+        Management Research Group (NMRG). Special thanks to Remco van
+        de Meent for writing the initial Perl script that lead to the
+        script shown in the Appendix and Matus Harvan for his work on
+        lexicographic order preserving anonymization transformations.
       </t>
     </section>
 
@@ -451,7 +492,15 @@
 	</artwork>
       </figure>
 
+    </section>
 
+    <section anchor="snmpstat" title="Sample Perl Analysis Script">
+
+      <figure>
+        <artwork>
+	  <?rfc include='snmpstat.pl.xml'?>
+	</artwork>
+      </figure>
 
     </section>
 
