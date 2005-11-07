@@ -32,6 +32,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
+#include <inttypes.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -1596,12 +1597,65 @@ repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 }
 
 /*
+ *
+ */
+
+static void
+mark_anon_port_node(anon_int64_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+{
+    xmlXPathObjectPtr obj;
+    xmlChar *content;
+    int i;
+    int64_t num;
+
+    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
+    if (obj) {
+	if (obj->type == XPATH_NODESET) {
+	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
+		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
+		if (sscanf((char *)content, "%"SCNd64, &num) == 1) {
+		    anon_int64_set_used(an_ip, num);
+		}
+	    }
+	}
+	xmlXPathFreeObject(obj);
+    }
+}
+
+static void
+repl_anon_port_node(anon_int64_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+{
+    xmlXPathObjectPtr obj;
+    xmlChar *content;
+    int i;
+    int64_t num, anum;
+
+    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
+    if (obj) {
+	if (obj->type == XPATH_NODESET) {
+	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
+		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
+                if (sscanf((char *)content, "%"SCNd64, &num) == 1) {
+		    char buf[40];
+		    (void) anon_int64_map_lex(an_ip, num, &anum);
+		    if (snprintf(buf, sizeof(buf), "%"PRId64, anum) > 0) {
+			xmlNodeSetContent(obj->nodesetval->nodeTab[i],
+					  BAD_CAST(buf));
+		    }
+		}
+	    }
+	}
+	xmlXPathFreeObject(obj);
+    }
+}
+
+/*
  * First anonymization transformation pass: collect all the data
  * values that need anonymization and clear the rest.
  */
 
 static void
-anon_pass1(anon_ip_t *an_ip)
+anon_pass1(anon_ip_t *an_ip, anon_int64_t *an_port)
 {
     xmlXPathContextPtr ctxt;
 
@@ -1609,6 +1663,7 @@ anon_pass1(anon_ip_t *an_ip)
     ctxt->node = xmlDocGetRootElement(xml_doc);
 
     mark_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
+    mark_anon_port_node(an_port, "//snmptrace/packet/*/@port", ctxt);
 
     xmlXPathFreeContext(ctxt);
 }
@@ -1619,7 +1674,7 @@ anon_pass1(anon_ip_t *an_ip)
  */
 
 static void
-anon_pass2(anon_ip_t *an_ip)
+anon_pass2(anon_ip_t *an_ip, anon_int64_t *an_port)
 {
     xmlXPathContextPtr ctxt;
 
@@ -1627,6 +1682,7 @@ anon_pass2(anon_ip_t *an_ip)
     ctxt->node = xmlDocGetRootElement(xml_doc);
 
     repl_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
+    repl_anon_port_node(an_port, "//snmptrace/packet/*/@port", ctxt);
     
     xmlXPathFreeContext(ctxt);
 }
@@ -1727,6 +1783,7 @@ main(int argc, char **argv)
 
     if (a_flag) {
 	anon_ip_t *an_ip;
+	anon_int64_t *an_port;
 
 	xmlXPathInit();
 
@@ -1736,12 +1793,21 @@ main(int argc, char **argv)
 		    progname);
 	    exit(1);
 	}
-	anon_ip_set_key(an_ip, my_key); 
+	an_port = anon_int64_new(0, 65535);
+	if (! an_port) {
+	    fprintf(stderr, "%s: initialization of port anonymization failed\n",
+		    progname);
+	    exit(1);
+	}
+	
+	anon_ip_set_key(an_ip, my_key);
+	anon_int64_set_key(an_port, my_key);
 
-	anon_pass1(an_ip);	/* xml_root passed as global */
-	anon_pass2(an_ip);	/* xml_root passed as global */
+	anon_pass1(an_ip, an_port);	/* xml_root passed as global */
+	anon_pass2(an_ip, an_port);	/* xml_root passed as global */
 
 	anon_ip_delete(an_ip);
+	anon_int64_delete(an_port);
     }
 
     if (xmlDocFormatDump(stdout, xml_doc, 1) == -1) {
