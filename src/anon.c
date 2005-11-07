@@ -3,9 +3,8 @@
  *
  * Sample program to demonstrate usage of the anonymization library.
  *
- * Applies prefix- and lexicographical-order-preserving anonymization
- * to addresses in input file and prints anonymized addresses to
- * standard output.
+ * Applies anonymization to addresses and other data types read from
+ * input files and prints anonymized results to the standard output.
  *
  * Copyright (c) 2005 Matus Harvan
  * Copyright (c) 2005 Juergen Schoenwaelder
@@ -17,6 +16,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <ctype.h>
+#include <inttypes.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -325,7 +325,7 @@ int64_lex(anon_int64_t *a, FILE *f)
      * first pass: read numbers (one per input line) and mark
      * them as used
      */
-    while (fscanf(f, "%ld", &num) == 1) {
+    while (fscanf(f, "%"SCNd64, &num) == 1) {
 	anon_int64_set_used(a, num);
     }
 
@@ -333,9 +333,9 @@ int64_lex(anon_int64_t *a, FILE *f)
      * second pass: read numbers and print the anonymized numbers
      */
     fseek(f,0,SEEK_SET);
-    while (fscanf(f, "%ld", &num) == 1) {
+    while (fscanf(f, "%"SCNd64, &num) == 1) {
 	(void) anon_int64_map_lex(a,num,&anum);
-	printf("%ld\n", anum);
+	printf("%"PRId64"\n", anum);
     }
 }
 
@@ -352,9 +352,9 @@ int64_nolex(anon_int64_t *a, FILE *f)
     /*
      *  read numbers and print the anonymized numbers
      */
-    while (fscanf(f, "%ld", &num) == 1) {
+    while (fscanf(f, "%"SCNd64, &num) == 1) {
 	(void) anon_int64_map(a,num,&anum);
-	printf("%ld\n", anum);
+	printf("%"PRId64"\n", anum);
     }
 }
 
@@ -430,7 +430,7 @@ uint64_lex(anon_uint64_t *a, FILE *f)
      * first pass: read numbers (one per input line) and mark
      * them as used
      */
-    while (fscanf(f, "%lu", &num) == 1) {
+    while (fscanf(f, "%"SCNu64, &num) == 1) {
 	anon_uint64_set_used(a, num);
     }
 
@@ -438,9 +438,9 @@ uint64_lex(anon_uint64_t *a, FILE *f)
      * second pass: read numbers and print the anonymized numbers
      */
     fseek(f,0,SEEK_SET);
-    while (fscanf(f, "%lu", &num) == 1) {
+    while (fscanf(f, "%"SCNu64, &num) == 1) {
 	(void) anon_uint64_map_lex(a,num,&anum);
-	printf("%lu\n", anum);
+	printf("%"PRIu64"\n", anum);
     }
 }
 
@@ -457,9 +457,9 @@ uint64_nolex(anon_uint64_t *a, FILE *f)
     /*
      *  read numbers and print the anonymized numbers
      */
-    while (fscanf(f, "%lu", &num) == 1) {
+    while (fscanf(f, "%"SCNu64, &num) == 1) {
 	(void) anon_uint64_map(a,num,&anum);
-	printf("%lu\n", anum);
+	printf("%"PRIu64"\n", anum);
     }
 }
 
