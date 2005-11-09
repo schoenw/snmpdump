@@ -5,8 +5,8 @@
 # To run this script:
 #    snmpstat.pl [<filename>]
 #
-# (x) 2002 Remco van de Meent    <remco@vandemeent.net>
-# (x) 2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
+# (c) 2002 Remco van de Meent    <remco@vandemeent.net>
+# (c) 2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 
 use strict;
 use XML::LibXML;
@@ -16,8 +16,8 @@ sub version_stats {
     my $doc = shift;
     my @cntr;
     my $total = 0;
-    foreach my $camelid ($doc->findnodes('//version')) {
-	my $version = $camelid->textContent();
+    foreach my $node ($doc->findnodes('//snmp/version')) {
+	my $version = $node->textContent();
 	$cntr[$version]++;
 	$total++;
     }
@@ -27,8 +27,7 @@ sub version_stats {
 	    $cntr[$version], $cntr[$version]/$total*100;
     }
     printf "    ---------------------------\n";
-    printf "%18s: %5d  %3d\%\n", "total", $total, 100;
-    printf "\n";
+    printf "%18s: %5d  %3d\%\n\n", "total", $total, 100;
 }
 
 
@@ -37,17 +36,14 @@ sub operation_stats {
     my @total = $doc->findnodes('//packet/snmp');
     printf "SNMP PDU type statistics:\n\n"; 
     foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-		    "set-request", 
-		    "trap", "trap-v2", "inform", 
-		    "response",
-                    "report") {
+		    "set-request", "trap", "trap-v2", "inform", 
+		    "response", "report") {
 	my @nodes = $doc->findnodes("//packet/snmp/$op");
 	printf "%18s: %5d  %3d\%\n", $op, $#nodes + 1, 
 	    ($#nodes+1)/($#total+1)*100;
     }
     printf "    ---------------------------\n";
-    printf "%18s: %5d  %3d\%\n", "total", $#total + 1, 100;
-    printf "\n";
+    printf "%18s: %5d  %3d\%\n\n", "total", $#total + 1, 100;
 }
 
 
@@ -58,8 +54,8 @@ sub oid_stats {
     my $mib2_ctr;         # 1.3.6.1.2.1
     my $experiment_ctr;   # 1.3.6.1.3
     my $enterprise_ctr;   # 1.3.6.1.4.1
-    foreach my $camelid ($doc->findnodes('//varbind/name')) {
-        my $name = $camelid->textContent();
+    foreach my $node ($doc->findnodes('//varbind/name')) {
+        my $name = $node->textContent();
 	for ($name) {
 	    if    (/1\.3\.6\.1\.2\.1\.10/) { $transmission_ctr++; }
 	    elsif (/1\.3\.6\.1\.2\.1/)     { $mib2_ctr++; }
@@ -78,10 +74,8 @@ sub oid_stats {
     printf "%18s: %5d  %3d\%\n", "enterprises",
         $enterprise_ctr, ($enterprise_ctr/$oid_ctr*100);
     printf "    ---------------------------\n";
-    printf "%18s: %5d  %3d\%\n", "total", $oid_ctr, 100;
-    printf "\n";
+    printf "%18s: %5d  %3d\%\n\n", "total", $oid_ctr, 100;
 }
-
 
 
 @ARGV = ('-') unless @ARGV;
