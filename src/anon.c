@@ -376,8 +376,8 @@ cmd_int64(int argc, char **argv, struct cmd *cmd)
 	exit(EXIT_FAILURE);
     }
     optind = 4;
-    lower = strtol(argv[2], NULL, 10);
-    upper = strtol(argv[3], NULL, 10);
+    sscanf(argv[2], "%"SCNd64, &lower);
+    sscanf(argv[3], "%"SCNd64, &upper);
     while ((c = getopt(argc, argv, "lh")) != -1) {
 	switch (c) {
 	case 'l':

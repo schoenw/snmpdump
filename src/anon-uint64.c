@@ -38,16 +38,16 @@ struct _anon_uint64 {
     struct node *list;
     int state;
     uint64_t lower, upper;
+    uint64_t range; /* range = upper - lower + 1 */
 };
 
 enum anon_uint64_state_t {INIT=0, /* anon object initialized,
-				* set_used() may have been used
-				* already, but nothing has yet
-				* been anonymized using this object
-				*/
-			 NON_LEX, /* anon_uint64_map() has already been used */
-			 LEX}; /* anon_uint64_map_lex() has already been used */
-
+				   * set_used() may have been used
+				   * already, but nothing has yet
+				   * been anonymized using this object
+				   */
+			NON_LEX, /* anon_uint64_map() has already been used */
+			LEX}; /* anon_uint64_map_lex() has already been used */
 
 
 /* functions for the lhash table */
@@ -106,6 +106,17 @@ list_insert(struct node **list, const uint64_t num)
     return 0;
 }
 
+/* generate a random number between a->lower and a->upper */
+static void
+generate_random_number(uint64_t* anum, anon_uint64_t* a)
+{
+	    *anum = 0;
+	    RAND_bytes(anum,sizeof(*anum));
+	    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
+	    *anum %= a->range;
+	    *anum += a->lower;
+}
+
 /*
  * Set/change the state of uint64 anonymization object. Performs
  * neccessary checks if state change is ok.
@@ -144,11 +155,7 @@ anon_uint64_set_state(anon_uint64_t *a, int state)
 		assert(0);
 	    }
 	    do {
-		anum = 0;
-		RAND_bytes(&anum, sizeof(anum));
-		/* RAND_pseudo_bytes(anum, sizeof(anum)); */
-		anum %= (a->upper-a->lower+1);
-		anum += a->lower;
+		generate_random_number(&anum, a);
 	    } while (list_insert(&hashlist,anum)==1);
 	}
 
@@ -218,6 +225,9 @@ anon_uint64_new(const uint64_t lower, const uint64_t upper)
         RAND_seed(buf,1);
 	fprintf(stderr, "done\n");
     }
+
+    /* calculate range = upper - lower + 1 */
+    a->range = a->upper - a->lower + 1;
 
     return a;
 }
@@ -317,11 +327,7 @@ anon_uint64_map(anon_uint64_t *a, const uint64_t num, uint64_t *anum)
     } else { /* num not found in lhash table */
 	/* generate a unique random number */
 	do {
-	    *anum = 0;
-	    RAND_bytes(anum,sizeof(*anum));
-	    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
-	    *anum %= (a->upper - a->lower + 1);
-	    *anum += a->lower;
+	    generate_random_number(anum, a);
 	    tmp = list_insert(&(a->list),*anum);
 	    assert(tmp >= 0);
 	} while (tmp==1);

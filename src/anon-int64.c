@@ -38,6 +38,7 @@ struct _anon_int64 {
     struct node *list;
     int state;
     int64_t lower, upper;
+    uint64_t range; /* range = upper - lower + 1 */
 };
 
 enum anon_int64_state_t {INIT=0, /* anon object initialized,
@@ -47,7 +48,6 @@ enum anon_int64_state_t {INIT=0, /* anon object initialized,
 				*/
 			 NON_LEX, /* anon_int64_map() has already been used */
 			 LEX}; /* anon_int64_map_lex() has already been used */
-
 
 
 /* functions for the lhash table */
@@ -106,6 +106,26 @@ list_insert(struct node **list, const int64_t num)
     return 0;
 }
 
+/* generate a random number between a->lower and a->upper */
+static void
+generate_random_number(int64_t* anum, anon_int64_t* a)
+{
+    uint64_t u_anum = 0; /* unsigned version of anum */
+    RAND_bytes(&u_anum, sizeof(u_anum));
+    u_anum %= a->range;
+    
+    if (u_anum > INT64_MAX) {
+	*anum = (int64_t) (u_anum - ((uint64_t) INT64_MAX));
+	*anum += a->lower; /* u_anum > INT64_MAX => range > INT64_MAX
+			 * => lower < 0
+			 */
+	*anum += INT64_MAX;
+    } else {
+	*anum = (int64_t) u_anum;
+	*anum += a->lower;
+    }
+}
+
 /*
  * Set/change the state of int64 anonymization object. Performs
  * neccessary checks if state change is ok.
@@ -144,11 +164,7 @@ anon_int64_set_state(anon_int64_t *a, int state)
 		assert(0);
 	    }
 	    do {
-		anum = 0;
-		RAND_bytes(&anum, sizeof(anum)-1);
-		/* RAND_pseudo_bytes(anum, sizeof(anum)); */
-		anum %= (a->upper-a->lower+1);
-		anum += a->lower;
+		generate_random_number(&anum, a);
 	    } while (list_insert(&hashlist,anum)==1);
 	}
 
@@ -218,6 +234,23 @@ anon_int64_new(const int64_t lower, const int64_t upper)
         RAND_seed(buf,1);
 	fprintf(stderr, "done\n");
     }
+
+    /* calculate range = upper - lower + 1 */
+    if (a->lower < 0) {
+	a->range += (uint64_t) (0 - a->lower);
+	if (upper < 0) {
+	    /* lower:neg uppper:neg */
+	    a->range = (uint64_t) (a->upper - a->lower);
+	} else {
+	    /* lower:neg uppper:nonneg */
+	    a->range = (uint64_t) (a->upper);
+	    a->range -= (uint64_t) (0 - a->lower);
+	}
+    } else {
+	/* lower:noneg (=> uppper:nonneg) */
+	a->range = (uint64_t) (a->upper - a->lower);
+    }
+    (a->range)++;
 
     return a;
 }
@@ -317,11 +350,7 @@ anon_int64_map(anon_int64_t *a, const int64_t num, int64_t *anum)
     } else { /* num not found in lhash table */
 	/* generate a unique random number */
 	do {
-	    *anum = 0;
-	    RAND_bytes(anum,sizeof(*anum)-1);
-	    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
-	    *anum %= (a->upper - a->lower + 1);
-	    *anum += a->lower;
+	    generate_random_number(anum, a);
 	    tmp = list_insert(&(a->list),*anum);
 	    assert(tmp >= 0);
 	} while (tmp==1);
