@@ -3,6 +3,10 @@
  *
  * int64 anonymization functions.
  *
+ * Numbers are mapped into range [lower, upper] (inclusive). Clearly,
+ * number of distinct input numbers has to be <= (upper - lower + 1),
+ * i.e. the total number of distinct numbers we can generate.
+ *
  * Copyright (c) 2005 Juergen Schoenwaelder
  */
 
