@@ -2,10 +2,13 @@ INCLUDES		= $(XML_CFLAGS) $(XML_CPPFLAGS) $(OPENSSL_CFLAGS) $(NIDSINC)
 
 EXTRA_DIST		= $(man_MANS)
 
-bin_PROGRAMS		= snmpdump anon
+bin_PROGRAMS		= snmpdump snmpanon anon
 
-snmpdump_SOURCES	= snmpdump.c
-snmpdump_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) $(NIDSLIB) -lpcap -lsmi
+snmpdump_SOURCES	= snmpdump.c xpath-filter.c
+snmpdump_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) $(NIDSLIB) -lpcap
+
+snmpanon_SOURCES	= snmpanon.c xpath-filter.c
+snmpanon_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) -lsmi
 
 anon_SOURCES		= anon.c
 anon_LDADD		= libanon.la $(OPENSSL_LIBS)

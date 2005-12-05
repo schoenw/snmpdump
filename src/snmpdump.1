@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH SNMPDUMP 1 "December 24, 2004"
+.TH SNMPDUMP 1 "December 2, 2005"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -27,46 +27,64 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-snmpdump \- extract SNMP messages from pcap trace files.
+snmpdump \- extract SNMP messages from pcap trace files
 .SH SYNOPSIS
 .B snmpdump
 .RI [ options ]
 .SH DESCRIPTION
 \fBsnmpdump\fP extract SNMP messages out of pcap trace files and
 renders the messages in an XML format which can be easily processed
-using scripts written in scripting language such as Perl.
-.PP
-Data can be optionally anonymized by using the -a option. Note that
-anonymization results can be drastically improved by loading the
-relevant MIB modules using the -m flag. A default MIB module set can
-be specified using the libsmi startup mechanism described in the
-smi_config(3) man page.
+using scripts written in scripting languages such as Perl. Sensitive
+data can be filtered or removed by passing XPATH expressions to
+snmpdump.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
 .TP
-.B \-a, \-\-anonymize
-Anonymize the data. Setting this option will (a) anonymize all
-recognized data types and (b) suppress all other data types. Loading
-the MIB modules will generally improve the anonymization result.
-.TP
-\fB-c \fIfile\fB, --config=\fIfile\fP
-Read \fIfile\fP instead of any other (global and user)
-libsmi configuration file.
+\fB-z \fIxpath\fB, --zero=\fIxpath\fP
+Replace all nodes in the XML document matching the \fIxpath\fR
+expression with empty content. This option can be used multiple times
+to match against multiple xpath expression.
 .TP
 \fB-f \fIexpression\fB, --filter=\fIexpression\fP
 Filter the input by applying the pcap filter \fIexpression\fR to the
-packets before they are processed by snmpdump.
+packets before they are processed by snmpdump. This option can only
+be used once.
 .TP
 .B \-h, \-\-help
 Show summary of options.
 .TP
-\fB-m \fIfile\fB \-\-module \fIfile\fB
-Load SMI MIB module definitions from \fIfile\fR.  This option can be
-used several times to load several MIB modules into snmpdump.
-.TP
 .B \-V, \-\-version
 Show version of program.
-.SH "SEE ALSO"
-.BR smi_config(3).
+.SH EXAMPLES
+The following command converts SNMP traces stored in the file
+'trace.pcap' into XML format.
+.PP 
+.RS 
+\f(CWsnmpdump trace.pcap\fP
+.RE 
+.PP 
+To suppress all community strings, you can use the xpath filtering
+mechanism as follows:
+.PP
+.RS
+\f(CWsnmpdump -d '/snmptrace/packet/snmp/community' trace.pcap\fP
+.RE
+.PP
+With relative xpath expression, this becomes:
+.PP
+.RS
+\f(CWsnmpdump -d '//community' trace.pcap\fP
+.RE
+.PP
+To filter out only certain SNMP packets from a given source using a
+non-standard port number, you can use the pcap filtering mechanism:
+.PP 
+.RS 
+\f(CWsnmpdump -f 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
+.RE 
+.PP
+.SH SEE ALSO
+See snmpanon(1) for more advanced content filtering and anonymization.
+See xxx(1) for maintaining pcap files.
 .SH AUTHOR
 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>.

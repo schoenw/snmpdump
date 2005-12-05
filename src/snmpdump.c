@@ -2,7 +2,7 @@
  * snmpdump.c --
  *
  * A utility to convert pcap capture files containing SNMP messages
- * into snmp trace files. To create these pcap  files, you can use:
+ * into snmp trace files. To create these pcap files, you can use:
  *
  *    tcpdump -i <interface> -s 0 -w <filename> udp and port 161 or port 162
  *
@@ -20,9 +20,47 @@
  *
  * (c) 2004-2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
  *
+ * This code is derived from the print-snmp.c module shipped as part
+ * of tcpdump. The copyrigths notes of this tcpdump module say:
+ *
+ * Copyright (c) 1990, 1991, 1993, 1994, 1995, 1996, 1997
+ *     John Robert LoVerso. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+ * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+ * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * Support for SNMPv2c/SNMPv3 and the ability to link the module against
+ * the libsmi was added by J. Schoenwaelder, Copyright (c) 1999.
  */
 
 #define _GNU_SOURCE
+
+#define HACK_AROUND_LIBNET_API_CHANGES
+
+#ifdef HACK_AROUND_LIBNET_API_CHANGES
+int libnet_build_ip() { libnet_build_ipv4(); }
+int libnet_write_ip() { libnet_write_raw_ipv4(); }
+int libnet_open_raw_sock() { libnet_open_raw4(); }
+#endif
 
 #include "config.h"
 
@@ -45,9 +83,8 @@
 #include <libxml/xpath.h>
 
 #include <nids.h>
-#include <smi.h>
 
-#include "libanon.h"
+#include "xpath-filter.h"
 
 #if 0
 /* needed to work around a bug in libnids */
@@ -59,16 +96,12 @@ static const char *progname = "snmpdump";
 static xmlDocPtr xml_doc;
 static xmlNodePtr xml_root;
 
-static int s_length = 0;
-static int s_community = 0;
-static int s_values = 0;
-static int a_flag = 0;
+typedef struct filter {
+    xmlChar       *xpath;
+    struct filter *next;
+} filter;
 
-static unsigned char my_key[32] = 
-{
-     21, 34, 23,141, 51,164,207,128, 19, 10, 91, 22, 73,144,125, 16,
-    216,152,143,131,121,121,101, 39, 98, 87, 76, 45, 42,132, 34,  2
-};
+static filter *filter_list = NULL;
 
 struct timeval start = { 0, 0 };
 
@@ -138,10 +171,8 @@ xml_new_child(xmlNodePtr parent, xmlNsPtr ns, const char *name,
 static void
 xml_set_lengths(xmlNodePtr xml_node, int ber_len, int val_len)
 {
-    if (! s_length) {
-	xml_set_prop(xml_node, "blen", "%u", ber_len);
-	xml_set_prop(xml_node, "vlen", "%u", val_len);
-    }
+    xml_set_prop(xml_node, "blen", "%u", ber_len);
+    xml_set_prop(xml_node, "vlen", "%u", val_len);
 }
 
 static void
@@ -872,13 +903,9 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 			if (Types[i].id == elem.type) break;
 		}
 
-		if (s_values) {
-		    xml_value = xml_new_child(xml_vb, NULL, "value", NULL);
-		} else {
-		    val = asn1_print(&elem);
-		    xml_value = xml_new_child(xml_vb, NULL,
-		      Types[i].name ? Types[i].name : "value", "%s", val);
-		}
+		val = asn1_print(&elem);
+		xml_value = xml_new_child(xml_vb, NULL,
+			  Types[i].name ? Types[i].name : "value", "%s", val);
 		xml_set_lengths(xml_value, count, elem.asnlen);
 		
 		length = vblength;
@@ -1175,12 +1202,8 @@ v12msg_print(const u_char *np, u_int length, int version, xmlNodePtr xml_snmp)
 		return;
 	}
 
-	if (s_community) {
-	    xml_community = xml_new_child(xml_snmp, NULL, "community", NULL);
-	} else {
-	    xml_community = xml_new_child(xml_snmp, NULL, "community",
-				  "%.*s", (int) elem.asnlen, elem.data.str);
-	}
+	xml_community = xml_new_child(xml_snmp, NULL, "community", "%.*s",
+				      (int) elem.asnlen, elem.data.str);
 	xml_set_lengths(xml_community, count, elem.asnlen);
 
 	length -= count;
@@ -1542,156 +1565,40 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     snmp_print((unsigned char *) buf, len, xml_pkt);
 }
 
+
 /*
- *
+ * Filter the XML document by applying an xpath expression and setting
+ * the content to NULL.
  */
 
 static void
-mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
-{
-    xmlXPathObjectPtr obj;
-    xmlChar *content;
-    int i;
-    in_addr_t ip;
-
-    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
-    if (obj) {
-	if (obj->type == XPATH_NODESET) {
-	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
-		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
-		    anon_ip_set_used(an_ip, ip, 32);
-		}
-	    }
-	}
-	xmlXPathFreeObject(obj);
-    }
-}
-
-static void
-repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
-{
-    xmlXPathObjectPtr obj;
-    xmlChar *content;
-    int i;
-    in_addr_t ip;
-    in_addr_t aip;
-
-    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
-    if (obj) {
-	if (obj->type == XPATH_NODESET) {
-	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
-		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
-		    char buf[INET_ADDRSTRLEN];
-		    (void) anon_ip_map_pref_lex(an_ip, ip, &aip);
-		    if (inet_ntop(AF_INET, &aip, buf, sizeof(buf))) {
-			xmlNodeSetContent(obj->nodesetval->nodeTab[i],
-					  BAD_CAST(buf));
-		    }
-		}
-	    }
-	}
-	xmlXPathFreeObject(obj);
-    }
-}
-
-/*
- *
- */
-
-static void
-mark_anon_port_node(anon_int64_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
-{
-    xmlXPathObjectPtr obj;
-    xmlChar *content;
-    int i;
-    int64_t num;
-
-    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
-    if (obj) {
-	if (obj->type == XPATH_NODESET) {
-	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
-		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		if (sscanf((char *)content, "%"SCNd64, &num) == 1) {
-		    anon_int64_set_used(an_ip, num);
-		}
-	    }
-	}
-	xmlXPathFreeObject(obj);
-    }
-}
-
-static void
-repl_anon_port_node(anon_int64_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
-{
-    xmlXPathObjectPtr obj;
-    xmlChar *content;
-    int i;
-    int64_t num, anum;
-
-    obj = xmlXPathEval(BAD_CAST(xpath), ctxt);
-    if (obj) {
-	if (obj->type == XPATH_NODESET) {
-	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
-		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-                if (sscanf((char *)content, "%"SCNd64, &num) == 1) {
-		    char buf[40];
-		    (void) anon_int64_map_lex(an_ip, num, &anum);
-		    if (snprintf(buf, sizeof(buf), "%"PRId64, anum) > 0) {
-			xmlNodeSetContent(obj->nodesetval->nodeTab[i],
-					  BAD_CAST(buf));
-		    }
-		}
-	    }
-	}
-	xmlXPathFreeObject(obj);
-    }
-}
-
-/*
- * First anonymization transformation pass: collect all the data
- * values that need anonymization and clear the rest.
- */
-
-static void
-anon_pass1(anon_ip_t *an_ip, anon_int64_t *an_port)
+filter_xpath(xmlDocPtr doc, xmlChar *xpath)
 {
     xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(xml_doc);
-    ctxt->node = xmlDocGetRootElement(xml_doc);
-
-    mark_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
-    mark_anon_port_node(an_port, "//snmptrace/packet/*/@port", ctxt);
-
-    xmlXPathFreeContext(ctxt);
-}
-
-/*
- * Second anonymization transformation pass: replace the data
- * looking for anonymization.
- */
-
-static void
-anon_pass2(anon_ip_t *an_ip, anon_int64_t *an_port)
-{
-    xmlXPathContextPtr ctxt;
-
-    ctxt = xmlXPathNewContext(xml_doc);
-    ctxt->node = xmlDocGetRootElement(xml_doc);
-
-    repl_anon_ip_node(an_ip, "//snmptrace/packet/*/@ip", ctxt);
-    repl_anon_port_node(an_port, "//snmptrace/packet/*/@port", ctxt);
+    xmlXPathObjectPtr obj;
+    int i, size;
     
+    ctxt = xmlXPathNewContext(doc);
+    ctxt->node = xmlDocGetRootElement(doc);
+    obj = xmlXPathEval(xpath, ctxt);
+    if (obj && obj->type == XPATH_NODESET && obj->nodesetval) {
+	size = xmlXPathNodeSetGetLength(obj->nodesetval);
+	for (i = size -1; i >= 0; i--) {
+	    xmlNodeSetContent(obj->nodesetval->nodeTab[i], NULL);
+	    if (obj->nodesetval->nodeTab[i]->type != XML_NAMESPACE_DECL) {
+		obj->nodesetval->nodeTab[i] = NULL;
+	    }
+	}
+    }
+
+    xmlXPathFreeObject(obj);
     xmlXPathFreeContext(ctxt);
 }
 
-
 /*
- * The main function to parse arguments, initialize the libraries
- * and to fire off the libnids library using nids_run() for every
- * input file we process.
+ * The main function to parse arguments, initialize the libraries and
+ * to fire off the libnids library using nids_run() for every input
+ * file we process.
  */
 
 int
@@ -1699,72 +1606,43 @@ main(int argc, char **argv)
 {
     int i, c;
     char buffer[1024];
-    char *filter = NULL;
+    char *expr = NULL;
+    xpath_filter_t *xpf;
 
-    struct {
-	char *name;
-	int *opt;
-    } strip_options[] = {
-	{ "community",	&s_community },
-	{ "length",	&s_length },
-	{ "values",	&s_values },
-	{ NULL,		NULL }
-    };
+    xpf = xpath_filter_new();
 
-    for (i = 1; i < argc; i++)
-	if ((strstr(argv[i], "-c") == argv[i]) ||
-	    (strstr(argv[i], "--config") == argv[i])) break;
-    if (i == argc) {
-	smiInit("smilint");
-    } else {
-	smiInit(NULL);
-    }
-
-    while ((c = getopt(argc, argv, "Vaf:hs:c:m:")) != -1) {
+    while ((c = getopt(argc, argv, "Vz:f:h")) != -1) {
 	switch (c) {
-	case 'a':
-	    a_flag = 1;
-	    break;
-	case 's':
-	    for (i = 0; strip_options[i].name; i++) {
-		if (strcmp(strip_options[i].name, optarg) == 0) {
-		    break;
-		}
+	case 'z':
+	    if (xpf) {
+		xpath_filter_add(xpf, BAD_CAST(optarg));
 	    }
-	    if (! strip_options[i].name) {
-		fprintf(stderr, "%s: unknown -s argument \"%s\"\n",
-			progname, optarg);
-		exit(1);
-	    }
-	    *strip_options[i].opt = 1;
 	    break;
 	case 'f':
-	    filter = optarg;
-	    break;
-	case 'c':
-	    smiReadConfig(optarg, "snmpdump");
-	    break;
-	case 'm':
-	    smiLoadModule(optarg);
+	    expr = optarg;
 	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-a] [-c config] [-s info] [-f filter] [-m module] [-h] file ... \n", progname);
+	    printf("%s [-z xpath] [-f filter] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
+
+    /* create an empty xml document */
 
     xml_doc = xmlNewDoc(BAD_CAST("1.0"));
     xml_root = xmlNewDocNode(xml_doc, NULL, BAD_CAST("snmptrace"), NULL);
     xml_doc->children = xml_root;
 
+    /* populate the internal XML tree by processing pcap files */
+
     for (i = optind; i < argc; i++) {
 	nids_params.filename = argv[i];
 	nids_params.device = NULL;
-	nids_params.pcap_filter = filter;
+	nids_params.pcap_filter = expr;
 	
 	if (! nids_init()) {
 	    fprintf(stderr, "%s: libnids initialization failed: %s\n",
@@ -1781,39 +1659,20 @@ main(int argc, char **argv)
 	nids_run();
     }
 
-    if (a_flag) {
-	anon_ip_t *an_ip;
-	anon_int64_t *an_port;
+    /* apply the filters */
 
-	xmlXPathInit();
+    xpath_filter_apply(xpf, xml_doc);
 
-	an_ip = anon_ip_new();
-	if (! an_ip) {
-	    fprintf(stderr, "%s: initialization of IP anonymization failed\n",
-		    progname);
-	    exit(1);
-	}
-	an_port = anon_int64_new(0, 65535);
-	if (! an_port) {
-	    fprintf(stderr, "%s: initialization of port anonymization failed\n",
-		    progname);
-	    exit(1);
-	}
-	
-	anon_ip_set_key(an_ip, my_key);
-	anon_int64_set_key(an_port, my_key);
-
-	anon_pass1(an_ip, an_port);	/* xml_root passed as global */
-	anon_pass2(an_ip, an_port);	/* xml_root passed as global */
-
-	anon_ip_delete(an_ip);
-	anon_int64_delete(an_port);
-    }
+    /* produce the output */
 
     if (xmlDocFormatDump(stdout, xml_doc, 1) == -1) {
-	fprintf(stderr, "%s: failed to serialize xml tree\n", progname);
+	fprintf(stderr, "%s: failed to serialize xml document\n", progname);
 	exit(1);
     }
+
+    /* cleanup */
+
+    xpath_filter_delete(xpf);
 
     return 0;
 }
