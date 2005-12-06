@@ -40,10 +40,15 @@ snmpdump.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
 .TP
-\fB-z \fIxpath\fB, --zero=\fIxpath\fP
-Replace all nodes in the XML document matching the \fIxpath\fR
-expression with empty content. This option can be used multiple times
-to match against multiple xpath expression.
+\fB-c \fIxpath\fB, --clear=\fIxpath\fP
+Clear all nodes in the XML document matching the \fIxpath\fR
+expression by setting empty content. This option can be used multiple
+times to match against multiple xpath expression.
+.TP
+\fB-d \fIxpath\fB, --delete=\fIxpath\fP
+Delete all nodes in the XML document matching the \fIxpath\fR.  This
+option can be used multiple times to match against multiple xpath
+expression.
 .TP
 \fB-f \fIexpression\fB, --filter=\fIexpression\fP
 Filter the input by applying the pcap filter \fIexpression\fR to the
@@ -63,17 +68,24 @@ The following command converts SNMP traces stored in the file
 \f(CWsnmpdump trace.pcap\fP
 .RE 
 .PP 
-To suppress all community strings, you can use the xpath filtering
+To zero out all community strings, you can use the xpath filtering
 mechanism as follows:
 .PP
 .RS
-\f(CWsnmpdump -d '/snmptrace/packet/snmp/community' trace.pcap\fP
+\f(CWsnmpdump -c '/snmptrace/packet/snmp/community' trace.pcap\fP
 .RE
 .PP
 With relative xpath expression, this becomes:
 .PP
 .RS
-\f(CWsnmpdump -d '//community' trace.pcap\fP
+\f(CWsnmpdump -c '//community' trace.pcap\fP
+.RE
+.PP
+To filter out all vlen and blen attributes, one can use the following
+command line:
+.PP
+.RS
+\f(CWsnmpdump -d '//@vlen|//@blen' trace.pcap\fP
 .RE
 .PP
 To filter out only certain SNMP packets from a given source using a

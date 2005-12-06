@@ -1611,11 +1611,18 @@ main(int argc, char **argv)
 
     xpf = xpath_filter_new();
 
-    while ((c = getopt(argc, argv, "Vz:f:h")) != -1) {
+    while ((c = getopt(argc, argv, "Vc:d:f:h")) != -1) {
 	switch (c) {
-	case 'z':
+	case 'c':
 	    if (xpf) {
-		xpath_filter_add(xpf, BAD_CAST(optarg));
+		xpath_filter_add(xpf, BAD_CAST(optarg),
+				 XPATH_FILTER_TYPE_CLEAR);
+	    }
+	    break;
+	case 'd':
+	    if (xpf) {
+		xpath_filter_add(xpf, BAD_CAST(optarg),
+				 XPATH_FILTER_TYPE_DELETE);
 	    }
 	    break;
 	case 'f':
@@ -1626,7 +1633,7 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-z xpath] [-f filter] [-h] file ... \n", progname);
+	    printf("%s [-c xpath] [-d xpath] [-f filter] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
@@ -1634,8 +1641,9 @@ main(int argc, char **argv)
     /* create an empty xml document */
 
     xml_doc = xmlNewDoc(BAD_CAST("1.0"));
+    xmlNewDocComment(xml_doc, BAD_CAST("nase"));
     xml_root = xmlNewDocNode(xml_doc, NULL, BAD_CAST("snmptrace"), NULL);
-    xml_doc->children = xml_root;
+    xmlDocSetRootElement(xml_doc, xml_root);
 
     /* populate the internal XML tree by processing pcap files */
 

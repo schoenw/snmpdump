@@ -46,7 +46,17 @@ smi_config(3) man page.
 \fB-a \fIregex\fB, --anonymize=\fIregex\fP
 xxx
 .TP
-\fB-c \fIfile\fB, --config=\fIfile\fP
+\fB-c \fIxpath\fB, --clear=\fIxpath\fP
+Clear all nodes in the XML document matching the \fIxpath\fR
+expression by setting empty content. This option can be used multiple
+times to match against multiple xpath expression.
+.TP
+\fB-d \fIxpath\fB, --delete=\fIxpath\fP
+Delete all nodes in the XML document matching the \fIxpath\fR.  This
+option can be used multiple times to match against multiple xpath
+expression.
+.TP
+\fB-s \fIfile\fB, --smi-config=\fIfile\fP
 Read \fIfile\fP instead of any other (global and user)
 libsmi configuration file.
 .TP

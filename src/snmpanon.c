@@ -224,33 +224,40 @@ main(int argc, char **argv)
     xpf = xpath_filter_new();
 
     for (i = 1; i < argc; i++)
-	if ((strstr(argv[i], "-c") == argv[i]) ||
-	    (strstr(argv[i], "--config") == argv[i])) break;
+	if ((strstr(argv[i], "-s") == argv[i]) ||
+	    (strstr(argv[i], "--smi-config") == argv[i])) break;
     if (i == argc) {
 	smiInit("smilint");
     } else {
 	smiInit(NULL);
     }
 	
-    while ((c = getopt(argc, argv, "Vhz:c:m:")) != -1) {
+    while ((c = getopt(argc, argv, "Vhc:d:m:")) != -1) {
 	switch (c) {
-	case 'z':
+	case 'c':
 	    if (xpf) {
-		xpath_filter_add(xpf, BAD_CAST(optarg));
+		xpath_filter_add(xpf, BAD_CAST(optarg),
+				 XPATH_FILTER_TYPE_CLEAR);
 	    }
 	    break;
-	case 'c':
-	    smiReadConfig(optarg, "snmpdump");
+	case 'd':
+	    if (xpf) {
+		xpath_filter_add(xpf, BAD_CAST(optarg),
+				 XPATH_FILTER_TYPE_DELETE);
+	    }
 	    break;
 	case 'm':
 	    smiLoadModule(optarg);
+	    break;
+	case 's':
+	    smiReadConfig(optarg, "snmpdump");
 	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-h] file ... \n", progname);
+	    printf("%s [-c xpath] [-d xpath] [-m module] [-h] [-s config] file ... \n", progname);
 	    exit(0);
 	}
     }
