@@ -25,8 +25,7 @@
     </title>
     
     <author initials="J." surname="Schoenwaelder"
-            fullname="Juergen Schoenwaelder"
-	    role = "editor">
+            fullname="Juergen Schoenwaelder">
       <organization>International University Bremen</organization>
       <address>
         <postal>
@@ -39,7 +38,7 @@
       </address>
     </author>
 
-    <date month="November" year="2005"/>
+    <date month="December" year="2005"/>
 
       <area>Operations and Management</area>
 
@@ -53,16 +52,15 @@
         <t>
 	  The Simple Network Management Protocol (SNMP) is widely
 	  deployed to monitor, control and configure network elements.
-	  Even though the principal behavior of SNMP is well
-	  understood, it remains unclear how SNMP is used in
-	  practice. In particular, it is not clear which features are
-	  being used, how SNMP usage differs in different types of
-	  organizations, which information is frequently queried, and
-	  what typical SNMP interactions patterns are in real world
-	  networks. These questions recently became important as
-	  researchers and engineers started to investigate the
-	  application of other protocols for network management
-	  purposes.
+	  Even though the SNMP technology is well documented, it
+	  remains unclear how SNMP is used in practice and what
+	  typical SNMP usage patterns are. 
+	  
+	  This document proposes to carry out large scale SNMP traffic
+	  measurements in order to develop a better understanding how
+	  SNMP is used in real world production networks. It describes
+	  the motivation, the measurement approach, and the tools and
+	  data formats needed to carry out such a study.
         </t>
       </abstract>
 
@@ -75,29 +73,41 @@
 
 
     <section anchor="introduction" title="Introduction">
-      
+
+      <t>
+        The Simple Network Management Protocol (SNMP) was introduced
+        in the late 1980s <xref target="RFC1052"/> and has since then
+        evolved to what is known today as the SNMP version 3 Framework
+        (SNMPv3) <xref target="RFC3410"/>. While SNMP is widely
+        deployed, it is not clear which features are being used, how
+        SNMP usage differs in different types of networks or
+        organizations, which information is frequently queried, and
+        what typical SNMP interactions patterns are in real world
+        production networks.
+      </t>
       <t>
 	There have been several publications in the recent past
 	dealing with the performance of SNMP in general, the impact of
 	SNMPv3 security or the relative performance of SNMP compared
-	to Web Services. While these papers are generally useful to
+	to Web Services <xref target="PDMQ04"/><xref
+	target="PFGL04"/>. While these papers are generally useful to
 	better understand the impact of various design decisions and
 	technologies, some of these papers lack a strong foundation
 	because authors typically assume certain SNMP interaction
 	patterns without having experimental evidence that the
 	assumptions are correct. In fact, there are many speculations
-	and opinions how SNMP is being used and real world networks
-	and how it performs, but no systematic measurements have been
+	how SNMP is being used in real world production networks and
+	how it performs, but no systematic measurements have been
 	performed and published so far.
       </t>
       <t>
 	Many authors use the ifTable of the IF-MIB <xref
 	target="RFC2863"/> or the tcpConnTable of the TCP-MIB <xref
-	target="RFC4022"/> as a foundation for their analysis and
+	target="RFC4022"/> as a starting point for their analysis and
 	comparison. Despite the fact that it is not even clear that
-	these tables dominate the SNMP traffic, it is even more
-	unclear how these tables are read and which optimizations are
-	done (or not done) by real world applications. It is also
+	operations on these tables dominate SNMP traffic, it is even
+	more unclear how these tables are read and which optimizations
+	are done (or not done) by real world applications. It is also
 	unclear what the actual traffic trade-off between periodic
 	polling and more aperiodic bulk data retrieval is.
 	Furthermore, we do not generally understand how much traffic
@@ -108,11 +118,11 @@
       </t>
       <t>
 	This document describes an effort to collect SNMP traffic
-	traces for analysis in order to find answers to some of these
-	questions. It describes the tools that have been developed to
-	allow network operators to collect traffic traces and to share
-	them with research groups interested in understanding and
-	modeling network management interactions.
+	traces in order to find answers to some of these questions. It
+	describes the tools that have been developed to allow network
+	operators to collect traffic traces and to share them with
+	research groups interested in analyzing and modeling network
+	management interactions.
       </t>
 
     </section>
@@ -126,43 +136,47 @@
       </t>
       <list style="numbers">
 	<t>
-	  Capture the raw SNMP traffic into a pcap capture file.
+	  Capture raw SNMP traffic traces in pcap capture files.
 	</t>
 	<t>
-	  Convert the pcap traffic traces into a structured machine
-	  and human readable file format.
+	  Convert the raw traffic traces into a structured machine and
+	  human readable format. A suitable XML schema has been
+	  developed for this purpose.
 	</t>
 	<t>
-	  Filter the converted traffic XML traces to hide or anonymize
-	  sensitive information
+	  Filter the converted traffic traces to hide or anonymize
+	  sensitive information.
 	</t>
 	<t>
 	  Submit the filtered traffic traces to a repository from
-	  where they can be processed and analyzed. Such a repository
-	  may be public or it may be under the control of the network
-	  operator if he commits to run analysis scripts on the
-	  repository on behalf of researchers.
+	  where they can be retrieved and analyzed. Such a repository
+	  may be public, it may be under the control of a research
+	  group, or it may be under the control of a network operator
+	  who commits to run analysis scripts on the repository on
+	  behalf of researchers.
 	</t>
 	<t>
-	  Analyze the traces by creating and running scripts which
-	  extract and aggregate information.
+	  Analyze the traces by creating and executing analysis
+	  scripts which extract and aggregate information.
 	</t>
       </list>
       <t>
-	Most of the steps listed above require involvement of the
-	network operator supporting the SNMP measurement project.  In
-	many cases, the filtered XML representation of the SNMP traces
-	will be the binding interface between the researchers
-	providing analysis scripts and the operators involved in the
-	measurement activity.
+        Several of the steps listed above require the involvement of
+	network operators supporting the SNMP measurement projects.
+	In many cases, the filtered XML representation of the SNMP
+	traces will be the binding interface between the researchers
+	writing analysis scripts and the operators involved in the
+	measurement activity. It is therefore important to have a well
+	defined specification of this interfaces.
       </t>
       <t>
-	This document provides advise and hints for network operators
-	how the steps listed above can be carried out efficiently.
-	Some special tools have been developed to assist operators so
-	that the time spend on supporting this project is limited. The
-	following sections describe the various steps and tools in
-	more detail.
+	This section provides some advise and concrete hints how the
+	steps listed above can be carried out efficiently.  Some
+	special tools have been developed to assist network operators
+	and researchers so that the time spend on supporting SNMP
+	traffic measurement projects is limited. The following
+	sections describe the five steps and some tools in more
+	detail.
       </t>
 
       <section title="Capturing Traffic Traces">
@@ -171,17 +185,18 @@
 	  sniffers such as <eref
 	  target="http://www.tcpdump.org/">tcpdump</eref>, ethereal,
 	  or similar applications.  Note, care must be taken to
-	  specify a filter expression that matches the SNMP transport
-	  endpoints used for SNMP (typically 'udp and (port 161 or
-	  port 162)').  Furthermore, it is necessary to ensure that
-	  packets are not truncated (tcpdump option -s 0). Finally, it
-	  is necessary to carefully select the placement of the probe
-	  within the network. Especially on bridged LANs, it is
-	  important to ensure that all management traffic is captured
-	  and that the probe has access to the virtual LANs carrying
-	  management traffic. This usually requires to place the
-	  probe(s) close to the management system(s) and to configure
-	  monitoring ports on bridged networks.
+	  specify filter expressions that match the SNMP transport
+	  endpoints used to carry SNMP traffic (typically 'udp and
+	  (port 161 or port 162)').  Furthermore, it is necessary to
+	  ensure that packets are not truncated (tcpdump option -s
+	  0). Finally, it is necessary to carefully select the
+	  placement of the probe within the network. Especially on
+	  bridged LANs, it is important to ensure that all management
+	  traffic is captured and that the probe has access to all
+	  virtual LANs carrying management traffic. This usually
+	  requires to place the probe(s) close to the management
+	  system(s) and to configure monitoring ports on bridged
+	  networks.
 	</t>
 	<t>
 	  It is recommended to capture at least a full week of data.
@@ -194,9 +209,10 @@
 	<t>
 	  It is important to note that the raw pcap files should be
 	  kept in stable storage (e.g., compressed and encrypted on a
-	  CD ROM). To verify measurements, it might be necessary to go
-	  back to the original pcap files if for example bugs in the
-	  tool described below have been detected.
+	  CD ROM or DVD). To verify measurements, it might be
+	  necessary to go back to the original pcap files if for
+	  example bugs in the tools described below have been
+	  detected and fixed.
 	</t>
       </section>
 
@@ -207,39 +223,40 @@
 	  for efficient post-processing. Human readability makes it
 	  easy for an operator to verify that no sensitive data is
 	  left in a traffic trace while machine readability is needed
-	  to efficiently extract interesting information.
+	  to efficiently extract relevant information.
 	</t>
 	<t>
-	  The natural choice here is to define an XML format since it
-	  XML is human as well as machine readable and there are many
-	  high-level scripting languages that can process XML and be
-	  used to extract meaningful information. 
+	  The natural choice here is to use an XML format since XML is
+	  human as well as machine readable and there are many tools
+	  and high-level scripting language programming interfaces
+	  that can be used to process XML documents and to extract
+	  meaningful information.
 	</t>
 	<t>
-	  <xref target="schema"/> contains the <eref
-	  target="http://www.relaxng.org/">RELAX NG</eref> schema
-	  definition for this purpose.  The XML schema represents all
-	  relevant details of an SNMP messages in XML. Note that the
-	  XML format retains some information about the original SNMP
-	  encoding.
+	  <xref target="schema"/> of this document defines a <eref
+	  target="http://www.relaxng.org/">RELAX NG</eref> schema for
+	  representing SNMP traffic traces in XML.  The schema
+	  captures all relevant details of an SNMP messages in the XML
+	  format. Note that the XML format retains some information
+	  about the original ASN.1/BER encoding to support message
+	  size analysis.
 	</t>
 	<t>
 	  The <eref
 	  target="https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump">snmpdump</eref>
-	  package has been created to convert raw pcap files into the
-	  XML format. The snmpdump program reads pcap files and
+	  package has been developed to convert raw pcap files into
+	  the XML format. The snmpdump program reads pcap files and
 	  produces an XML document which lists the details of the SNMP
-	  packets contained in the traffic trace. The snmpdump
-	  implementation is able to correctly deal with IPv4
-	  fragments.
+	  packets contained in the traffic trace. The implementation
+	  is able to correctly deal with IPv4 fragments.
 	</t>
       </section>
 
       <section title="Filtering Traffic Traces">
 	<t>
-	  Filtering of sensitive data can be implemented easily by
-	  manipulating the XML representation of an SNMP trace.
-	  Standard XSLT processors such as <eref
+	  Filtering sensitive data can be achieved by manipulating the
+	  XML representation of an SNMP trace.  Standard XSLT
+	  processors such as <eref
 	  target="http://xmlsoft.org/XSLT/">xsltproc</eref> can be
 	  used for this purpose. People familiar with Perl might also
 	  be interested in using the <eref
@@ -248,38 +265,42 @@
 	</t>
 	<t>
 	  The snmpdump program can filter out sensitive information,
-	  e.g., by suppressing all varbind values.  Work is in progress
-	  to provide data type specific anonymization capabilities
-	  that maintain lexicographic ordering for values that appear
-	  in instance identifiers.
+	  e.g., by deleting or "zeroing" all XML elements matching
+	  XPATH expressions. The snmpanon program shipped as part of
+	  the snmpdump package implements the same filtering
+	  capabilities of snmpdump and allows in addition to anonymize
+	  (portions of) SNMP messages. Work is in progress to provide
+	  data type specific anonymization transformations that
+	  maintain lexicographic ordering for values that appear in
+	  instance identifiers <xref target="HS06"/>.
 	</t>
       </section>
 
       <section title="Storing Traffic Traces">
 	<t>
-	  The pcap traces together with the XML traces should be
-	  stored in an archive. Such an archive might either be
-	  maintained by research groups (e.g., the NMRG) or by the
-	  operators themself. It is, however, of key importance that
-	  captured traces are not lost or modified as they form the
-	  basis of future research projects and may also be needed to
-	  verify published research results.  Access to the archive
-	  might be restricted to those who have signed some sort of a
-	  non-disclosure agreement.
+	  The pcap traces together with the XML formatted traces
+	  should be stored in an archive or repository. Such an
+	  archive or repository might either be maintained by research
+	  groups (e.g., the NMRG) or by operators. It is, however, of
+	  key importance that captured traces are not lost or modified
+	  as they form the basis of future research projects and may
+	  also be needed to verify published research results.  Access
+	  to the archive might be restricted to those who have signed
+	  some sort of a non-disclosure agreement.
 	</t>
 	<t>
 	  Note that lossless compression algorithms embodied in
 	  programs such as gzip or bzip2 can be used to compress even
-	  large traces files down to a size where they can be burned
+	  large trace files down to a size where they can be burned
 	  on DVDs for cheap longterm storage.
 	</t>
 	<t>
-	  It should be mentioned here that it is important to keep the
-	  original pcap traces in addition to the XML formatted traces
-	  as they are the most authentic source of information.
-	  Improvements in the tool chain may require to go back to the
-	  original pcap traces and to rebuild all intermediate formats
-	  from them.
+	  It should be stressed again here that it is important to
+	  keep the original pcap traces in addition to the XML
+	  formatted traces as they are the most authentic source of
+	  information.  Improvements in the tool chain may require to
+	  go back to the original pcap traces and to rebuild all
+	  intermediate formats from them.
 	</t>
       </section>
 
@@ -301,14 +322,16 @@
 	  scripts are written in the Perl programming language using
 	  the <eref target="http://www.cpan.org/">XML::LibXML</eref>
 	  Perl package to read the XML format of the trace
-	  files. Using scripting language such as Perl instead of
+	  files. Using a scripting language such as Perl instead of
 	  system programming languages such as C or C++ has the
 	  advantage to reduce development time and to make scripts
-	  more accessible to the average reader.
+	  more accessible to operators who may want to verify scripts
+	  before running them on trace files which potentially contain
+	  sensitive data.
 	</t>
 	<t>
-	  Appendix <xref target="snmpstat"/> show a simple Perl script
-	  which computes some summary statistics.
+	  <xref target="snmpstat"/> show a simple Perl script which
+	  computes some summary statistics.
 	</t>
       </section>
 
@@ -319,57 +342,58 @@
       <t>
         This section discusses several questions that can be answered
         by analyzing SNMP traffic traces. The questions raised in the
-        following subsections is meant to be illustrative and no
+        following subsections are meant to be illustrative and no
         attempt has been made to provide a complete list.
       </t>
 
         <section title="Basic Statistics">
 	  <t>
 	    Basic statistics cover things such as the SNMP protocol
-	    version used or the protocol operations used in a traffic
+	    versions used or the protocol operations used in a traffic
 	    trace. In addition, a rough classification of the data
 	    manipulated into 'standardized', 'proprietary', and
-	    'experimental can be done. Appendix <xref
-	    target="snmpstat"/> contains a simple analysis script
-	    deriving some of this very basic information from a
-	    traffic trace.
+	    'experimental' can be done. <xref target="snmpstat"/>
+	    contains a simple analysis script deriving some of these
+	    very basic statistics from a traffic trace.
 	  </t>
 	</section>
 
         <section title="Periodic vs. Aperiodic Traffic">
 	  <t>
 	    SNMP is used to periodically poll devices as well as to
-	    retrieve information on demand. The periodic polling leads
-	    to periodic traffic while the on demand information
-	    retrieval causes more aperiodic traffic. It would be
-	    worthwhile to understand what the relationship is between
-	    the amount of periodic and aperiodic traffic. In addition,
-	    it would be interesting to research whether there are
-	    multiple levels of periodicity at different time scales.
+	    retrieve information on request of an operator or
+	    application. The periodic polling leads to periodic
+	    traffic pattern while the on demand information retrieval
+	    causes more aperiodic traffic pattern. It is worthwhile to
+	    understand what the relationship is between the amount of
+	    periodic and aperiodic traffic. In addition, it will be
+	    interesting to research whether there are multiple levels
+	    of periodicity at different time scales.
 	  </t>
 	</section>
 
 	<section title="Message Size and Latency Distributions">
 	  <t>
 	    SNMP messages are size constrained by the transport
-	    mappings and the buffers provided by the SNMP engines. For
-	    further evolution of the SNMP framework, it would be
-	    useful to know what the actual message size distributions
-	    are. In addition, it would be useful to understand the
-	    latency distributions, especially the distribution of the
-	    processing times by SNMP command responders. Some SNMP
-	    implementations approximate networking delays by measuring
-	    request-response times and it would be useful to
-	    understand to what extend this is a viable approach.
+	    mappings used and the buffers provided by the SNMP
+	    engines. For the further evolution of the SNMP framework,
+	    it would be useful to know what the actual message size
+	    distributions are. In addition, it would be useful to
+	    understand the latency distributions, especially the
+	    distribution of the processing times by SNMP command
+	    responders. Some SNMP implementations approximate
+	    networking delays by measuring request-response times and
+	    it would be useful to understand to what extend this is a
+	    viable approach.
 	  </t>
 	</section>
 
 	<section title="Concurrency Levels">
 	  <t>
 	    SNMP allows management stations to retrieve information
-	    from multiple agents concurrently. It would be interesting
+	    from multiple agents concurrently. It will be interesting
 	    to identify what the typical concurrency level is that can
-	    be observed on production networks and whether management
+	    be observed on production networks or whether management
 	    applications prefer more sequential ways of retrieving
 	    data.
 	  </t>
@@ -381,9 +405,10 @@
 	    and most inefficient approach is to retrieve tables
 	    cell-by-cell in column-by-column order. More advanced
 	    approaches try to read tables row-by-row or even
-	    multiple-rows-multiple-rows. In addition, index elements
-	    can be suppressed. It would be useful to know which of
-	    these approaches are actually used on production networks.
+	    multiple-rows-by-multiple-rows. In addition, the retrieval
+	    of index elements can be suppressed in most cases. It will
+	    be useful to know which of these approaches are actually
+	    used on production networks.
 	  </t>
         </section>
 
@@ -394,7 +419,7 @@
 	    periodically poll SNMP agents to determine their
 	    status. SNMP agents can in addition send traps to notify
 	    SNMP managers about events so that SNMP managers can adopt
-	    their polling scheme and basically react faster than
+	    their polling strategy and basically react faster than
 	    normal polling would allow to do.
 	  </t>
 	  <t>
@@ -403,19 +428,20 @@
 	    the question that should be addressed is whether SNMP
 	    notifications lead to changes in the short-term polling
 	    behavior of management stations. In particular, it should
-	    be investigated whether SNMP managers use procedures to
-	    track down the meaning of the even conveyed by an SNMP
-	    notification.
+	    be investigated to which extend SNMP managers use
+	    automated procedures to track down the meaning of the
+	    event conveyed by an SNMP notification.
 	  </t>
         </section>
 
         <section title="Popular MIB Modules">
 	  <t>
 	    An analysis of object identifier prefixes can identify the
-	    most popular MIB modules and the most important objects or
-	    notifications defined by these modules. Such information
-	    would be very valuable for the further maintenance and
-	    development of these and related MIB modules.
+	    most popular MIB modules and the most important object
+	    types or notification types defined by these modules. Such
+	    information would be very valuable for the further
+	    maintenance and development of these and related MIB
+	    modules.
 	  </t>
         </section>
 
@@ -424,13 +450,14 @@
 	    Several objects from the early days have been obsoleted
 	    because they cannot properly represent today's networks. A
 	    typical example is the ipRouteTable which was obsoleted
-	    because it was not able to represent classless routing
-	    introduced in 1993. Some of these obsolete objects are
-	    still mentioned in popular publications as well as
-	    research papers. It would be interesting to find out
-	    whether they are also still used by management
-	    applications or whether management applications have been
-	    updated to use the replacement objects.
+	    because it was not able to represent classless routing,
+	    introduced and deployed on the Internet in 1993. Some of
+	    these obsolete objects are still mentioned in popular
+	    publications as well as research papers. It will be
+	    interesting to find out whether they are also still used
+	    by management applications or whether management
+	    applications have been updated to use the replacement
+	    objects.
 	  </t>
         </section>
 
@@ -448,41 +475,42 @@
 	  <t>
 	    Counters can experience discontinuities <xref
 	    target="RFC2578"/>. The default discontinuity indicator is
-	    the sysUpTime scalar of the SNMPv2-MIB, which can also be
-	    used to detect counter rollovers. Some MIB modules
-	    introduce more specific discontinuity indicators, e.g.,
-	    the ifCounterDiscontinuityTime of the IF-MIB <xref
+	    the sysUpTime scalar of the SNMPv2-MIB <xref
+	    target="RFC3418"/>, which can also be used to detect
+	    counter roll-overs. Some MIB modules introduce more
+	    specific discontinuity indicators, e.g., the
+	    ifCounterDiscontinuityTime of the IF-MIB <xref
 	    target="RFC2863"/>. It will be interesting to study to
 	    which extend these objects are actually used by management
-	    applications.
+	    applications to handle discontinuity events.
 	  </t>
         </section>
 
         <section title="Spin Locks">
 	  <t>
-	    Several cooperating command generators can use advisory
-	    locks to coordinate their usage of the SNMP write
-	    operations. The snmpSetSerialNo scalar of the SNMPv2-MIB
-	    is the default course-grain coordination object. It will
-	    interesting to find out whether there are command
-	    generators which coordinate themself using these spin
-	    locks.
+	    Cooperating command generators can use advisory locks to
+	    coordinate their usage of SNMP write operations. The
+	    snmpSetSerialNo scalar of the SNMPv2-MIB <xref
+	    target="RFC3418"/> is the default course-grain
+	    coordination object. It will interesting to find out
+	    whether there are command generators which coordinate
+	    themself using these spin locks.
 	  </t>
         </section>
 
         <section title="Row Creation">
 	  <t>
 	    Row creation is an operation not natively supported by the
-	    protocol. Instead, tables supporting row creation
-	    typically provide a control column which uses the
-	    RowStatus textual convention defined in the SNMPv2-TC
+	    protocol operations. Instead, conceptual tables supporting
+	    row creation typically provide a control column which uses
+	    the RowStatus textual convention defined in the SNMPv2-TC
 	    module. The RowStatus itself supports different row
 	    creation modes, namely dribble-mode and one-shot mode.  In
 	    addition, different approaches can be used to derive the
 	    instance identifier if it does not have special semantics
 	    associated. It will be useful to study which of the
-	    various approaches are actually used by management
-	    applications on production networks.
+	    various row creation approaches are actually used by
+	    management applications on production networks.
 	  </t>
         </section>
 
@@ -501,29 +529,29 @@
 	SNMP traffic traces usually contain sensitive information. It
 	is therefore necessary to (a) remove unneeded information and
 	(b) to anonymize the remaining necessary information before
-	traces are made available for others.
+	traces are made available for analysis.
       </t>
       <t>
 	Implementations that generate XML traces from raw pcap files
-	should have an option to suppress all values. Note that
-	instance identifiers of tables also include values and it
-	might be therefore also be necessary to suppress (parts of)
-	the instance identifiers. Similarly, the packet and message
-	headers typically contain sensitive information about the
-	source and destination of SNMP messages as well as
-	authentication information (community strings or user names).
+	should have an option to suppress values. Note that instance
+	identifiers of tables also include values and it might
+	therefore be necessary to suppress (parts of) the instance
+	identifiers. Similarly, the packet and message headers
+	typically contain sensitive information about the source and
+	destination of SNMP messages as well as authentication
+	information (community strings or user names).
       </t>
       <t>
 	Anonymization techniques can be applied to keep some more
-	information in the trace, following the filter-in principle
-	which says that only values are added when their data type is
-	known and an appropriate anonymization transformation is
-	available. For values appearing in instance identifiers, it is
-	usually desirable to maintain the lexicographic order. Special
-	anonymization transformations which have this property have
-	been developed, although their anonymization strength is
-	usually reduced compared to transformations that do not
-	preserve lexicographic ordering.
+	information in anonymized traces. This should follow the
+	filter-in principle which says that only values are added when
+	their data type is known and an appropriate anonymization
+	transformation is available. For values appearing in instance
+	identifiers, it is usually desirable to maintain the
+	lexicographic order. Special anonymization transformations
+	which preserve this property have been developed, although
+	their anonymization strength is usually reduced compared to
+	transformations that do not preserve lexicographic ordering.
       </t>
     </section>
 
@@ -534,6 +562,8 @@
         de Meent for writing the initial Perl script that lead to the
         script shown in the Appendix and Matus Harvan for his work on
         lexicographic order preserving anonymization transformations.
+        Aiko Pras contributed to the section which describes sample
+        questions that can be answered by SNMP traffic measurements.
       </t>
     </section>
 
@@ -646,6 +676,87 @@
 
     <references title="Informative References">
 
+      <reference anchor="RFC1052">
+        <front>
+          <title>
+            IAB Recommendations for the Development of
+            Internet Network Management Standards
+          </title>
+          <author initials="V." surname="Cerf" fullname="V. Cerf">
+            <organization>NRI</organization>
+          </author>
+          <date month="April" year="1998"/>
+        </front>
+        <seriesInfo name="RFC" value="1052"/>
+      </reference>
+
+      <reference anchor="RFC3410">
+        <front>
+          <title>
+            Introduction and Applicability Statements for
+            Internet Standard Management Framework
+          </title>
+          <author initials="J." surname="Case" fullname="J. Case">
+            <organization>SNMP Research, Inc.</organization>
+          </author>
+          <author initials="R." surname="Mundy" fullname="R. Mundy">
+            <organization>Network Associates Laboratories</organization>
+          </author>
+          <author initials="D." surname="Partain" fullname="D. Partain">
+            <organization>Ericsson</organization>
+          </author>
+          <author initials="B." surname="Stewart" fullname="B. Stewart">
+            <organization>Retired</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3410"/>
+      </reference>
+
+      <reference anchor="PDMQ04">
+        <front>
+          <title>
+            Comparing the Performance of SNMP and Web Services based Management
+          </title>
+          <author initials="A." surname="Pras" fullname="A. Pras">
+            <organization>University of Twente</organization>
+          </author>
+          <author initials="T." surname="Drevers" fullname="T. Drevers">
+            <organization>University of Twente</organization>
+          </author>
+          <author initials="R." surname="van de Meent" fullname="R. van de Meent">
+            <organization>University of Twente</organization>
+          </author>
+          <author initials="D." surname="Quartel" fullname="D. Quartel">
+            <organization>University of Twente</organization>
+          </author>
+          <date month="November" year="2004"/>
+        </front>
+        <seriesInfo name="IEEE electronic Transactions on Network and Service Management" value="1(2)"/>
+      </reference>
+
+      <reference anchor="PFGL04">
+        <front>
+          <title>
+            On Management Technologies and the Potential of Web Services
+          </title>
+          <author initials="G." surname="Pavlou" fullname="G. Pavlou">
+            <organization>University of Surrey</organization>
+          </author>
+          <author initials="P." surname="Flegkas" fullname="P. Flegkas">
+            <organization>University of Surrey</organization>
+          </author>
+          <author initials="S." surname="Gouveris" fullname="S. Gouveris">
+            <organization>University of Surrey</organization>
+          </author>
+          <author initials="A." surname="Liotta" fullname="A. Liotta">
+            <organization>University of Surrey</organization>
+          </author>
+          <date month="July" year="2004"/>
+        </front>
+        <seriesInfo name="IEEE Communications Magazine" value="42(7)"/>
+      </reference>
+
       <reference anchor="STBULK">
         <front>
           <title>
@@ -731,6 +842,23 @@
           <date month="March" year="2005"/>
         </front>
         <seriesInfo name="RFC" value="4022"/>
+      </reference>
+
+      <reference anchor="HS06">
+        <front>
+          <title>
+            Prefix- and Lexicographical-order-preserving IP Address
+            Anonymization
+          </title>
+          <author initials="M." surname="Harvan" fullname="M. Harvan">
+            <organization>International University Bremen</organization>
+          </author>
+          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
+            <organization>TU Braunschweig</organization>
+          </author>
+          <date month="April" year="2006"/>
+        </front>
+        <seriesInfo name="IEEE/IFIP Network Operations and Management Symposium" value="NOMS 2006"/>
       </reference>
 
     </references>
