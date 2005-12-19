@@ -1,11 +1,10 @@
 /*
- * libanon.h --
+ * xpath-filter.h --
  *
- * Anonymization library which supports among other things
- * prefix-preserving and lexicographical-order-preserving IP address
- * anonymization.
+ * Implements a filter object which can be used to delete or clear
+ * elements in an XML document identified by an xpath expression.
  *
- * Copyright (c) 2005 Matus Harvan
+ * Copyright (c) 2005 Juergen Schoenwaelder
  */
 
 #ifndef _XPATH_FILTER_H
