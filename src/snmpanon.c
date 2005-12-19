@@ -14,6 +14,11 @@
 #include <unistd.h>
 #include <inttypes.h>
 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 #include <libxml/xmlmemory.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
@@ -33,7 +38,34 @@ static unsigned char my_key[32] =
     216,152,143,131,121,121,101, 39, 98, 87, 76, 45, 42,132, 34,  2
 };
 
+/*
+ * Data structures used to describe the transformation instances we
+ * keep and the rules which define when to apply these transformation
+ * instances. We really should use a standard list, e.g. the xmllist
+ * which comes with the libxml anyways...
+ */
 
+typedef struct transform {
+    char *name;
+    union {
+	anon_ip_t     *an_ipv4;
+	anon_mac_t    *an_mac;
+	anon_int64_t  *an_int64;
+	anon_uint64_t *an_uint64;
+    } anon_union;
+    /* range / size restrictions */
+    /* options (lex) */
+} transform_t;
+
+typedef struct rule {
+    char         *name;
+    transform_t  *transform;
+    char         *targets;
+    xmlRegexpPtr target_regexp;
+} rule_t;
+
+static xmlListPtr transform_list = NULL;
+static xmlListPtr rule_list = NULL;
 
 /*
  *
@@ -156,16 +188,19 @@ mark_anon_varbind_name(const char *xpath, xmlXPathContextPtr ctxt)
 	if (obj->type == XPATH_NODESET) {
 	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
 		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
-		fprintf(stderr, "** <%s>\n", (char *) content);
+		fprintf(stderr, "** <%s>", (char *) content);
 		smiNode = smiGetNode(NULL, (char *) content);
 		if (smiNode) {
-		    fprintf(stdout, "** %s", smiNode->name);
+		    fprintf(stderr, " %s", smiNode->name);
 		    smiType = smiGetNodeType(smiNode);
-		    if (smiType) {
-			fprintf(stdout, " [%s]", smiType->name);
+		    if (smiType && !smiType->name) {
+			    smiType = smiGetParentType(smiType);
 		    }
-		    fprintf(stdout, "\n");
+		    if (smiType) {
+			fprintf(stderr, " [%s]", smiType->name);
+		    }
 		}
+		fprintf(stderr, "\n");
 	    }
 	}
 	xmlXPathFreeObject(obj);
@@ -212,28 +247,78 @@ anon_pass2(anon_ip_t *an_ip, anon_int64_t *an_port)
     xmlXPathFreeContext(ctxt);
 }
 
+/*
+ * Anonymize an XML document.
+ */
+
+static void
+anonymize(xmlDocPtr xml_doc)
+{
+    anon_ip_t *an_ip;
+    anon_int64_t *an_port;
+    
+    xmlXPathInit();
+    
+    an_ip = anon_ip_new();
+    if (! an_ip) {
+	fprintf(stderr, "%s: initialization of IP anonymization failed\n",
+		progname);
+	exit(1);
+    }
+    an_port = anon_int64_new(0, 65535);
+    if (! an_port) {
+	fprintf(stderr, "%s: initialization of port anonymization failed\n",
+		progname);
+	exit(1);
+    }
+    
+    anon_ip_set_key(an_ip, my_key);
+    anon_int64_set_key(an_port, my_key);
+    
+    anon_pass1(an_ip, an_port);	/* xml_root passed as global */
+    anon_pass2(an_ip, an_port);	/* xml_root passed as global */
+    
+    anon_ip_delete(an_ip);
+    anon_int64_delete(an_port);
+   
+}
+
 
 int
 main(int argc, char **argv)
 {
     int i, c;
-    char buffer[1024];
-    char *filter = NULL;
     xpath_filter_t *xpf;
 
     xpf = xpath_filter_new();
 
-    for (i = 1; i < argc; i++)
-	if ((strstr(argv[i], "-s") == argv[i]) ||
-	    (strstr(argv[i], "--smi-config") == argv[i])) break;
-    if (i == argc) {
-	smiInit("smilint");
-    } else {
-	smiInit(NULL);
-    }
+    transform_list = xmlListCreate(NULL, NULL);
+    rule_list = xmlListCreate(NULL, NULL);
+
+    smiInit(progname);
 	
-    while ((c = getopt(argc, argv, "Vhc:d:m:")) != -1) {
+    while ((c = getopt(argc, argv, "Vha:c:d:m:")) != -1) {
 	switch (c) {
+	case 'a':
+	    {
+		rule_t *rule;
+
+		rule = (rule_t *) malloc(sizeof(rule_t));
+		if (! rule) {
+		    /* xxx */
+		    exit(1);
+		}
+
+		rule->name = "xx";
+		rule->targets = optarg;
+		rule->target_regexp = xmlRegexpCompile(BAD_CAST(optarg));
+		if (!rule->target_regexp) {
+		    /* xxx */
+		    exit(1);
+		}
+		xmlListAppend(rule_list, rule);
+	    }
+	    break;
 	case 'c':
 	    if (xpf) {
 		xpath_filter_add(xpf, BAD_CAST(optarg),
@@ -257,12 +342,33 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c xpath] [-d xpath] [-m module] [-h] [-s config] file ... \n", progname);
+	    printf("%s [-a aexp] [-c xpath] [-d xpath] "
+		   "[-m module] [-h] [-s config] file ... \n", progname);
 	    exit(0);
 	}
     }
 
-    for (i = 1; i < argc; i++) {
+    if (optind == argc) {
+	xml_doc = xmlReadFd(fileno(stdin), NULL, NULL, 0);
+	if (! xml_doc) {
+	    fprintf(stderr, "%s: could not parse XML from standard input\n", progname);
+	    exit(1);
+	}
+
+	/* anonymize the data and apply any xpath filter */
+
+	anonymize(xml_doc);
+	xpath_filter_apply(xpf, xml_doc);
+
+	/* print the resulting xml document */
+
+	if (xmlDocFormatDump(stdout, xml_doc, 1) == -1) {
+	    fprintf(stderr, "%s: failed to serialize xml document\n", progname);
+	    exit(1);
+	}
+    }
+
+    for (i = optind; i < argc; i++) {
 	xml_doc = xmlReadFile(argv[i], NULL, 0);
 	if (! xml_doc) {
 	    fprintf(stderr, "%s: could not parse XML file '%s'\n",
@@ -270,37 +376,9 @@ main(int argc, char **argv)
 	    continue;
 	}
 
-	/* anonymize the data */
-	
-	anon_ip_t *an_ip;
-	anon_int64_t *an_port;
+	/* anonymize the data and apply any xpath filter */
 
-	xmlXPathInit();
-
-	an_ip = anon_ip_new();
-	if (! an_ip) {
-	    fprintf(stderr, "%s: initialization of IP anonymization failed\n",
-		    progname);
-	    exit(1);
-	}
-	an_port = anon_int64_new(0, 65535);
-	if (! an_port) {
-	    fprintf(stderr, "%s: initialization of port anonymization failed\n",
-		    progname);
-	    exit(1);
-	}
-	
-	anon_ip_set_key(an_ip, my_key);
-	anon_int64_set_key(an_port, my_key);
-
-	anon_pass1(an_ip, an_port);	/* xml_root passed as global */
-	anon_pass2(an_ip, an_port);	/* xml_root passed as global */
-
-	anon_ip_delete(an_ip);
-	anon_int64_delete(an_port);
-
-	/* apply the filters */
-	
+	anonymize(xml_doc);
 	xpath_filter_apply(xpf, xml_doc);
 
 	/* print the resulting xml document */
@@ -314,4 +392,6 @@ main(int argc, char **argv)
     /* cleanup */
 
     xpath_filter_delete(xpf);
+
+    return 0;
 }
