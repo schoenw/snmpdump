@@ -17,5 +17,5 @@ man_MANS		= snmpdump.1 anon.1
 
 include_HEADERS		= libanon.h
 lib_LTLIBRARIES		= libanon.la
-libanon_la_SOURCES	= anon-ip.c anon-mac.c anon-int64.c anon-uint64.c
+libanon_la_SOURCES	= anon-ip.c anon-ipv6.c anon-mac.c anon-int64.c anon-uint64.c
 libanon_la_LDFLAGS	= -version-info @VERSION_LIBTOOL@

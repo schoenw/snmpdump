@@ -34,6 +34,7 @@ struct cmd {
 
 static void cmd_help(int argc, char **argv, struct cmd *cmd);
 static void cmd_ip(int argc, char **argv, struct cmd *cmd);
+static void cmd_ipv6(int argc, char **argv, struct cmd *cmd);
 static void cmd_mac(int argc, char **argv, struct cmd *cmd);
 static void cmd_int64(int argc, char **argv, struct cmd *cmd);
 static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
@@ -41,6 +42,7 @@ static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
 static struct cmd cmds[] = {
     { "help",		cmd_help,	"anon help" },
     { "ip",		cmd_ip,		"anon ip [-hl] file" },
+    { "ipv6",		cmd_ipv6,	"anon ipv6 [-hl] file" },
     { "mac",		cmd_mac,	"anon mac [-hl] file" },
     { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
     { "uint64",		cmd_uint64,	"anon uint64 lower upper [-hl] file" },
@@ -51,6 +53,11 @@ static struct cmd cmds[] = {
 static unsigned char my_key[32] = 
   {21,34,23,141,51,164,207,128,19,10,91,22,73,144,125,16,
    216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
+/*
+static unsigned char my_key[32] = 
+  {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255};
+*/
 
 /*
  * Open a file and handle all errors by producing an error message
@@ -202,6 +209,122 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 	ip_pref(a, in);
     }
     anon_ip_delete(a);
+
+    fclose(in);
+}
+
+/*
+ * Prefix preserving IPv6 address anonymization.
+ */
+
+static void
+ipv6_pref(anon_ipv6_t *a, FILE *f)
+{
+    struct in6_addr raw_addr, anon_addr;
+    char buf[10*INET6_ADDRSTRLEN];
+
+    /*
+     * read ip addresses (one per input line), call the prefix
+     * preserving anonymization function and print the anonymized
+     * addresses
+     */
+
+    while (fgets(buf, sizeof(buf), f) 
+	   && trim(buf)
+	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
+
+	(void) anon_ipv6_map_pref(a, raw_addr, &anon_addr);
+	
+	printf("%s\n", inet_ntop(AF_INET6, &anon_addr, buf, sizeof(buf)));
+    }
+}
+
+/*
+ * Prefix and lexicographic order preserving IPv6 address anonymization.
+ */
+
+static void
+ipv6_lex(anon_ipv6_t *a, FILE *f)
+{
+    struct in6_addr raw_addr, anon_addr;
+    char buf[10*INET6_ADDRSTRLEN];
+
+    /*
+     * first pass: read ip addresses (one per input line) and mark
+     * them as used
+     */
+
+    while (fgets(buf, sizeof(buf), f) 
+	   && trim(buf)
+	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
+
+	anon_ipv6_set_used(a, raw_addr, 32);
+    }
+
+    /*
+     * second pass: read ip addresses (one per input line), call the
+     * prefix and lexcographic oder preserving anonymization function
+     * and print the anonymized addresses
+     */
+
+    rewind(f);
+    while (fgets(buf, sizeof(buf), f) 
+	   && trim(buf)
+	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
+	
+	(void) anon_ipv6_map_pref_lex(a, raw_addr, &anon_addr);
+
+	printf("%s\n", inet_ntop(AF_INET6, &anon_addr, buf, sizeof(buf)));
+    }
+}
+
+/*
+ * Prefix-preserving and lexicographic-order preserving IPv6 address
+ * anonymization subcommand.
+ */
+
+static void
+cmd_ipv6(int argc, char **argv, struct cmd *cmd)
+{
+    FILE *in;
+    anon_ipv6_t *a;
+    int c, lflag = 0;
+
+    optind = 2;
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+    argc -= optind;
+    argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[0], "r");
+
+    a = anon_ipv6_new();
+    if (! a) {
+	fprintf(stderr, "%s: Failed to initialize IPv6 mapping\n", progname);
+	exit(EXIT_FAILURE);
+    }
+    anon_ipv6_set_key(a, my_key);
+    if (lflag) {
+	ipv6_lex(a, in);
+    } else {
+	ipv6_pref(a, in);
+    }
+    anon_ipv6_delete(a);
 
     fclose(in);
 }
