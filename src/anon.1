@@ -35,6 +35,43 @@ anon \- anonymize data files
 \fBanon\fP anonymizes data contained in data files. The subcommands
 define which type of data is expected in the input files and which
 anonymization is carried out.
+.SH SUBCOMMANDS:
+.SS ip
+.B ip
+.RI [-clh]
+.I file
+.br
+anonymizes IPv4 addresses contained in \fIfile\fP.
+.TP
+\fB-c\fP
+output (to stderr) number of nodes in the used_i tree
+.TP
+\fB-l\fP
+preserve lexicographical order
+.TP
+\fB-h\fP
+help
+.PP
+
+.SS ipv6
+.B ipv6
+.RI [-clh]
+.I file
+.br
+anonymizes IPv6 addresses contained in \fIfile\fP.
+.TP
+\fB-c\fP
+output (to stderr) number of nodes in the used_i tree
+.TP
+\fB-l\fP
+preserve lexicographical order
+.TP
+\fB-h\fP
+help
+.PP
+
+.B ...(mac,int64,uint64)
+
 .SH AUTHOR
 Matus Harvan <m.harvan@iu-bremen.de>
 .br

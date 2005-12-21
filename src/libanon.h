@@ -28,6 +28,7 @@ int		anon_ip_map_pref(anon_ip_t *a, const in_addr_t ip,
 int		anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t ip,
 				     in_addr_t *aip);
 void		anon_ip_delete(anon_ip_t *a);
+int		anon_ip_nodes_count(anon_ip_t *a);
 
 /*
  * IPv6 address anonymization API.
@@ -44,6 +45,7 @@ int		anon_ipv6_map_pref(anon_ipv6_t *a, const in6_addr_t ip,
 int		anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip,
 				     in6_addr_t *aip);
 void		anon_ipv6_delete(anon_ipv6_t *a);
+int		anon_ipv6_nodes_count(anon_ipv6_t *a);
 
 /*
  * IEEE MAC address anonymization API.

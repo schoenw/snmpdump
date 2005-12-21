@@ -199,7 +199,7 @@ canflip(anon_ip_t *a, in_addr_t ip, int prefixlen)
 }
 
 int
-nodes_count_ip(anon_ip_t *a)
+anon_ip_nodes_count(anon_ip_t *a)
 {
     return a->nodes;
 }

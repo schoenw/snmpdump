@@ -202,7 +202,7 @@ canflip(anon_ipv6_t *a, const in6_addr_t ip, int prefixlen)
 }
 
 int
-nodes_count_ipv6(anon_ipv6_t *a)
+anon_ipv6_nodes_count(anon_ipv6_t *a)
 {
     return a->nodes;
 }

@@ -41,8 +41,8 @@ static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
     { "help",		cmd_help,	"anon help" },
-    { "ip",		cmd_ip,		"anon ip [-hl] file" },
-    { "ipv6",		cmd_ipv6,	"anon ipv6 [-hl] file" },
+    { "ip",		cmd_ip,		"anon ip [-hlc] file" },
+    { "ipv6",		cmd_ipv6,	"anon ipv6 [-hlc] file" },
     { "mac",		cmd_mac,	"anon mac [-hl] file" },
     { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
     { "uint64",		cmd_uint64,	"anon uint64 lower upper [-hl] file" },
@@ -172,11 +172,14 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ip_t *a;
-    int c, lflag = 0;
+    int c, lflag = 0, cflag = 0;
 
     optind = 2;
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    while ((c = getopt(argc, argv, "clh")) != -1) {
 	switch (c) {
+	case 'c':
+	    cflag = 1;
+	    break;
 	case 'l':
 	    lflag = 1;
 	    break;
@@ -207,6 +210,9 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 	ip_lex(a, in);
     } else {
 	ip_pref(a, in);
+    }
+    if (cflag) {
+	fprintf(stderr, "number of nodes: %d\n", anon_ip_nodes_count(a));
     }
     anon_ip_delete(a);
 
@@ -288,11 +294,14 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ipv6_t *a;
-    int c, lflag = 0;
+    int c, lflag = 0, cflag = 0;
 
     optind = 2;
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    while ((c = getopt(argc, argv, "clh")) != -1) {
 	switch (c) {
+	case 'c':
+	    cflag = 1;
+	    break;
 	case 'l':
 	    lflag = 1;
 	    break;
@@ -323,6 +332,9 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 	ipv6_lex(a, in);
     } else {
 	ipv6_pref(a, in);
+    }
+    if (cflag) {
+	fprintf(stderr, "number of nodes: %d\n", anon_ipv6_nodes_count(a));
     }
     anon_ipv6_delete(a);
 
