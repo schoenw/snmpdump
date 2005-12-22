@@ -214,6 +214,10 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
     if (cflag) {
 	fprintf(stderr, "number of nodes: %d\n", anon_ip_nodes_count(a));
     }
+    /*
+    fprintf(stderr, "Measure memory consumption now\n");
+    scanf("\n");
+    */
     anon_ip_delete(a);
 
     fclose(in);
@@ -264,7 +268,7 @@ ipv6_lex(anon_ipv6_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
 
-	anon_ipv6_set_used(a, raw_addr, 32);
+	anon_ipv6_set_used(a, raw_addr, 128);
     }
 
     /*
@@ -336,6 +340,10 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     if (cflag) {
 	fprintf(stderr, "number of nodes: %d\n", anon_ipv6_nodes_count(a));
     }
+    /*
+    fprintf(stderr, "Measure memory consumption now\n");
+    scanf("\n");
+    */
     anon_ipv6_delete(a);
 
     fclose(in);
