@@ -3,11 +3,11 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                           International University Bremen
-Expires: June 12, 2006                                  December 9, 2005
+Expires: July 1, 2006                                  December 28, 2005
 
 
                        SNMP Traffic Measurements
-                 draft-schoenw-nrmg-snmp-measure-00.txt
+                 draft-schoenw-nrmg-snmp-measure-01.txt
 
 Status of this Memo
 
@@ -32,7 +32,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on June 12, 2006.
+   This Internet-Draft will expire on July 1, 2006.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Abstract
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 1]
+Schoenwaelder             Expires July 1, 2006                  [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 2]
+Schoenwaelder             Expires July 1, 2006                  [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -164,7 +164,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 3]
+Schoenwaelder             Expires July 1, 2006                  [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -200,10 +200,10 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    therefore important to have a well defined specification of this
    interfaces.
 
-   This section provides some advise and concrete hints how the steps
+   This section provides some advice and concrete hints how the steps
    listed above can be carried out efficiently.  Some special tools have
    been developed to assist network operators and researchers so that
-   the time spend on supporting SNMP traffic measurement projects is
+   the time spent on supporting SNMP traffic measurement projects is
    limited.  The following sections describe the five steps and some
    tools in more detail.
 
@@ -220,7 +220,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 4]
+Schoenwaelder             Expires July 1, 2006                  [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -276,7 +276,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 5]
+Schoenwaelder             Expires July 1, 2006                  [Page 5]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -332,7 +332,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 6]
+Schoenwaelder             Expires July 1, 2006                  [Page 6]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -388,7 +388,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 7]
+Schoenwaelder             Expires July 1, 2006                  [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -413,8 +413,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
    SNMP is used to periodically poll devices as well as to retrieve
    information on request of an operator or application.  The periodic
-   polling leads to periodic traffic pattern while the on demand
-   information retrieval causes more aperiodic traffic pattern.  It is
+   polling leads to periodic traffic patterns while the on demand
+   information retrieval causes more aperiodic traffic patterns.  It is
    worthwhile to understand what the relationship is between the amount
    of periodic and aperiodic traffic.  In addition, it will be
    interesting to research whether there are multiple levels of
@@ -429,7 +429,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    understand the latency distributions, especially the distribution of
    the processing times by SNMP command responders.  Some SNMP
    implementations approximate networking delays by measuring request-
-   response times and it would be useful to understand to what extend
+   response times and it would be useful to understand to what extent
    this is a viable approach.
 
 3.4.  Concurrency Levels
@@ -444,7 +444,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 8]
+Schoenwaelder             Expires July 1, 2006                  [Page 8]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -461,7 +461,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 3.6.  Trap-Directed Polling - Myths or Reality?
 
-   SNMP is build around a concept called trap-directed polling.
+   SNMP is built around a concept called trap-directed polling.
    Management applications are responsible to periodically poll SNMP
    agents to determine their status.  SNMP agents can in addition send
    traps to notify SNMP managers about events so that SNMP managers can
@@ -472,7 +472,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    polling is actually deployed.  In particular, the question that
    should be addressed is whether SNMP notifications lead to changes in
    the short-term polling behavior of management stations.  In
-   particular, it should be investigated to which extend SNMP managers
+   particular, it should be investigated to what extent SNMP managers
    use automated procedures to track down the meaning of the event
    conveyed by an SNMP notification.
 
@@ -500,7 +500,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                 [Page 9]
+Schoenwaelder             Expires July 1, 2006                  [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -519,7 +519,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    [RFC3418], which can also be used to detect counter roll-overs.  Some
    MIB modules introduce more specific discontinuity indicators, e.g.,
    the ifCounterDiscontinuityTime of the IF-MIB [RFC2863].  It will be
-   interesting to study to which extend these objects are actually used
+   interesting to study to what extent these objects are actually used
    by management applications to handle discontinuity events.
 
 3.11.  Spin Locks
@@ -527,8 +527,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    Cooperating command generators can use advisory locks to coordinate
    their usage of SNMP write operations.  The snmpSetSerialNo scalar of
    the SNMPv2-MIB [RFC3418] is the default course-grain coordination
-   object.  It will interesting to find out whether there are command
-   generators which coordinate themself using these spin locks.
+   object.  It will be interesting to find out whether there are command
+   generators which coordinate themselves using these spin locks.
 
 3.12.  Row Creation
 
@@ -536,12 +536,12 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    operations.  Instead, conceptual tables supporting row creation
    typically provide a control column which uses the RowStatus textual
    convention defined in the SNMPv2-TC module.  The RowStatus itself
-   supports different row creation modes, namely dribble-mode and one-
-   shot mode.  In addition, different approaches can be used to derive
-   the instance identifier if it does not have special semantics
-   associated.  It will be useful to study which of the various row
-   creation approaches are actually used by management applications on
-   production networks.
+   supports different row creation modes, namely createAndWait (dribble-
+   mode) and createAndGo (one-shot mode).  In addition, different
+   approaches can be used to derive the instance identifier if it does
+   not have special semantics associated.  It will be useful to study
+   which of the various row creation approaches are actually used by
+   management applications on production networks.
 
 
 
@@ -556,7 +556,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 10]
+Schoenwaelder             Expires July 1, 2006                 [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -576,15 +576,15 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
    source and destination of SNMP messages as well as authentication
    information (community strings or user names).
 
-   Anonymization techniques can be applied to keep some more information
-   in anonymized traces.  This should follow the filter-in principle
-   which says that only values are added when their data type is known
-   and an appropriate anonymization transformation is available.  For
+   Anonymization techniques can be applied to keep more information in
+   traces which could reveal sensitive information.  Values should only
+   be added when their data type is known and an appropriate
+   anonymization transformation is available (filter-in principle).  For
    values appearing in instance identifiers, it is usually desirable to
    maintain the lexicographic order.  Special anonymization
    transformations which preserve this property have been developed,
    although their anonymization strength is usually reduced compared to
-   transformations that do not preserve lexicographic ordering.
+   transformations that do not preserve lexicographic ordering [HS06].
 
 
 
@@ -612,7 +612,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 11]
+Schoenwaelder             Expires July 1, 2006                 [Page 11]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -621,11 +621,11 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
    This document was influenced by discussions within the Network
    Management Research Group (NMRG).  Special thanks to Remco van de
-   Meent for writing the initial Perl script that lead to the script
-   shown in the Appendix and Matus Harvan for his work on lexicographic
-   order preserving anonymization transformations.  Aiko Pras
-   contributed to the section which describes sample questions that can
-   be answered by SNMP traffic measurements.
+   Meent for writing the initial Perl script that lead to the script in
+   Appendix B and Matus Harvan for his work on lexicographic order
+   preserving anonymization transformations.  Aiko Pras contributed
+   ideas to Section 3 while David Harrington helped to improve the
+   readability of this document.
 
 
 
@@ -668,7 +668,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 12]
+Schoenwaelder             Expires July 1, 2006                 [Page 12]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -724,7 +724,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 13]
+Schoenwaelder             Expires July 1, 2006                 [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -780,7 +780,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 14]
+Schoenwaelder             Expires July 1, 2006                 [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -836,7 +836,7 @@ URIs
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 15]
+Schoenwaelder             Expires July 1, 2006                 [Page 15]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -892,7 +892,7 @@ Appendix A.  RELAX NG Schema Definition
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 16]
+Schoenwaelder             Expires July 1, 2006                 [Page 16]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -948,7 +948,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 17]
+Schoenwaelder             Expires July 1, 2006                 [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -1004,7 +1004,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 18]
+Schoenwaelder             Expires July 1, 2006                 [Page 18]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -1060,7 +1060,7 @@ Appendix B.  Sample Perl Analysis Script
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 19]
+Schoenwaelder             Expires July 1, 2006                 [Page 19]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -1116,7 +1116,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2005
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 20]
+Schoenwaelder             Expires July 1, 2006                 [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -1172,7 +1172,7 @@ Author's Address
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 21]
+Schoenwaelder             Expires July 1, 2006                 [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements          December 2005
 
@@ -1228,5 +1228,5 @@ Acknowledgment
 
 
 
-Schoenwaelder             Expires June 12, 2006                [Page 22]
+Schoenwaelder             Expires July 1, 2006                 [Page 22]
 

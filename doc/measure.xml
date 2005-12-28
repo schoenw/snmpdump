@@ -3,7 +3,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?> 
 <rfc ipr='full3978'
-     docName="draft-schoenw-nrmg-snmp-measure-00.txt"
+     docName="draft-schoenw-nrmg-snmp-measure-01.txt"
      category="info">
 
   <!--
@@ -170,10 +170,10 @@
 	defined specification of this interfaces.
       </t>
       <t>
-	This section provides some advise and concrete hints how the
+	This section provides some advice and concrete hints how the
 	steps listed above can be carried out efficiently.  Some
 	special tools have been developed to assist network operators
-	and researchers so that the time spend on supporting SNMP
+	and researchers so that the time spent on supporting SNMP
 	traffic measurement projects is limited. The following
 	sections describe the five steps and some tools in more
 	detail.
@@ -337,7 +337,7 @@
 
     </section>
 
-    <section title="Analysis of Traffic Traces">
+    <section anchor="analysis" title="Analysis of Traffic Traces">
 
       <t>
         This section discusses several questions that can be answered
@@ -363,8 +363,8 @@
 	    SNMP is used to periodically poll devices as well as to
 	    retrieve information on request of an operator or
 	    application. The periodic polling leads to periodic
-	    traffic pattern while the on demand information retrieval
-	    causes more aperiodic traffic pattern. It is worthwhile to
+	    traffic patterns while the on demand information retrieval
+	    causes more aperiodic traffic patterns. It is worthwhile to
 	    understand what the relationship is between the amount of
 	    periodic and aperiodic traffic. In addition, it will be
 	    interesting to research whether there are multiple levels
@@ -383,7 +383,7 @@
 	    distribution of the processing times by SNMP command
 	    responders. Some SNMP implementations approximate
 	    networking delays by measuring request-response times and
-	    it would be useful to understand to what extend this is a
+	    it would be useful to understand to what extent this is a
 	    viable approach.
 	  </t>
 	</section>
@@ -414,7 +414,7 @@
 
         <section title="Trap-Directed Polling - Myths or Reality?">
           <t>
-	    SNMP is build around a concept called trap-directed
+	    SNMP is built around a concept called trap-directed
 	    polling.  Management applications are responsible to
 	    periodically poll SNMP agents to determine their
 	    status. SNMP agents can in addition send traps to notify
@@ -428,9 +428,9 @@
 	    the question that should be addressed is whether SNMP
 	    notifications lead to changes in the short-term polling
 	    behavior of management stations. In particular, it should
-	    be investigated to which extend SNMP managers use
-	    automated procedures to track down the meaning of the
-	    event conveyed by an SNMP notification.
+	    be investigated to what extent SNMP managers use automated
+	    procedures to track down the meaning of the event conveyed
+	    by an SNMP notification.
 	  </t>
         </section>
 
@@ -481,7 +481,7 @@
 	    specific discontinuity indicators, e.g., the
 	    ifCounterDiscontinuityTime of the IF-MIB <xref
 	    target="RFC2863"/>. It will be interesting to study to
-	    which extend these objects are actually used by management
+	    what extent these objects are actually used by management
 	    applications to handle discontinuity events.
 	  </t>
         </section>
@@ -492,9 +492,9 @@
 	    coordinate their usage of SNMP write operations. The
 	    snmpSetSerialNo scalar of the SNMPv2-MIB <xref
 	    target="RFC3418"/> is the default course-grain
-	    coordination object. It will interesting to find out
+	    coordination object. It will be interesting to find out
 	    whether there are command generators which coordinate
-	    themself using these spin locks.
+	    themselves using these spin locks.
 	  </t>
         </section>
 
@@ -505,12 +505,13 @@
 	    row creation typically provide a control column which uses
 	    the RowStatus textual convention defined in the SNMPv2-TC
 	    module. The RowStatus itself supports different row
-	    creation modes, namely dribble-mode and one-shot mode.  In
-	    addition, different approaches can be used to derive the
-	    instance identifier if it does not have special semantics
-	    associated. It will be useful to study which of the
-	    various row creation approaches are actually used by
-	    management applications on production networks.
+	    creation modes, namely createAndWait (dribble-mode) and
+	    createAndGo (one-shot mode).  In addition, different
+	    approaches can be used to derive the instance identifier
+	    if it does not have special semantics associated. It will
+	    be useful to study which of the various row creation
+	    approaches are actually used by management applications on
+	    production networks.
 	  </t>
         </section>
 
@@ -542,16 +543,17 @@
 	information (community strings or user names).
       </t>
       <t>
-	Anonymization techniques can be applied to keep some more
-	information in anonymized traces. This should follow the
-	filter-in principle which says that only values are added when
-	their data type is known and an appropriate anonymization
-	transformation is available. For values appearing in instance
-	identifiers, it is usually desirable to maintain the
+	Anonymization techniques can be applied to keep more
+	information in traces which could reveal sensitive
+	information. Values should only be added when their data type
+	is known and an appropriate anonymization transformation is
+	available (filter-in principle). For values appearing in
+	instance identifiers, it is usually desirable to maintain the
 	lexicographic order. Special anonymization transformations
 	which preserve this property have been developed, although
 	their anonymization strength is usually reduced compared to
-	transformations that do not preserve lexicographic ordering.
+	transformations that do not preserve lexicographic ordering
+	<xref target="HS06"/>.
       </t>
     </section>
 
@@ -560,10 +562,11 @@
         This document was influenced by discussions within the Network
         Management Research Group (NMRG). Special thanks to Remco van
         de Meent for writing the initial Perl script that lead to the
-        script shown in the Appendix and Matus Harvan for his work on
-        lexicographic order preserving anonymization transformations.
-        Aiko Pras contributed to the section which describes sample
-        questions that can be answered by SNMP traffic measurements.
+        script in <xref target="snmpstat"/> and Matus Harvan for his
+        work on lexicographic order preserving anonymization
+        transformations.  Aiko Pras contributed ideas to <xref
+        target="analysis"/> while David Harrington helped to improve
+        the readability of this document.
       </t>
     </section>
 
