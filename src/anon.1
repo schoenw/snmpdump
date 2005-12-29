@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH ANON 1 "July 12, 2005"
+.TH ANON 1 "Dec 29, 2005"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -28,20 +28,23 @@
 .\" for manpage-specific macros, see man(7)
 .SH NAME
 anon \- anonymize data files
+
 .SH SYNOPSIS
 .B anon subcommand
 .RI [ options ]
+
 .SH DESCRIPTION
 \fBanon\fP anonymizes data contained in data files. The subcommands
 define which type of data is expected in the input files and which
 anonymization is carried out.
-.SH SUBCOMMANDS:
-.SS ip
-.B ip
-.RI [-clh]
-.I file
-.br
-anonymizes IPv4 addresses contained in \fIfile\fP.
+
+.SH SUBCOMMANDS
+The \fBanon\fP command line tool supports a number of
+subcommands. Each subcommand deals with specific data types.
+
+.SS anon ipv4 \fR[\fI-clh\fR] \fIfile\fR
+The \fBanon ipv4\fP command anonymizes IPv4 addresses contained in
+\fIfile\fP and supports the following options:
 .TP
 \fB-c\fP
 output (to stderr) number of nodes in the used_i tree
@@ -53,12 +56,9 @@ preserve lexicographical order
 help
 .PP
 
-.SS ipv6
-.B ipv6
-.RI [-clh]
-.I file
-.br
-anonymizes IPv6 addresses contained in \fIfile\fP.
+.SS anon ipv6 \fR[\fI-clh\fR] \fIfile\fR
+The \fBanon ipv6\fP command anonymizes IPv6 addresses contained in
+\fIfile\fP and supports the following options:
 .TP
 \fB-c\fP
 output (to stderr) number of nodes in the used_i tree

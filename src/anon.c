@@ -22,6 +22,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <sys/time.h>
+#include <sys/resource.h>
+
 #include "libanon.h"
 
 static const char *progname = "anon";
@@ -33,7 +36,7 @@ struct cmd {
 };
 
 static void cmd_help(int argc, char **argv, struct cmd *cmd);
-static void cmd_ip(int argc, char **argv, struct cmd *cmd);
+static void cmd_ipv4(int argc, char **argv, struct cmd *cmd);
 static void cmd_ipv6(int argc, char **argv, struct cmd *cmd);
 static void cmd_mac(int argc, char **argv, struct cmd *cmd);
 static void cmd_int64(int argc, char **argv, struct cmd *cmd);
@@ -41,7 +44,7 @@ static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
     { "help",		cmd_help,	"anon help" },
-    { "ip",		cmd_ip,		"anon ip [-hlc] file" },
+    { "ipv4",		cmd_ipv4,	"anon ipv4 [-hlc] file" },
     { "ipv6",		cmd_ipv6,	"anon ipv6 [-hlc] file" },
     { "mac",		cmd_mac,	"anon mac [-hl] file" },
     { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
@@ -93,7 +96,7 @@ trim(char *buffer)
 
     for (e = s + strlen(s)-1; e > s && isspace(*e); e--) *e = 0;
     
-    memmove(buffer, s, e-s+2);
+    if (s != buffer) memmove(buffer, s, e-s+2);
     return 1;
 }
 
@@ -163,12 +166,12 @@ ip_lex(anon_ip_t *a, FILE *f)
 }
 
 /*
- * Prefix-preserving and lexicographic-order preserving IP address
+ * Prefix-preserving and lexicographic-order preserving IPv4 address
  * anonymization subcommand.
  */
 
 static void
-cmd_ip(int argc, char **argv, struct cmd *cmd)
+cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ip_t *a;
@@ -212,12 +215,18 @@ cmd_ip(int argc, char **argv, struct cmd *cmd)
 	ip_pref(a, in);
     }
     if (cflag) {
+	struct rusage r;
+	if (0 == getrusage(RUSAGE_SELF, &r)) {
+	    fprintf(stderr, "user time: %d\n", r.ru_utime.tv_sec);
+	}
 	fprintf(stderr, "number of nodes: %d\n", anon_ip_nodes_count(a));
     }
-    /*
+
+#if 0
     fprintf(stderr, "Measure memory consumption now\n");
     scanf("\n");
-    */
+#endif
+    
     anon_ip_delete(a);
 
     fclose(in);
@@ -340,10 +349,12 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     if (cflag) {
 	fprintf(stderr, "number of nodes: %d\n", anon_ipv6_nodes_count(a));
     }
-    /*
+
+#if 0
     fprintf(stderr, "Measure memory consumption now\n");
     scanf("\n");
-    */
+#endif
+
     anon_ipv6_delete(a);
 
     fclose(in);
