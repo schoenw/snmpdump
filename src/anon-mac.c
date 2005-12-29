@@ -14,6 +14,7 @@
 #include <string.h>
 #include <assert.h>
 #include <openssl/lhash.h>
+#include <openssl/rand.h>
 
 #include "libanon.h"
 
@@ -142,7 +143,6 @@ anon_mac_set_state(anon_mac_t *a, int state)
 {
     uint8_t amac[MAC_LENGTH];
     struct node *p, *q;
-    int i, j;
 
     assert(a);
     
@@ -311,9 +311,6 @@ anon_mac_set_key(anon_mac_t *a, const uint8_t *key)
 int
 anon_mac_set_used(anon_mac_t *a, const uint8_t *mac)
 {
-    struct node *p, *q, *n;
-    int c;
-    
     assert(a && mac);
     
     (void) anon_mac_set_state(a, INIT);
@@ -336,7 +333,6 @@ anon_mac_map(anon_mac_t *a, const uint8_t *mac,
 {
     struct hash_node node;
     struct hash_node *p;
-    int j;
     int tmp;
 
     (void) anon_mac_set_state(a, NON_LEX);

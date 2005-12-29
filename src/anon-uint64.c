@@ -15,6 +15,7 @@
 #include <string.h>
 #include <assert.h>
 #include <openssl/lhash.h>
+#include <openssl/rand.h>
 
 #include "libanon.h"
 
@@ -79,9 +80,6 @@ static int
 list_insert(struct node **list, const uint64_t num)
 {
     struct node *p, *q, *n;
-    int c;
-    
-    //assert(num);
     
     for (p = *list, q = NULL; p; q = p, p = p->next) {
 	if (num == p->num) {
@@ -130,7 +128,6 @@ anon_uint64_set_state(anon_uint64_t *a, int state)
 {
     uint64_t anum;
     struct node *p, *q;
-    int i, j;
 
     assert(a);
     
@@ -293,11 +290,7 @@ anon_uint64_set_key(anon_uint64_t *a, const uint8_t *key)
 int
 anon_uint64_set_used(anon_uint64_t *a, const uint64_t num)
 {
-    struct node *p, *q, *n;
-    int c;
-    
     assert(a);
-    //assert(a && mac);
     
     (void) anon_uint64_set_state(a, INIT);
 

@@ -30,4 +30,4 @@ extern int  xpath_filter_add(xpath_filter_t *xpf,
 
 extern void xpath_filter_apply(xpath_filter_t *xpf, xmlDocPtr doc);
 
-#endif _XPATH_FILTER_H
+#endif /* _XPATH_FILTER_H */

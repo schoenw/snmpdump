@@ -49,6 +49,23 @@ static struct node* add_new_node(struct node* parent, int right);
 static void canflip_count_n(struct node* p,int* n, int level);
 
 /*
+ * Node allocator and deallocator (factored out to experiment with
+ * different allocators).
+ */
+
+static inline struct node*
+node_alloc()
+{
+    return (struct node*) malloc(sizeof(struct node));
+}
+
+static inline void
+node_free(struct node* n)
+{
+    free(n);
+}
+
+/*
  * Create a new IP anonymization object.
  */
 
@@ -62,7 +79,7 @@ anon_ipv6_new()
 	return NULL;
     }
     memset(a, 0, sizeof(anon_ipv6_t));
-    a->tree = (struct node*) malloc(sizeof(struct node));
+    a->tree = node_alloc();
     if (!a->tree) {
 	free(a);
 	return NULL;
@@ -250,7 +267,7 @@ add_new_node(struct node* parent, int right) {
 	return NULL;
     }
     
-    struct node* n = (struct node*) malloc(sizeof(struct node));
+    struct node* n = node_alloc();
     if (!n) {
 	return NULL;
     }
@@ -276,7 +293,7 @@ delete_node(struct node* n) {
     delete_node(n->right);
     n->left = NULL;
     n->right = NULL;
-    free(n);
+    node_free(n);
 }
 
 /*

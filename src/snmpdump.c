@@ -57,9 +57,9 @@
 #define HACK_AROUND_LIBNET_API_CHANGES
 
 #ifdef HACK_AROUND_LIBNET_API_CHANGES
-int libnet_build_ip() { libnet_build_ipv4(); }
-int libnet_write_ip() { libnet_write_raw_ipv4(); }
-int libnet_open_raw_sock() { libnet_open_raw4(); }
+int libnet_build_ip() { return libnet_build_ipv4(); }
+int libnet_write_ip() { return libnet_write_raw_ipv4(); }
+int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #endif
 
 #include "config.h"
@@ -101,7 +101,6 @@ typedef struct filter {
     struct filter *next;
 } filter;
 
-static filter *filter_list = NULL;
 
 struct timeval start = { 0, 0 };
 

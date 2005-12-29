@@ -97,8 +97,6 @@ xpath_filter_add(xpath_filter_t *xpf,
 void
 xpath_filter_apply(xpath_filter_t *xpf, xmlDocPtr doc)
 {
-    xpath_filter_t *p;
-
     if (xpf->expr) {
 	xpath_filter_apply_one(doc, xpf->expr, xpf->type);
     }
