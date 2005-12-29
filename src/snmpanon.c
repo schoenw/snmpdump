@@ -48,7 +48,8 @@ static unsigned char my_key[32] =
 typedef struct transform {
     char *name;
     union {
-	anon_ip_t     *an_ipv4;
+	anon_ipv4_t   *an_ipv4;
+	anon_ipv6_t   *an_ipv6;
 	anon_mac_t    *an_mac;
 	anon_int64_t  *an_int64;
 	anon_uint64_t *an_uint64;
@@ -72,7 +73,7 @@ static xmlListPtr rule_list = NULL;
  */
 
 static void
-mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+mark_anon_ip_node(anon_ipv4_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 {
     xmlXPathObjectPtr obj;
     xmlChar *content;
@@ -85,7 +86,7 @@ mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 	    for (i = 0; i < xmlXPathNodeSetGetLength(obj->nodesetval); i++) {
 		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
 		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
-		    anon_ip_set_used(an_ip, ip, 32);
+		    anon_ipv4_set_used(an_ip, ip, 32);
 		}
 	    }
 	}
@@ -94,7 +95,7 @@ mark_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 }
 
 static void
-repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
+repl_anon_ip_node(anon_ipv4_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 {
     xmlXPathObjectPtr obj;
     xmlChar *content;
@@ -109,7 +110,7 @@ repl_anon_ip_node(anon_ip_t *an_ip, const char *xpath, xmlXPathContextPtr ctxt)
 		content = xmlNodeGetContent(obj->nodesetval->nodeTab[i]);
 		if (inet_pton(AF_INET, (char *) content, &ip) > 0) {
 		    char buf[INET_ADDRSTRLEN];
-		    (void) anon_ip_map_pref_lex(an_ip, ip, &aip);
+		    (void) anon_ipv4_map_pref_lex(an_ip, ip, &aip);
 		    if (inet_ntop(AF_INET, &aip, buf, sizeof(buf))) {
 			xmlNodeSetContent(obj->nodesetval->nodeTab[i],
 					  BAD_CAST(buf));
@@ -213,7 +214,7 @@ mark_anon_varbind_name(const char *xpath, xmlXPathContextPtr ctxt)
  */
 
 static void
-anon_pass1(anon_ip_t *an_ip, anon_int64_t *an_port)
+anon_pass1(anon_ipv4_t *an_ip, anon_int64_t *an_port)
 {
     xmlXPathContextPtr ctxt;
 
@@ -234,7 +235,7 @@ anon_pass1(anon_ip_t *an_ip, anon_int64_t *an_port)
  */
 
 static void
-anon_pass2(anon_ip_t *an_ip, anon_int64_t *an_port)
+anon_pass2(anon_ipv4_t *an_ip, anon_int64_t *an_port)
 {
     xmlXPathContextPtr ctxt;
 
@@ -254,12 +255,12 @@ anon_pass2(anon_ip_t *an_ip, anon_int64_t *an_port)
 static void
 anonymize(xmlDocPtr xml_doc)
 {
-    anon_ip_t *an_ip;
+    anon_ipv4_t *an_ip;
     anon_int64_t *an_port;
     
     xmlXPathInit();
     
-    an_ip = anon_ip_new();
+    an_ip = anon_ipv4_new();
     if (! an_ip) {
 	fprintf(stderr, "%s: initialization of IP anonymization failed\n",
 		progname);
@@ -272,13 +273,13 @@ anonymize(xmlDocPtr xml_doc)
 	exit(1);
     }
     
-    anon_ip_set_key(an_ip, my_key);
+    anon_ipv4_set_key(an_ip, my_key);
     anon_int64_set_key(an_port, my_key);
     
     anon_pass1(an_ip, an_port);	/* xml_root passed as global */
     anon_pass2(an_ip, an_port);	/* xml_root passed as global */
     
-    anon_ip_delete(an_ip);
+    anon_ipv4_delete(an_ip);
     anon_int64_delete(an_port);
    
 }

@@ -245,7 +245,7 @@ anon_mac_new()
 	fprintf(stderr, "initializing randomness...");
 	char buf;
 	buf = rand();
-        RAND_seed(buf,1);
+        RAND_seed(&buf, 1);
 	fprintf(stderr, "done\n");
     }
 

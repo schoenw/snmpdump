@@ -101,14 +101,31 @@ trim(char *buffer)
 }
 
 /*
- * Prefix preserving IP address anonymization.
+ * Show information about the current resource usage on the given
+ * stream.
  */
 
 static void
-ip_pref(anon_ip_t *a, FILE *f)
+show_resource_usage(FILE *stream)
+{
+    struct rusage r;
+    
+    if (0 == getrusage(RUSAGE_SELF, &r)) {
+	fprintf(stream, "%s: user time in seconds:\t%u.%06u\n", progname,
+		(unsigned) r.ru_utime.tv_sec, r.ru_utime.tv_usec);
+    }
+}
+
+/*
+ * Prefix preserving IP address anonymization.
+ */
+
+static unsigned
+ipv4_pref(anon_ipv4_t *a, FILE *f)
 {
     in_addr_t raw_addr, anon_addr;
     char buf[10*INET_ADDRSTRLEN];
+    unsigned cnt = 0;
 
     /*
      * read ip addresses (one per input line), call the prefix
@@ -120,21 +137,25 @@ ip_pref(anon_ip_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET, buf, &raw_addr) > 0) {
 
-	(void) anon_ip_map_pref(a, raw_addr, &anon_addr);
+	(void) anon_ipv4_map_pref(a, raw_addr, &anon_addr);
+	cnt++;
 	
 	printf("%s\n", inet_ntop(AF_INET, &anon_addr, buf, sizeof(buf)));
     }
+
+    return cnt;
 }
 
 /*
  * Prefix and lexicographic order preserving IP address anonymization.
  */
 
-static void
-ip_lex(anon_ip_t *a, FILE *f)
+static unsigned
+ipv4_lex(anon_ipv4_t *a, FILE *f)
 {
     in_addr_t raw_addr, anon_addr;
     char buf[10*INET_ADDRSTRLEN];
+    unsigned cnt = 0;
 
     /*
      * first pass: read ip addresses (one per input line) and mark
@@ -145,7 +166,7 @@ ip_lex(anon_ip_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET, buf, &raw_addr) > 0) {
 
-	anon_ip_set_used(a, raw_addr, 32);
+	anon_ipv4_set_used(a, raw_addr, 32);
     }
 
     /*
@@ -159,10 +180,13 @@ ip_lex(anon_ip_t *a, FILE *f)
 	   && trim(buf)
 	   && inet_pton(AF_INET, buf, &raw_addr) > 0) {
 	
-	(void) anon_ip_map_pref_lex(a, raw_addr, &anon_addr);
+	(void) anon_ipv4_map_pref_lex(a, raw_addr, &anon_addr);
+	cnt++;
 
 	printf("%s\n", inet_ntop(AF_INET, &anon_addr, buf, sizeof(buf)));
     }
+
+    return cnt;
 }
 
 /*
@@ -174,8 +198,9 @@ static void
 cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
-    anon_ip_t *a;
+    anon_ipv4_t *a;
     int c, lflag = 0, cflag = 0;
+    unsigned cnt;
 
     optind = 2;
     while ((c = getopt(argc, argv, "clh")) != -1) {
@@ -203,23 +228,22 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 
     in = xfopen(argv[0], "r");
 
-    a = anon_ip_new();
+    a = anon_ipv4_new();
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize IP mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_ip_set_key(a, my_key);
+    anon_ipv4_set_key(a, my_key);
     if (lflag) {
-	ip_lex(a, in);
+	cnt = ipv4_lex(a, in);
     } else {
-	ip_pref(a, in);
+	cnt = ipv4_pref(a, in);
     }
     if (cflag) {
-	struct rusage r;
-	if (0 == getrusage(RUSAGE_SELF, &r)) {
-	    fprintf(stderr, "user time: %d\n", r.ru_utime.tv_sec);
-	}
-	fprintf(stderr, "number of nodes: %d\n", anon_ip_nodes_count(a));
+	show_resource_usage(stderr);
+	fprintf(stderr, "%s: number of addresses:\t%u\n", progname, cnt);
+	fprintf(stderr, "%s: number of tree nodes:\t%u\n", progname,
+		anon_ipv4_nodes_count(a));
     }
 
 #if 0
@@ -227,7 +251,7 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
     scanf("\n");
 #endif
     
-    anon_ip_delete(a);
+    anon_ipv4_delete(a);
 
     fclose(in);
 }
@@ -236,11 +260,12 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
  * Prefix preserving IPv6 address anonymization.
  */
 
-static void
+static unsigned
 ipv6_pref(anon_ipv6_t *a, FILE *f)
 {
     struct in6_addr raw_addr, anon_addr;
     char buf[10*INET6_ADDRSTRLEN];
+    unsigned cnt = 0;
 
     /*
      * read ip addresses (one per input line), call the prefix
@@ -253,20 +278,24 @@ ipv6_pref(anon_ipv6_t *a, FILE *f)
 	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
 
 	(void) anon_ipv6_map_pref(a, raw_addr, &anon_addr);
+	cnt++;
 	
 	printf("%s\n", inet_ntop(AF_INET6, &anon_addr, buf, sizeof(buf)));
     }
+
+    return cnt;
 }
 
 /*
  * Prefix and lexicographic order preserving IPv6 address anonymization.
  */
 
-static void
+static unsigned
 ipv6_lex(anon_ipv6_t *a, FILE *f)
 {
     struct in6_addr raw_addr, anon_addr;
     char buf[10*INET6_ADDRSTRLEN];
+    unsigned cnt = 0;
 
     /*
      * first pass: read ip addresses (one per input line) and mark
@@ -292,9 +321,12 @@ ipv6_lex(anon_ipv6_t *a, FILE *f)
 	   && inet_pton(AF_INET6, buf, &raw_addr) > 0) {
 	
 	(void) anon_ipv6_map_pref_lex(a, raw_addr, &anon_addr);
+	cnt++;
 
 	printf("%s\n", inet_ntop(AF_INET6, &anon_addr, buf, sizeof(buf)));
     }
+
+    return cnt;
 }
 
 /*
@@ -308,6 +340,7 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     FILE *in;
     anon_ipv6_t *a;
     int c, lflag = 0, cflag = 0;
+    unsigned cnt = 0;
 
     optind = 2;
     while ((c = getopt(argc, argv, "clh")) != -1) {
@@ -342,12 +375,15 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     }
     anon_ipv6_set_key(a, my_key);
     if (lflag) {
-	ipv6_lex(a, in);
+	cnt = ipv6_lex(a, in);
     } else {
-	ipv6_pref(a, in);
+	cnt = ipv6_pref(a, in);
     }
     if (cflag) {
-	fprintf(stderr, "number of nodes: %d\n", anon_ipv6_nodes_count(a));
+	show_resource_usage(stderr);
+	fprintf(stderr, "%s: number of addresses:\t%u\n", progname, cnt);
+	fprintf(stderr, "%s: number of tree nodes:\t%u\n", progname,
+		anon_ipv6_nodes_count(a));
     }
 
 #if 0

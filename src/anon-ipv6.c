@@ -35,7 +35,7 @@ struct node {
 
 struct _anon_ipv6 {
     struct node *tree;
-    int nodes;
+    unsigned nodes;
     AES_KEY aes_key;	/* AES key */
     uint8_t m_key[16];	/* 128 bit secret key */
     uint8_t m_pad[16];	/* 128 bit secret pad */
@@ -218,7 +218,7 @@ canflip(anon_ipv6_t *a, const in6_addr_t ip, int prefixlen)
     return ( !(nodep->left && nodep->right) && !nodep->complete);
 }
 
-int
+unsigned
 anon_ipv6_nodes_count(anon_ipv6_t *a)
 {
     return a->nodes;

@@ -18,17 +18,17 @@
  * IPv4 address anonymization API.
  */
 
-typedef struct _anon_ip anon_ip_t;
+typedef struct _anon_ipv4 anon_ipv4_t;
 
-anon_ip_t*	anon_ip_new();
-void		anon_ip_set_key(anon_ip_t *a, const uint8_t *key);
-int		anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen);
-int		anon_ip_map_pref(anon_ip_t *a, const in_addr_t ip,
-				 in_addr_t *aip);
-int		anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t ip,
-				     in_addr_t *aip);
-void		anon_ip_delete(anon_ip_t *a);
-int		anon_ip_nodes_count(anon_ip_t *a);
+anon_ipv4_t*	anon_ipv4_new();
+void		anon_ipv4_set_key(anon_ipv4_t *a, const uint8_t *key);
+int		anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen);
+int		anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip,
+				   in_addr_t *aip);
+int		anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip,
+				       in_addr_t *aip);
+void		anon_ipv4_delete(anon_ipv4_t *a);
+unsigned	anon_ipv4_nodes_count(anon_ipv4_t *a);
 
 /*
  * IPv6 address anonymization API.
@@ -41,11 +41,11 @@ anon_ipv6_t*	anon_ipv6_new();
 void		anon_ipv6_set_key(anon_ipv6_t *a, const uint8_t *key);
 int		anon_ipv6_set_used(anon_ipv6_t *a, const in6_addr_t ip, int prefixlen);
 int		anon_ipv6_map_pref(anon_ipv6_t *a, const in6_addr_t ip,
-				 in6_addr_t *aip);
+				   in6_addr_t *aip);
 int		anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip,
-				     in6_addr_t *aip);
+				       in6_addr_t *aip);
 void		anon_ipv6_delete(anon_ipv6_t *a);
-int		anon_ipv6_nodes_count(anon_ipv6_t *a);
+unsigned	anon_ipv6_nodes_count(anon_ipv6_t *a);
 
 /*
  * IEEE MAC address anonymization API.

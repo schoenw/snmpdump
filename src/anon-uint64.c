@@ -112,11 +112,11 @@ list_insert(struct node **list, const uint64_t num)
 static void
 generate_random_number(uint64_t* anum, anon_uint64_t* a)
 {
-	    *anum = 0;
-	    RAND_bytes(anum,sizeof(*anum));
-	    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
-	    *anum %= a->range;
-	    *anum += a->lower;
+    *anum = 0;
+    RAND_bytes((char *) anum, sizeof(*anum));
+    /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
+    *anum %= a->range;
+    *anum += a->lower;
 }
 
 /*
@@ -223,7 +223,7 @@ anon_uint64_new(const uint64_t lower, const uint64_t upper)
 	fprintf(stderr, "initializing randomness...");
 	char buf;
 	buf = rand();
-        RAND_seed(buf,1);
+        RAND_seed(&buf, 1);
 	fprintf(stderr, "done\n");
     }
 

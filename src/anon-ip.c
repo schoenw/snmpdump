@@ -32,9 +32,9 @@ struct node {
     struct node* parent;
 };
 
-struct _anon_ip {
+struct _anon_ipv4 {
     struct node *tree;
-    int nodes;
+    unsigned nodes;
     AES_KEY aes_key;	/* AES key */
     uint8_t m_key[16];	/* 128 bit secret key */
     uint8_t m_pad[16];	/* 128 bit secret pad */
@@ -42,7 +42,7 @@ struct _anon_ip {
 
 #define IPv4LENGTH 32
 
-static int canflip(anon_ip_t *a, in_addr_t ip, int prefixlen);
+static int canflip(anon_ipv4_t *a, in_addr_t ip, int prefixlen);
 static void delete_node(struct node* n);
 static struct node* add_new_node(struct node* parent, int right);
 static void canflip_count_n(struct node* p,int* n, int level);
@@ -68,16 +68,16 @@ node_free(struct node* n)
  * Create a new IP anonymization object.
  */
 
-anon_ip_t*
-anon_ip_new()
+anon_ipv4_t*
+anon_ipv4_new()
 {
-    anon_ip_t *a;
+    anon_ipv4_t *a;
 
-    a = (anon_ip_t *) malloc(sizeof(anon_ip_t));
+    a = (anon_ipv4_t *) malloc(sizeof(anon_ipv4_t));
     if (! a) {
 	return NULL;
     }
-    memset(a, 0, sizeof(anon_ip_t));
+    memset(a, 0, sizeof(anon_ipv4_t));
     a->tree = node_alloc();
     if (!a->tree) {
 	free(a);
@@ -96,7 +96,7 @@ anon_ip_new()
  */
 
 void
-anon_ip_delete(anon_ip_t *a)
+anon_ipv4_delete(anon_ipv4_t *a)
 {
     if (! a) {
 	return;
@@ -113,7 +113,7 @@ anon_ip_delete(anon_ip_t *a)
  */
 
 void
-anon_ip_set_key(anon_ip_t *a, const uint8_t *key)
+anon_ipv4_set_key(anon_ipv4_t *a, const uint8_t *key)
 {
     assert(a);
 
@@ -133,7 +133,7 @@ anon_ip_set_key(anon_ip_t *a, const uint8_t *key)
  */
 
 int
-anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen) 
+anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen) 
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
@@ -182,7 +182,7 @@ anon_ip_set_used(anon_ip_t *a, in_addr_t ip, int prefixlen)
  */
 
 static int
-canflip(anon_ip_t *a, in_addr_t ip, int prefixlen)
+canflip(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
@@ -215,14 +215,14 @@ canflip(anon_ip_t *a, in_addr_t ip, int prefixlen)
     return ( !(nodep->left && nodep->right) && !nodep->complete);
 }
 
-int
-anon_ip_nodes_count(anon_ip_t *a)
+unsigned
+anon_ipv4_nodes_count(anon_ipv4_t *a)
 {
     return a->nodes;
 }
 
 int
-canflip_count_ip(anon_ip_t *a)
+canflipv4_count_ip(anon_ipv4_t *a)
 {
     int n = 0;
     canflip_count_n(a->tree, &n,0);
@@ -298,7 +298,7 @@ delete_node(struct node* n) {
  * slightly modified version of PAnonymizer::anonymize() from Crypto-PAn
  */
 int
-anon_ip_map_pref(anon_ip_t *a, const in_addr_t ip, in_addr_t *aip)
+anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
@@ -360,7 +360,7 @@ anon_ip_map_pref(anon_ip_t *a, const in_addr_t ip, in_addr_t *aip)
  */
 
 int
-anon_ip_map_pref_lex(anon_ip_t *a, const in_addr_t ip, in_addr_t *aip)
+anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
