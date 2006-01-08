@@ -20,7 +20,7 @@ snmp.elem =
 
 message.elem =
   element version { length.attrs, xsd:int },
-  element community { length.attrs, text },
+  element community { length.attrs, xsd:hexBinary },
   pdu.elem
 
 message.elem |=
@@ -35,18 +35,18 @@ message.elem |=
   },
   element scoped-pdu {
     length.attrs,
-    element context-engine-id { length.attrs, text },
+    element context-engine-id { length.attrs, xsd:hexBinary },
     element context-name { length.attrs, text },
     pdu.elem
   }
 
 usm.elem =
-  element auth-engine-id { length.attrs, text },
+  element auth-engine-id { length.attrs, xsd:hexBinary },
   element auth-engine-boots { length.attrs, xsd:unsignedInt },
   element auth-engine-time { length.attrs, xsd:unsignedInt },
   element user { length.attrs, text },
-  element auth-params { length.attrs, text },
-  element priv-params { length.attrs, text }
+  element auth-params { length.attrs, xsd:hexBinary },
+  element priv-params { length.attrs, xsd:hexBinary }
 
 pdu.elem =
   element trap { 
@@ -81,7 +81,7 @@ value.elem =
   element unsigned32 { length.attrs, xsd:unsignedInt } |
   element unsigned64 { length.attrs, xsd:unsignedLong } |
   element ipaddress { length.attrs, ipaddress.type } |
-  element octet-string { length.attrs, text } |
+  element octet-string { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
   element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
   element value { empty }
