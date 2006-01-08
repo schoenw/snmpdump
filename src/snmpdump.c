@@ -70,6 +70,7 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include <ctype.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdint.h>
 #include <inttypes.h>
 
 #include <sys/socket.h>
@@ -183,6 +184,36 @@ xml_set_addr(xmlNodePtr xml_node, u_int addr, u_short port)
 
     xml_set_prop(xml_node, "ip", "%s", inet_ntoa(ip));
     xml_set_prop(xml_node, "port", "%u", port);
+}
+
+/*
+ * Convert octet string values into something useful.
+ */
+
+static char*
+hexify(const int len, const u_char *str)
+{
+	static size_t size = 0;
+	static char *buffer = NULL;
+	int i;
+
+	if (len < 0) {
+		return NULL;
+	}
+
+	if (size < 2*len+1) {
+		size = 2*len+1;
+		buffer = realloc(buffer, size);
+		if (! buffer) {
+			size = 0;
+			return NULL;
+		}
+	}
+	
+	for (i = 0; i < len; i++) {
+		snprintf(buffer+2*i, size-2*i, "%.2x", str[i]);
+	}
+	return buffer;
 }
 
 /*
@@ -344,16 +375,13 @@ const char *Form[] = {
  * temporary internal representation while decoding an ASN.1 data stream.
  */
 struct be {
-	u_int32_t asnlen;
+	uint32_t asnlen;
 	union {
 		caddr_t raw;
 		int32_t integer;
-		u_int32_t uns;
+		uint32_t uns;
 		const u_char *str;
-	        struct {
-		        u_int32_t high;
-		        u_int32_t low;
-		} uns64;
+		uint64_t uns64;
 	} data;
 	u_short id;
 	u_char form, class;		/* tag info */
@@ -503,7 +531,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 	elem->asnlen = *p;
 	p++; len--; hdr++;
 	if (elem->asnlen & ASN_BIT8) {
-		u_int32_t noct = elem->asnlen % ASN_BIT8;
+		uint32_t noct = elem->asnlen % ASN_BIT8;
 		elem->asnlen = 0;
 		if (len < noct) {
 			ifNotTruncated printf("[asnlen? %d<%d]", len, noct);
@@ -586,7 +614,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 			case COUNTER:
 			case GAUGE:
 			case TIMETICKS: {
-				register u_int32_t data;
+				register uint32_t data;
 				elem->type = BE_UNS;
 				data = 0;
 				for (i = elem->asnlen; i-- > 0; p++)
@@ -596,16 +624,13 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 			}
 
 			case COUNTER64: {
-				register u_int32_t high, low;
+				register uint32_t data;
 			        elem->type = BE_UNS64;
-				high = 0, low = 0;
+				data = 0;
 				for (i = elem->asnlen; i-- > 0; p++) {
-				        high = (high << 8) |
-					    ((low & 0xFF000000) >> 24);
-					low = (low << 8) | *p;
+					data = (data << 8) + *p;
 				}
-				elem->data.uns64.high = high;
-				elem->data.uns64.low = low;
+				elem->data.uns64 = data;
 				break;
 			}
 
@@ -693,17 +718,14 @@ asn1_print(struct be *elem)
 	static char buffer[1024];
 	char numbuf[20];
 	u_char *p = (u_char *)elem->data.raw;
-	u_int32_t asnlen = elem->asnlen;
-	u_int32_t i;
+	uint32_t asnlen = elem->asnlen;
 
 	buffer[0] = 0;
 
 	switch (elem->type) {
 
 	case BE_OCTET:
-		for (i = asnlen; i-- > 0; p++)
-			printf("_%.2x", *p);
-		break;
+		return hexify(asnlen, p);
 
 	case BE_NULL:
 		return buffer;
@@ -740,48 +762,19 @@ asn1_print(struct be *elem)
 	}
 
 	case BE_INT:
-		sprintf(buffer, "%d", elem->data.integer);
+		sprintf(buffer, "%"PRIi32, elem->data.integer);
 		return buffer;
 
 	case BE_UNS:
-		sprintf(buffer, "%u", elem->data.uns);
+		sprintf(buffer, "%"PRIu32, elem->data.uns);
 		return buffer;
 
-	case BE_UNS64: {	/* idea borrowed from Marshall Rose */
-	        double d;
-		int j, carry;
-		char *cpf, *cpl, last[6], first[30];
-		if (elem->data.uns64.high == 0) {
-		        sprintf(buffer, "%u", elem->data.uns64.low);
-		        return buffer;
-		}
-		d = elem->data.uns64.high * 4294967296.0;	/* 2^32 */
-		if (elem->data.uns64.high <= 0x1fffff) {
-		        d += elem->data.uns64.low;
-			sprintf(buffer, "%f", d);
-			return buffer;
-		}
-		d += (elem->data.uns64.low & 0xfffff000);
-		snprintf(first, sizeof(first), "%f", d);
-		snprintf(last, sizeof(last), "%5.5d",
-		    elem->data.uns64.low & 0xfff);
-		for (carry = 0, cpf = first+strlen(first)-1, cpl = last+4;
-		     cpl >= last;
-		     cpf--, cpl--) {
-		        j = carry + (*cpf - '0') + (*cpl - '0');
-			if (j > 9) {
-			        j -= 10;
-				carry = 1;
-			} else {
-			        carry = 0;
-		        }
-			*cpf = j + '0';
-		}
-		strcpy(buffer, first);
+	case BE_UNS64:
+		sprintf(buffer, "%"PRIu64, elem->data.uns64);
 		return buffer;
-	}
 
 	case BE_STR: {
+#if 0
 		register int printable = 1, first = 1;
 		const u_char *p = elem->data.str;
 		for (i = asnlen; printable && i-- > 0; p++)
@@ -793,9 +786,13 @@ asn1_print(struct be *elem)
 			return buffer;
 		} else
 			for (i = asnlen; i-- > 0; p++) {
-				printf(first ? "%.2x" : "_%.2x", *p);
+				printf(first ? "(fix me)%.2x" : "_%.2x", *p);
 				first = 0;
 			}
+
+#else
+		return hexify(asnlen, p);
+#endif
 		break;
 	}
 
@@ -903,8 +900,15 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		}
 
 		val = asn1_print(&elem);
-		xml_value = xml_new_child(xml_vb, NULL,
+		if (Types[i].id == BE_NOSUCHOBJECT
+		    || Types[i].id == BE_NOSUCHINST
+		    || Types[i].id == BE_ENDOFMIBVIEW) {
+			xml_value = xml_new_child(xml_vb, NULL,
+			  Types[i].name ? Types[i].name : "value", NULL);
+		} else {
+			xml_value = xml_new_child(xml_vb, NULL,
 			  Types[i].name ? Types[i].name : "value", "%s", val);
+		}
 		xml_set_lengths(xml_value, count, elem.asnlen);
 		
 		length = vblength;
@@ -1201,8 +1205,8 @@ v12msg_print(const u_char *np, u_int length, int version, xmlNodePtr xml_snmp)
 		return;
 	}
 
-	xml_community = xml_new_child(xml_snmp, NULL, "community", "%.*s",
-				      (int) elem.asnlen, elem.data.str);
+	xml_community = xml_new_child(xml_snmp, NULL, "community", "%s",
+				      hexify(elem.asnlen, elem.data.str));
 	xml_set_lengths(xml_community, count, elem.asnlen);
 
 	length -= count;
@@ -1564,35 +1568,6 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     snmp_print((unsigned char *) buf, len, xml_pkt);
 }
 
-
-/*
- * Filter the XML document by applying an xpath expression and setting
- * the content to NULL.
- */
-
-static void
-filter_xpath(xmlDocPtr doc, xmlChar *xpath)
-{
-    xmlXPathContextPtr ctxt;
-    xmlXPathObjectPtr obj;
-    int i, size;
-    
-    ctxt = xmlXPathNewContext(doc);
-    ctxt->node = xmlDocGetRootElement(doc);
-    obj = xmlXPathEval(xpath, ctxt);
-    if (obj && obj->type == XPATH_NODESET && obj->nodesetval) {
-	size = xmlXPathNodeSetGetLength(obj->nodesetval);
-	for (i = size -1; i >= 0; i--) {
-	    xmlNodeSetContent(obj->nodesetval->nodeTab[i], NULL);
-	    if (obj->nodesetval->nodeTab[i]->type != XML_NAMESPACE_DECL) {
-		obj->nodesetval->nodeTab[i] = NULL;
-	    }
-	}
-    }
-
-    xmlXPathFreeObject(obj);
-    xmlXPathFreeContext(ctxt);
-}
 
 /*
  * The main function to parse arguments, initialize the libraries and
