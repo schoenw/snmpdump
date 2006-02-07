@@ -113,7 +113,7 @@ static void
 generate_random_number(int64_t* anum, anon_int64_t* a)
 {
     uint64_t u_anum = 0; /* unsigned version of anum */
-    RAND_bytes((char *) &u_anum, sizeof(u_anum));
+    RAND_bytes((unsigned char *) &u_anum, sizeof(u_anum));
     u_anum %= a->range;
     
     if (u_anum > INT64_MAX) {

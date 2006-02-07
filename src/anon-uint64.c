@@ -113,7 +113,7 @@ static void
 generate_random_number(uint64_t* anum, anon_uint64_t* a)
 {
     *anum = 0;
-    RAND_bytes((char *) anum, sizeof(*anum));
+    RAND_bytes((unsigned char *) anum, sizeof(*anum));
     /* RAND_pseudo_bytes(anum,sizeof(*anum)); */
     *anum %= a->range;
     *anum += a->lower;
