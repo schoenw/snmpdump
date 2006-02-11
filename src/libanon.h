@@ -93,6 +93,23 @@ int		anon_uint64_map_lex(anon_uint64_t *a, const uint64_t num,
 void		anon_uint64_delete(anon_uint64_t *a);
 
 /*
+ * octet string anonymization API.
+ */
+
+typedef struct _anon_octet_string anon_octet_string_t;
+
+anon_octet_string_t*	anon_octet_string_new();
+void		anon_octet_string_set_key(anon_octet_string_t *a,
+					  const uint8_t *key);
+int		anon_octet_string_set_used(anon_octet_string_t *a,
+					   const char *str);
+int		anon_octet_string_map(anon_octet_string_t *a,
+				      const char *str, char *astr);
+int		anon_octet_string_map_lex(anon_octet_string_t *a,
+					  const char *str, char *astr);
+void		anon_octet_string_delete(anon_octet_string_t *a);
+
+/*
  * Other stuff goes here...
  */
 

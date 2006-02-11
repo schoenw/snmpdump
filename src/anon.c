@@ -27,6 +27,8 @@
 
 #include "libanon.h"
 
+#define STRLEN 1024
+
 static const char *progname = "anon";
 
 struct cmd {
@@ -41,6 +43,7 @@ static void cmd_ipv6(int argc, char **argv, struct cmd *cmd);
 static void cmd_mac(int argc, char **argv, struct cmd *cmd);
 static void cmd_int64(int argc, char **argv, struct cmd *cmd);
 static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
+static void cmd_octet_string(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
     { "help",		cmd_help,	"anon help" },
@@ -49,6 +52,7 @@ static struct cmd cmds[] = {
     { "mac",		cmd_mac,	"anon mac [-hl] file" },
     { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
     { "uint64",		cmd_uint64,	"anon uint64 lower upper [-hl] file" },
+    { "octet_string",	cmd_octet_string,"anon octet_string [-hl] file" },
     { NULL, NULL }
 };
 
@@ -710,6 +714,106 @@ cmd_uint64(int argc, char **argv, struct cmd *cmd)
 
     fclose(in);
 }
+
+/*
+ * Lexicographic order preserving octet string anonymization.
+ */
+
+static void
+octet_string_lex(anon_octet_string_t *a, FILE *f)
+{
+    char str[STRLEN];
+    char astr[STRLEN];
+
+    /*
+     * first pass: read string (one per input line) and mark
+     * them as used
+     */
+    while (fscanf(f, "%s", str) == 1) {
+	anon_octet_string_set_used(a, str);
+    }
+
+    /*
+     * second pass: read strings and print the anonymized strings
+     */
+    fseek(f,0,SEEK_SET);
+    while (fscanf(f, "%s", str) == 1) {
+	(void) anon_octet_string_map_lex(a, str, astr);
+	printf("%s\n", astr);
+    }
+}
+
+/*
+ * octet string anonymization (not preserving lexicographic order)
+ */
+
+static void
+octet_string_nolex(anon_octet_string_t *a, FILE *f)
+{
+    char str[STRLEN];
+    char astr[STRLEN];
+
+    /*
+     *  read strings and print the anonymized strings
+     */
+    while (fscanf(f, "%s", str) == 1) {
+	fprintf(stderr, "converting %s...\n", str);
+	(void) anon_octet_string_map(a, str, astr);
+	printf("%s\n", astr);
+    }
+}
+
+/*
+ * Lexicographic-order preserving octet string anonymization
+ * subcommand.
+ */
+
+static void
+cmd_octet_string(int argc, char **argv, struct cmd *cmd)
+{
+    FILE *in;
+    anon_octet_string_t *a;
+    int c, lflag = 0;
+
+    optind = 2;
+    while ((c = getopt(argc, argv, "lh")) != -1) {
+	switch (c) {
+	case 'l':
+	    lflag = 1;
+	    break;
+	case 'h':
+	case '?':
+	default:
+	    printf("usage: %s\n", cmd->usage);
+	    exit(EXIT_SUCCESS);
+	}
+    }
+     argc -= optind;
+     argv += optind;
+
+    if (argc != 1) {
+	fprintf(stderr, "usage: %s\n", cmd->usage);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[0], "r");
+
+    a = anon_octet_string_new();
+    if (! a) {
+	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
+	exit(EXIT_FAILURE);
+    }
+    anon_octet_string_set_key(a, my_key);
+    if (lflag) {
+	octet_string_lex(a, in);
+    } else {
+	octet_string_nolex(a, in);
+    }
+    anon_octet_string_delete(a);
+
+    fclose(in);
+}
+
 
 /*
  * Implementation of the 'anon help' command.
