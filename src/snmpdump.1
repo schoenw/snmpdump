@@ -35,20 +35,19 @@ snmpdump \- extract SNMP messages from pcap trace files
 \fBsnmpdump\fP extract SNMP messages out of pcap trace files and
 renders the messages in an XML format which can be easily processed
 using scripts written in scripting languages such as Perl. Sensitive
-data can be filtered or removed by passing XPATH expressions to
-snmpdump.
+data can be filtered or removed.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
 .TP
-\fB-c \fIxpath\fB, --clear=\fIxpath\fP
-Clear all nodes in the XML document matching the \fIxpath\fR
-expression by setting empty content. This option can be used multiple
-times to match against multiple xpath expression.
+\fB-c \fIregex\fB, --clear=\fIregex\fP
+Clear all attributes or elements in the XML document where the name
+matches \fIregex\fR. The regular expression \fIregex\fR is a case
+insensitive extended POSIX regular expression.
 .TP
-\fB-d \fIxpath\fB, --delete=\fIxpath\fP
-Delete all nodes in the XML document matching the \fIxpath\fR.  This
-option can be used multiple times to match against multiple xpath
-expression.
+\fB-d \fIregex\fB, --delete=\fIregex\fP
+Delete all attributes or elements in the XML document where the name
+matches \fIregex\fR.  The regular expression \fIregex\fR is a case
+insensitive extended POSIX regular expression.
 .TP
 \fB-f \fIexpression\fB, --filter=\fIexpression\fP
 Filter the input by applying the pcap filter \fIexpression\fR to the
@@ -66,26 +65,20 @@ The following command converts SNMP traces stored in the file
 .PP 
 .RS 
 \f(CWsnmpdump trace.pcap\fP
-.RE 
+.RE
 .PP 
-To zero out all community strings, you can use the xpath filtering
-mechanism as follows:
+To zero out all community strings, you can use the following command
+line:
 .PP
 .RS
-\f(CWsnmpdump -c '/snmptrace/packet/snmp/community' trace.pcap\fP
+\f(CWsnmpdump -c 'community' trace.pcap\fP
 .RE
 .PP
-With relative xpath expression, this becomes:
-.PP
-.RS
-\f(CWsnmpdump -c '//community' trace.pcap\fP
-.RE
-.PP
-To filter out all vlen and blen attributes, one can use the following
+To delete all vlen and blen attributes, use the following
 command line:
 .PP
 .RS
-\f(CWsnmpdump -d '//@vlen|//@blen' trace.pcap\fP
+\f(CWsnmpdump -d 'vlen|blen' trace.pcap\fP
 .RE
 .PP
 To filter out only certain SNMP packets from a given source using a
@@ -97,6 +90,5 @@ non-standard port number, you can use the pcap filtering mechanism:
 .PP
 .SH SEE ALSO
 See snmpanon(1) for more advanced content filtering and anonymization.
-See xxx(1) for maintaining pcap files.
 .SH AUTHOR
 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>.

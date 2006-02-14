@@ -37,7 +37,10 @@ PKG_CHECK_MODULES(OPENSSL, openssl)
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
 
-dnl Checks for libnids
+#----------------------------------------------------------------------------
+#       Checking for the libnids library.
+#----------------------------------------------------------------------------
+
 AC_MSG_CHECKING(for libnids)
 AC_ARG_WITH(libnids,
 [  --with-libnids=DIR      use libnids in DIR],
@@ -81,6 +84,12 @@ AC_EGREP_HEADER(pcap_filter, nids.h, AC_MSG_RESULT(yes),
 CPPFLAGS="$save_cppflags"
 AC_SUBST(NIDSINC)
 AC_SUBST(NIDSLIB)
+
+#----------------------------------------------------------------------------
+#       Checking for the libsmi library.
+#----------------------------------------------------------------------------
+
+AM_PATH_LIBSMI
 
 dnl Checks for header files.
 AC_HEADER_STDC

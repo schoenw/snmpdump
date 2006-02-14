@@ -78,6 +78,56 @@ sub oid_stats {
 }
 
 
+sub size_stats {
+    my $doc = shift;
+    my @total = $doc->findnodes('//packet/snmp');
+    printf "SNMP message size statistics:\n\n"; 
+    foreach my $op ("get-request", "get-next-request", "get-bulk-request",
+		    "set-request", "trap", "trap-v2", "inform", 
+		    "response", "report") {
+	my $total_ops = 0;
+	my $total_len = 0;
+	foreach my $node ($doc->findnodes("//packet/snmp/$op")) {
+	    my @msg_len = $node->find('../@blen');
+	    $total_ops++;
+	    # $total_len += $msg_len[0];
+	    # printf "\t%d\t%d\n", @msg_len, $total_len;
+	}
+	printf "%18s: %5d %5d %f\n", $op, $total_ops, $total_len, $total_ops ? $total_len/$total_ops : 0;
+    }
+    printf "\n";
+}
+
+
+sub min {
+    if ($_[0]>$_[1]) {return $_[1]} else {return $_[0]};
+}
+
+sub max {
+    if ($_[0]<$_[1]) {return $_[1]} else {return $_[0]};
+}
+
+sub varbind_stats {
+    my $doc = shift;
+    my @total = $doc->findnodes('//packet/snmp');
+    printf "SNMP varbind number statistics:\n\n"; 
+    foreach my $op ("get-request", "get-next-request", "get-bulk-request",
+		    "set-request", "trap", "trap-v2", "inform", 
+		    "response", "report") {
+	my ($total_ops, $total_vbs, $total_vbs_min, $total_vbs_max);
+	foreach my $node ($doc->findnodes("//packet/snmp/$op")) {
+	    my @varbinds = $node->findnodes("variable-bindings/varbind");
+	    $total_ops++;
+	    $total_vbs += $#varbinds + 1;
+	    $total_vbs_min = min($total_vbs_min, $#varbinds + 1);
+	    $total_vbs_max = max($total_vbs_max, $#varbinds + 1);
+	}
+	printf "%18s: %5d %5d %5.2f %5d %5d\n", $op, $total_ops, $total_vbs, $total_ops ? $total_vbs/$total_ops : 0, $total_vbs_min, $total_vbs_max;
+    }
+    printf "\n";
+}
+
+
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
     my $parser = XML::LibXML->new();
@@ -87,5 +137,7 @@ while ($ARGV = shift) {
     version_stats($doc);
     operation_stats($doc);
     oid_stats($doc);
+    size_stats($doc);
+    varbind_stats($doc);
 }
 exit(0);

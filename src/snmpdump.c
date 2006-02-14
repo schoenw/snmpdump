@@ -10,13 +10,8 @@
  *
  *    snmpdump <filename>
  *
- * The XML output will be written to stdout. Before this XML output is
- * written to stdout, it might be transformed in order to anonymize
- * important recognized data types while filtering away everything
- * else. For simplicity and clarity, this anonymization transformation
- * operates on the XML instead of mixing it into the creation of the
- * XML tree (since that makes the BER code almost unreadable and even
- * more difficult to get right).
+ * This implementation generates XML output directly rather than using
+ * and XML writer API in order to be fast and memory efficient.
  *
  * (c) 2004-2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
  *
@@ -54,7 +49,7 @@
 
 #define _GNU_SOURCE
 
-#define HACK_AROUND_LIBNET_API_CHANGES
+// #define HACK_AROUND_LIBNET_API_CHANGES
 
 #ifdef HACK_AROUND_LIBNET_API_CHANGES
 int libnet_build_ip() { return libnet_build_ipv4(); }
@@ -65,6 +60,7 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include "config.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -73,19 +69,16 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include <stdint.h>
 #include <inttypes.h>
 
+#include <sys/types.h>
+#include <regex.h>
+
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
 #include <pcap.h>
 
-#include <libxml/xmlmemory.h>
-#include <libxml/tree.h>
-#include <libxml/xpath.h>
-
 #include <nids.h>
-
-#include "xpath-filter.h"
 
 #if 0
 /* needed to work around a bug in libnids */
@@ -94,96 +87,67 @@ extern struct pcap_pkthdr *nids_last_pcap_header;
 
 static const char *progname = "snmpdump";
 
-static xmlDocPtr xml_doc;
-static xmlNodePtr xml_root;
+static int iflag = 0;
 
-typedef struct filter {
-    xmlChar       *xpath;
-    struct filter *next;
-} filter;
-
-
-struct timeval start = { 0, 0 };
+static struct timeval start = { 0, 0 };
 
 #define timediff2(t1,t2)  (((t2).tv_sec - (t1).tv_sec) * 1000 \
         + ((t2).tv_usec - (t1).tv_usec) / 1000)
 #define time_diff(t1,t2)  (timediff2(t1,t2) <= 0 ? (- timediff2(t1,t2)) \
                            : timediff2(t1,t2))
 
-static void
-xml_set_prop(xmlNodePtr node, const char *name, const char *format, ...)
-{
-    char *s;
-    va_list args;
+static regex_t _clr_regex, _del_regex;
+static regex_t *clr_regex = NULL, *del_regex = NULL;
 
-    va_start(args, format);
-    vasprintf(&s, format, args);
-    va_end(args);
+/* static int in_delete = 0; */
+/* static int in_clear = 0; */
 
-    if (s) {
-	xmlSetProp(node, BAD_CAST(name), BAD_CAST(s));
-	free(s);
-    }
-}
+/*
+ * Start an xml element with the given indentation and name and add
+ * the blen and vlan attributes.
+ */
 
 static void
-xml_set_content(xmlNodePtr node, const char *format, ...)
+xml_elem_start(const int indent, const char *name,
+	       const int blen, const int vlen)
 {
-    char *s;
-    va_list args;
-
-    va_start(args, format);
-    vasprintf(&s, format, args);
-    va_end(args);
-
-    if (s) {
-	xmlNodePtr text = xmlNewText(BAD_CAST(s));
-	if (text) xmlAddChild(node, text);
-	free(s);
-    }
+    printf("%*s<%s blen=\"%d\" vlen=\"%d\">%s", iflag ? indent : 0, "",
+	   name, blen, vlen, iflag ? "\n" : "");
 }
 
-static xmlNodePtr
-xml_new_child(xmlNodePtr parent, xmlNsPtr ns, const char *name,
-	      const char *format, ...)
-{
-    char *s;
-    va_list args;
-    xmlNodePtr node;
+/*
+ * Close an xml element with the given indentation and name.
+ */
 
-    node = xmlNewChild(parent, ns, BAD_CAST(name), NULL);
-    if (node && format) {
+static void
+xml_elem_end(const int indent, const char *name)
+{
+    printf("%*s</%s>%s", iflag ? indent : 0, "", name, iflag ? "\n" : "");
+}
+
+/*
+ * Create a leaf xml element the given indentation and name and add
+ * the blen and vlan attributes. The format is determined using
+ * printf-style arguments.
+ */
+
+static void
+xml_leaf(const int indent, const char *name,
+	 const int blen, const int vlen, const char *format, ...)
+{
+    va_list args;
+    
+    if (format) {
+	printf("%*s<%s blen=\"%d\" vlen=\"%d\">",
+	       iflag ? indent : 0, "", name, blen, vlen);
 	va_start(args, format);
-	vasprintf(&s, format, args);
+	vprintf(format, args);
 	va_end(args);
-
-	if (s) {
-	    xmlNodePtr text = xmlNewText(BAD_CAST(s));
-	    if (text) xmlAddChild(node, text);
-	    free(s);
-	}
+	printf("</%s>%s", name, iflag ? "\n" : "");
+    } else {
+	printf("%*s<%s blen=\"%d\" vlen=\"%d\"/>%s",
+	       iflag ? indent : 0, "", name, blen, vlen, iflag ? "\n" : "");
     }
-
-    return node;
-}
-
-
-static void
-xml_set_lengths(xmlNodePtr xml_node, int ber_len, int val_len)
-{
-    xml_set_prop(xml_node, "blen", "%u", ber_len);
-    xml_set_prop(xml_node, "vlen", "%u", val_len);
-}
-
-static void
-xml_set_addr(xmlNodePtr xml_node, u_int addr, u_short port)
-{
-    struct in_addr ip;
-
-    ip.s_addr = addr;
-
-    xml_set_prop(xml_node, "ip", "%s", inet_ntoa(ip));
-    xml_set_prop(xml_node, "port", "%u", port);
 }
 
 /*
@@ -383,7 +347,7 @@ struct be {
 		const u_char *str;
 		uint64_t uns64;
 	} data;
-	u_short id;
+	uint16_t id;
 	u_char form, class;		/* tag info */
 	u_char type;
 #define BE_ANY		255
@@ -829,9 +793,8 @@ asn1_print(struct be *elem)
  */
 
 static void
-varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
+varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_vbl, xml_vb, xml_name, xml_value;
 	const char *val;
 	
 	struct be elem;
@@ -848,10 +811,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		fprintf(stderr, "[%d extra after SEQ of varbind]\n",
 			length - count);
 
-	xml_vbl = xml_new_child(xml_pdu, NULL, "variable-bindings", NULL);
-	xml_set_lengths(xml_vbl, length, elem.asnlen);
-	
-	/* descend */
+	xml_elem_start(indent, "variable-bindings", length, elem.asnlen);
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -867,9 +827,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 			return;
 		}
 
-		xml_vb = xml_new_child(xml_vbl, NULL, "varbind", NULL);
-		xml_set_lengths(xml_vb, count, elem.asnlen);
-
+		xml_elem_start(indent+2, "varbind", count, elem.asnlen);
 		vbend = np + count;
 		vblength = length - count;
 		/* descend */
@@ -885,9 +843,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		}
 
 		val = asn1_print(&elem);
-		xml_name = xml_new_child(xml_vb, NULL, "name", "%s", val);
-		xml_set_lengths(xml_name, count, elem.asnlen);
-		
+		xml_leaf(indent+4, "name", count, elem.asnlen, "%s", val);
 		length -= count;
 		np += count;
 
@@ -903,17 +859,18 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		if (Types[i].id == BE_NOSUCHOBJECT
 		    || Types[i].id == BE_NOSUCHINST
 		    || Types[i].id == BE_ENDOFMIBVIEW) {
-			xml_value = xml_new_child(xml_vb, NULL,
-			  Types[i].name ? Types[i].name : "value", NULL);
+			xml_leaf(indent+4, Types[i].name ? Types[i].name : "value",
+				 count, elem.asnlen, NULL);
 		} else {
-			xml_value = xml_new_child(xml_vb, NULL,
-			  Types[i].name ? Types[i].name : "value", "%s", val);
+			xml_leaf(indent+4, Types[i].name ? Types[i].name : "value",
+				 count, elem.asnlen, "%s", val);
 		}
-		xml_set_lengths(xml_value, count, elem.asnlen);
+		xml_elem_end(indent+2, "varbind");
 		
 		length = vblength;
 		np = vbend;
 	}
+	xml_elem_end(indent, "variable-bindings");
 }
 
 /*
@@ -922,10 +879,8 @@ varbind_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
  */
 
 static void
-snmppdu_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
+snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_reqid, xml_err_status, xml_err_index;
-	
 	struct be elem;
 	int count = 0;
 
@@ -937,10 +892,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		return;
 	}
 
-	xml_reqid = xml_new_child(xml_pdu, NULL, "request-id",
-				  "%d", elem.data.integer);
-	xml_set_lengths(xml_reqid, count, elem.asnlen);
-
+	xml_leaf(indent, "request-id",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -952,10 +905,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		return;
 	}
 
-	xml_err_status = xml_new_child(xml_pdu, NULL, "error-status",
-				       "%d", elem.data.integer);
-	xml_set_lengths(xml_err_status, count, elem.asnlen);
-
+	xml_leaf(indent, "error-status",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -966,15 +917,13 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		fputs("[errorIndex!=INT]\n", stderr);
 		return;
 	}
-	
-	xml_err_index = xml_new_child(xml_pdu, NULL, "error-index",
-				      "%u", elem.data.integer);
-	xml_set_lengths(xml_err_index, count, elem.asnlen);
 
+	xml_leaf(indent, "error-index",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
-	varbind_print(pduid, np, length, xml_pdu);
+	varbind_print(pduid, np, length, indent);
 	return;
 }
 
@@ -983,10 +932,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, xmlNodePtr xml_pdu)
  */
 
 static void
-trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
+trappdu_print(const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_enterprise, xml_agent, xml_generic,
-		xml_specific, xml_timestamp;
 	const char *val;
 
 	struct be elem;
@@ -1001,8 +948,8 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
 	}
 	
 	val = asn1_print(&elem);
-	xml_enterprise = xml_new_child(xml_pdu, NULL, "enterprise", "%s", val);
-	xml_set_lengths(xml_enterprise, count, elem.asnlen);
+	xml_leaf(indent, "enterprise",
+		 count, elem.asnlen, "%s", val);
 
 	length -= count;
 	np += count;
@@ -1016,8 +963,8 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
 	}
 
 	val = asn1_print(&elem);
-	xml_agent = xml_new_child(xml_pdu, NULL, "agent-addr", "%s", val);
-	xml_set_lengths(xml_agent, count, elem.asnlen);
+	xml_leaf(indent, "agent-addr",
+		 count, elem.asnlen, "%s", val);
 
 	length -= count;
 	np += count;
@@ -1030,9 +977,8 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		return;
 	}
 
-	xml_generic = xml_new_child(xml_pdu, NULL, "generic-trap",
-				    "%d", elem.data.integer);
-	xml_set_lengths(xml_generic, count, elem.asnlen);
+	xml_leaf(indent, "generic-trap",
+		 count, elem.asnlen, "%d", elem.data.integer);
 
 	length -= count;
 	np += count;
@@ -1045,9 +991,8 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		return;
 	}
 
-	xml_specific = xml_new_child(xml_pdu, NULL, "specific-trap",
-				     "%d", elem.data.integer);
-	xml_set_lengths(xml_specific, count, elem.asnlen);
+	xml_leaf(indent, "specific-trap",
+		 count, elem.asnlen, "%d", elem.data.integer);
 
 	length -= count;
 	np += count;
@@ -1060,14 +1005,13 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
 		return;
 	}
 
-	xml_timestamp = xml_new_child(xml_pdu, NULL, "time-stamp",
-				      "%u", elem.data.uns);
-	xml_set_lengths(xml_timestamp, count, elem.asnlen);
+	xml_leaf(indent, "time-stamp",
+		 count, elem.asnlen, "%u", elem.data.uns);
 	
 	length -= count;
 	np += count;
 
-	varbind_print(TRAP, np, length, xml_pdu);
+	varbind_print(TRAP, np, length, indent);
 	return;
 }
 
@@ -1076,9 +1020,9 @@ trappdu_print(const u_char *np, u_int length, xmlNodePtr xml_pdu)
  */
 
 static void
-pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
+pdu_print(const u_char *np, u_int length, int version, int indent)
 {
-	xmlNodePtr xml_pdu;
+	const char *name;
 	
 	struct be pdu;
 	int count = 0;
@@ -1093,10 +1037,8 @@ pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
 	if ((u_int)count < length)
 		fprintf(stderr, "[%d extra after PDU]\n", length - count);
 
-	xml_pdu = xml_new_child(xml_node, NULL,
-				Class[CONTEXT].Id[pdu.id], NULL);
-	xml_set_lengths(xml_pdu, length, pdu.asnlen);
-
+	name = Class[CONTEXT].Id[pdu.id];
+	xml_elem_start(indent, name, length, pdu.asnlen);
 	/* descend into PDU */
 	length = pdu.asnlen;
 	np = (u_char *)pdu.data.raw;
@@ -1115,7 +1057,7 @@ pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
 
 	switch (pdu.id) {
 	case TRAP:
-		trappdu_print(np, length, xml_pdu);
+		trappdu_print(np, length, indent+2);
 		break;
 	case GETREQ:
 	case GETNEXTREQ:
@@ -1125,9 +1067,11 @@ pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
 	case INFORMREQ:
 	case V2TRAP:
 	case REPORT:
-		snmppdu_print(pdu.id, np, length, xml_pdu);
+		snmppdu_print(pdu.id, np, length, indent+2);
 		break;
 	}
+
+	xml_elem_end(indent, name);
 }
 
 /*
@@ -1135,11 +1079,8 @@ pdu_print(const u_char *np, u_int length, int version, xmlNodePtr xml_node)
  */
 
 static void
-scopedpdu_print(const u_char *np, u_int length, int version,
-		xmlNodePtr xml_node)
+scopedpdu_print(const u_char *np, u_int length, int version, int indent)
 {
-	xmlNodePtr xml_scopedpdu, xml_ctxtengid, xml_ctxtname;
-	
 	struct be elem;
 	int count = 0;
 	const char *val;
@@ -1151,8 +1092,7 @@ scopedpdu_print(const u_char *np, u_int length, int version,
 		fputs("[!scoped PDU]\n", stderr);
 		return;
 	}
-	xml_scopedpdu = xml_new_child(xml_node, NULL, "scoped-pdu", NULL);
-	xml_set_lengths(xml_scopedpdu, length, elem.asnlen);
+	xml_elem_start(indent, "scoped-pdu", length, elem.asnlen);
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -1164,8 +1104,7 @@ scopedpdu_print(const u_char *np, u_int length, int version,
 		return;
 	}
 	val = asn1_print(&elem);
-	xml_ctxtengid = xml_new_child(xml_scopedpdu, NULL, "context-engine-id", val);
-	xml_set_lengths(xml_ctxtengid, length, elem.asnlen);
+	xml_leaf(indent+2, "context-engine-id", length, elem.asnlen, "%s", val);
 	length -= count;
 	np += count;
 
@@ -1176,12 +1115,13 @@ scopedpdu_print(const u_char *np, u_int length, int version,
 		fputs("[contextName!=STR]\n", stderr);
 		return;
 	}
-	xml_ctxtname = xml_new_child(xml_scopedpdu, NULL, "context-name", val);
-	xml_set_lengths(xml_ctxtname, length, elem.asnlen);
+	val = asn1_print(&elem);
+	xml_leaf(indent+2, "context-name", length, elem.asnlen, "%s", val);
 	length -= count;
 	np += count;
 
-	pdu_print(np, length, version, xml_scopedpdu);
+	pdu_print(np, length, version, indent+2);
+	xml_elem_end(indent, "scoped-pdu");
 }
 
 /*
@@ -1190,10 +1130,8 @@ scopedpdu_print(const u_char *np, u_int length, int version,
  */
 
 static void
-v12msg_print(const u_char *np, u_int length, int version, xmlNodePtr xml_snmp)
+v12msg_print(const u_char *np, u_int length, int version, int indent)
 {
-	xmlNodePtr xml_community;
-	
 	struct be elem;
 	int count = 0;
 
@@ -1205,14 +1143,12 @@ v12msg_print(const u_char *np, u_int length, int version, xmlNodePtr xml_snmp)
 		return;
 	}
 
-	xml_community = xml_new_child(xml_snmp, NULL, "community", "%s",
-				      hexify(elem.asnlen, elem.data.str));
-	xml_set_lengths(xml_community, count, elem.asnlen);
-
+	xml_leaf(indent, "community", count, elem.asnlen,
+		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
 	np += count;
 
-	pdu_print(np, length, version, xml_snmp);
+	pdu_print(np, length, version, indent);
 }
 
 /*
@@ -1221,10 +1157,8 @@ v12msg_print(const u_char *np, u_int length, int version, xmlNodePtr xml_snmp)
  */
 
 static void
-usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
+usm_print(const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_usm, xml_engine_boots, xml_engine_time, xml_user;
-	
         struct be elem;
 	int count = 0;
 
@@ -1235,8 +1169,7 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[!usm]\n", stderr);
 		return;
 	}
-	xml_usm = xml_new_child(xml_message, NULL, "usm", NULL);
-	xml_set_lengths(xml_usm, count, elem.asnlen);
+	xml_elem_start(indent, "usm", count, elem.asnlen);
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -1247,7 +1180,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgAuthoritativeEngineID!=STR]\n", stderr);
 		return;
 	}
-	/* xxx */
+	xml_leaf(indent+2, "auth-engine", count, elem.asnlen,
+		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
 	np += count;
 
@@ -1258,9 +1192,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgAuthoritativeEngineBoots!=INT]\n", stderr);
 		return;
 	}
-	xml_engine_boots = xml_new_child(xml_usm, NULL, "auth-engine-boots",
-					 "%d", elem.data.integer);
-	xml_set_lengths(xml_engine_boots, count, elem.asnlen);
+	xml_leaf(indent+2, "auth-engine-boots", count, elem.asnlen,
+		 "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -1271,9 +1204,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgAuthoritativeEngineTime!=INT]\n", stderr);
 		return;
 	}
-	xml_engine_time = xml_new_child(xml_usm, NULL, "auth-engine-time",
-					"%d", elem.data.integer);
-	xml_set_lengths(xml_engine_time, count, elem.asnlen);
+	xml_leaf(indent+2, "auth-engine-time", count, elem.asnlen,
+		 "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -1284,9 +1216,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgUserName!=STR]\n", stderr);
 		return;
 	}
-	xml_user = xml_new_child(xml_usm, NULL, "user",
-				 "%.*s", (int) elem.asnlen, elem.data.str);
-	xml_set_lengths(xml_user, count, elem.asnlen);
+	xml_leaf(indent+2, "user", count, elem.asnlen,
+		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
         np += count;
 
@@ -1297,7 +1228,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgAuthenticationParameters!=STR]\n", stderr);
 		return;
 	}
-	/* xxx */
+	xml_leaf(indent+2, "auth-params", count, elem.asnlen,
+		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
         np += count;
 
@@ -1308,12 +1240,15 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
 		fputs("[msgPrivacyParameters!=STR]\n", stderr);
 		return;
 	}
-	/* xxx */
+	xml_leaf(indent+2, "priv-params", count, elem.asnlen,
+		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
         np += count;
 
 	if ((u_int)count < length)
 		fprintf(stderr, "[%d extra after usm SEQ]\n", length - count);
+
+	xml_elem_end(indent, "usm");
 }
 
 /*
@@ -1322,11 +1257,8 @@ usm_print(const u_char *np, u_int length, xmlNodePtr xml_message)
  */
 
 static void
-v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
+v3msg_print(const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_message, xml_msgid, xml_msgmaxsize, xml_msgsecmod;
-	xmlNodePtr xml_msgflags;
-	
 	struct be elem;
 	int count = 0;
 	u_char flags;
@@ -1343,8 +1275,8 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 		asn1_print(&elem);
 		return;
 	}
-	xml_message = xml_new_child(xml_snmp, NULL, "message", NULL);
-	xml_set_lengths(xml_message, count, elem.asnlen);
+
+	xml_elem_start(indent, "message", count, elem.asnlen);
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -1355,9 +1287,8 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 		fputs("[msgID!=INT]\n", stderr);
 		return;
 	}
-	xml_msgid = xml_new_child(xml_message, NULL, "msg-id",
-				  "%d", elem.data.integer);
-	xml_set_lengths(xml_msgid, count, elem.asnlen);
+	xml_leaf(indent+2, "msg-id",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -1368,9 +1299,8 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 		fputs("[msgMaxSize!=INT]\n", stderr);
 		return;
 	}
-	xml_msgmaxsize = xml_new_child(xml_message, NULL, "max-size",
-				  "%d", elem.data.integer);
-	xml_set_lengths(xml_msgmaxsize, count, elem.asnlen);
+	xml_leaf(indent+2, "max-size",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	length -= count;
 	np += count;
 
@@ -1398,8 +1328,7 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 		strcat(buffer, "p");
 	if (flags & 0x04)
 		strcat(buffer, "r");
-	xml_msgflags = xml_new_child(xml_message, NULL, "flags", buffer);
-	xml_set_lengths(xml_msgflags, count, elem.asnlen);
+	xml_leaf(indent+2, "flags", count, elem.asnlen, "%s", buffer);
 	length -= count;
 	np += count;
 
@@ -1411,9 +1340,8 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 		asn1_print(&elem);
 		return;
 	}
-	xml_msgsecmod = xml_new_child(xml_message, NULL, "security-model",
-				  "%d", elem.data.integer);
-	xml_set_lengths(xml_msgsecmod, count, elem.asnlen);
+	xml_leaf(indent+2, "security-model",
+		 count, elem.asnlen, "%d", elem.data.integer);
 	model = elem.data.integer;
 	length -= count;
 	np += count;
@@ -1451,10 +1379,12 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
 	np += count;
 
 	if (model == 3) {
-		usm_print(elem.data.str, elem.asnlen, xml_message);
+		usm_print(elem.data.str, elem.asnlen, indent+2);
 	}
 
-	scopedpdu_print(np, length, 3, xml_snmp);
+	scopedpdu_print(np, length, 3, indent+2);
+
+	xml_elem_end(indent, "message");
 }
 
 /*
@@ -1464,10 +1394,8 @@ v3msg_print(const u_char *np, u_int length, xmlNodePtr xml_snmp)
  */
 
 static void
-snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
+snmp_print(const u_char *np, u_int length, int indent)
 {
-	xmlNodePtr xml_snmp = NULL, xml_version;
-	
 	struct be elem;
 	int count = 0;
 	int version = 0;
@@ -1484,9 +1412,7 @@ snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
 	if ((u_int)count < length)
 		fprintf(stderr, "[%d extra after iSEQ]\n", length - count);
 
-	xml_snmp = xml_new_child(xml_pkt, NULL, "snmp", NULL);
-	xml_set_lengths(xml_snmp, length, elem.asnlen);
-
+	xml_elem_start(indent, "snmp", length, elem.asnlen);
         /* descend */
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
@@ -1499,9 +1425,8 @@ snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
 		return;
 	}
 
-	xml_version = xml_new_child(xml_snmp, NULL, "version",
-				    "%u", elem.data.integer);
-	xml_set_lengths(xml_version, count, elem.asnlen);
+	xml_leaf(indent+2, "version",
+		 count, elem.asnlen, "%u", elem.data.integer);
 
 	switch (elem.data.integer) {
 	case SNMP_VERSION_1:
@@ -1519,15 +1444,17 @@ snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
 	switch (version) {
 	case SNMP_VERSION_1:
         case SNMP_VERSION_2:
-		v12msg_print(np, length, version, xml_snmp);
+		v12msg_print(np, length, version, indent+2);
 		break;
 	case SNMP_VERSION_3:
-		v3msg_print(np, length, xml_snmp);
+		v3msg_print(np, length, indent+2);
 		break;
 	default:
 	        fprintf(stderr, "[version = %d]\n", elem.data.integer);
 		break;
 	}
+
+	xml_elem_end(indent, "snmp");
 }
 
 /*
@@ -1540,32 +1467,31 @@ snmp_print(const u_char *np, u_int length, xmlNodePtr xml_pkt)
 static void
 udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 {
-    xmlNodePtr xml_pkt, xml_src, xml_dst;
     char buffer[256];
     struct tm *tm;
     unsigned long delta = 0;
+    struct in_addr ip;
 
     if (start.tv_sec == 0 && start.tv_usec == 0) {
 	start = nids_last_pcap_header->ts;
     }
 
-
-    xml_pkt = xml_new_child(xml_root, NULL, "packet", NULL);
-    
     tm = gmtime(&nids_last_pcap_header->ts.tv_sec);
     strftime(buffer, sizeof(buffer), "%FT%H:%M:%S", tm);
-    xml_set_prop(xml_pkt, "date", "%s", buffer);
-    
     delta = time_diff(start, nids_last_pcap_header->ts);
-    xml_set_prop(xml_pkt, "delta", "%u", delta);
-    
-    xml_src = xml_new_child(xml_pkt, NULL, "src", NULL);
-    xml_set_addr(xml_src, addr->saddr, addr->source);
-    
-    xml_dst = xml_new_child(xml_pkt, NULL, "dst", NULL);
-    xml_set_addr(xml_dst, addr->daddr, addr->dest);
+    printf("%s<packet date=\"%s\" delta=\"%lu\">%s",
+	   iflag ? "  " : "", buffer, delta, iflag ? "\n" : "");
 
-    snmp_print((unsigned char *) buf, len, xml_pkt);
+    ip.s_addr = addr->saddr;
+    printf("%s<src ip=\"%s\" port=\"%u\"/>%s", iflag ? "    " : "",
+	   inet_ntoa(ip), addr->source, iflag ? "\n" : "");
+    ip.s_addr = addr->daddr;
+    printf("%s<dst ip=\"%s\" port=\"%u\"/>%s", iflag ? "    " : "",
+	   inet_ntoa(ip), addr->dest, iflag ? "\n" : "");
+
+    snmp_print((unsigned char *) buf, len, 4);
+
+    printf("%s</packet>\n", iflag ? "  " : "");
 }
 
 
@@ -1578,46 +1504,49 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 int
 main(int argc, char **argv)
 {
-    int i, c;
-    char buffer[1024];
+    int i, c, errcode;
     char *expr = NULL;
-    xpath_filter_t *xpf;
+    char buffer[256];
 
-    xpf = xpath_filter_new();
-
-    while ((c = getopt(argc, argv, "Vc:d:f:h")) != -1) {
+    while ((c = getopt(argc, argv, "Vc:d:f:ih")) != -1) {
 	switch (c) {
 	case 'c':
-	    if (xpf) {
-		xpath_filter_add(xpf, BAD_CAST(optarg),
-				 XPATH_FILTER_TYPE_CLEAR);
+	    errcode = regcomp(&_clr_regex, optarg,
+			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
+	    if (errcode) {
+		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
+		fprintf(stderr, "%s: ignoring clear regex: %s\n", progname, buffer);
+		continue;
 	    }
+	    clr_regex = &_clr_regex;
 	    break;
 	case 'd':
-	    if (xpf) {
-		xpath_filter_add(xpf, BAD_CAST(optarg),
-				 XPATH_FILTER_TYPE_DELETE);
+	    errcode = regcomp(&_del_regex, optarg,
+			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
+	    if (errcode) {
+		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
+		fprintf(stderr, "%s: ignoring delete regex: %s\n", progname, buffer);
+		continue;
 	    }
+	    del_regex = &_del_regex;
 	    break;
 	case 'f':
 	    expr = optarg;
+	    break;
+	case 'i':
+	    iflag = 1;
 	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c xpath] [-d xpath] [-f filter] [-h] file ... \n", progname);
+	    printf("%s [-c regex] [-d regex] [-f filter] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
 
-    /* create an empty xml document */
-
-    xml_doc = xmlNewDoc(BAD_CAST("1.0"));
-    xmlNewDocComment(xml_doc, BAD_CAST("nase"));
-    xml_root = xmlNewDocNode(xml_doc, NULL, BAD_CAST("snmptrace"), NULL);
-    xmlDocSetRootElement(xml_doc, xml_root);
+    printf("<?xml version=\"1.0\"?>\n<snmptrace>\n");
 
     /* populate the internal XML tree by processing pcap files */
 
@@ -1632,29 +1561,15 @@ main(int argc, char **argv)
 	    exit(1);
 	}
 
-	snprintf(buffer, sizeof(buffer), " %s ", argv[i]);
-	xmlAddChild(xml_root, xmlNewComment(BAD_CAST(buffer)));
-
+	printf("<!-- file '%s' (generated by %s version %s) -->\n",
+	       argv[i], progname, VERSION);
 	start.tv_sec = start.tv_usec = 0;
 	
-	nids_register_udp(udp_callback);	/* xml_root passed as global */
+	nids_register_udp(udp_callback);
 	nids_run();
     }
 
-    /* apply the filters */
-
-    xpath_filter_apply(xpf, xml_doc);
-
-    /* produce the output */
-
-    if (xmlDocFormatDump(stdout, xml_doc, 1) == -1) {
-	fprintf(stderr, "%s: failed to serialize xml document\n", progname);
-	exit(1);
-    }
-
-    /* cleanup */
-
-    xpath_filter_delete(xpf);
+    printf("</snmptrace>\n");
 
     return 0;
 }
