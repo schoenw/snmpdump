@@ -1,0 +1,30 @@
+INSTRUCTIONS FOR BUILDING SNMPDUMP ON FREEBSD 6.0
+
+portinstall libxml2 libnids libsmi
+portinstall gnu-autoconf gnu-automake gnu-libtool
+
+edit autogen.sh - add at the beginning:
+	PATH=${PATH}:/usr/local/gnu-autotools/bin/
+
+setenv PATH ${PATH}:/usr/local/gnu-autotools/bin/
+setenv ACLOCAL_FLAGS '-I /usr/local/share/aclocal'
+./autogen.sh --enable-shared --with-libnids=/usr/local/
+
+edit src/Makefile
+	replace NIDSLIB = -L/usr/local/lib -lnids
+	with NIDSLIB = -L/usr/local/lib -lnids -lnet
+
+make
+
+---------------------------------------------------------------------
+
+OR (this does not work)
+
+bash
+alias automake=automake19
+alias autoconf=autoconf259
+alias aclocal=aclocal19
+alias autoheader=autoheader259
+alias libtool=libtool15 
+alias libtoolize=libtoolize15 
+
