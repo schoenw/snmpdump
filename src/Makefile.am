@@ -5,7 +5,7 @@ EXTRA_DIST		= $(man_MANS)
 bin_PROGRAMS		= snmpdump snmpanon snmpstat anon
 
 snmpdump_SOURCES	= snmpdump.c # xpath-filter.c
-snmpdump_LDADD		= libanon.la $(NIDSLIB) -lpcap
+snmpdump_LDADD		= $(NIDSLIB) -lpcap
 
 snmpanon_SOURCES	= snmpanon.c xpath-filter.c
 snmpanon_LDADD		= libanon.la $(XML_LIBS) $(OPENSSL_LIBS) -lsmi
