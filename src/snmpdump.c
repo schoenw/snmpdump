@@ -49,7 +49,7 @@
 
 #define _GNU_SOURCE
 
-// #define HACK_AROUND_LIBNET_API_CHANGES
+#define HACK_AROUND_LIBNET_API_CHANGES
 
 #ifdef HACK_AROUND_LIBNET_API_CHANGES
 int libnet_build_ip() { return libnet_build_ipv4(); }
@@ -58,6 +58,8 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #endif
 
 #include "config.h"
+
+#include "snmp.h"
 
 #include <stdio.h>
 #include <stdlib.h>
