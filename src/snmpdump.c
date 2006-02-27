@@ -1473,10 +1473,14 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     struct tm *tm;
     unsigned long delta = 0;
     struct in_addr ip;
+    packet_t _pkt, *pkt = &_pkt;
 
     if (start.tv_sec == 0 && start.tv_usec == 0) {
 	start = nids_last_pcap_header->ts;
     }
+
+    pkt->time.tv_sec = nids_last_pcap_header->ts.tv_sec;
+    pkt->time.tv_usec = nids_last_pcap_header->ts.tv_usec;
 
     tm = gmtime(&nids_last_pcap_header->ts.tv_sec);
     strftime(buffer, sizeof(buffer), "%FT%H:%M:%S", tm);

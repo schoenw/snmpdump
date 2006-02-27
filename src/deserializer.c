@@ -15,11 +15,12 @@
 
 //#include <config.h>
 
+#include "snmp.h"
+
 #include <libxml/xmlreader.h>
 #include <assert.h>
 #include <string.h>
-#include "snmp.h"
-#include <netdb.h> /* maybe this should go into snmp.h */
+#include <netinet/in.h> /* maybe this should go into snmp.h */
 
 static const char *progname = "deserializer";
 

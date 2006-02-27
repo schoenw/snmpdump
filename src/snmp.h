@@ -57,7 +57,7 @@ typedef struct {
 } snmp_octs_t;
 
 typedef struct {
-    uint32_t    value[128];	/* oid value (sequence of unsigned ints) */
+    uint32_t    *value;		/* oid value (sequence of unsigned ints) */
     unsigned    len;		/* number of oids present */
     snmp_attr_t attr;		/* attributes */
 } snmp_oid_t;
@@ -77,6 +77,14 @@ typedef struct {
 typedef struct _snmp_varbind {
     uint32_t	    type;	/* type of value */
     snmp_oid_t	    name;	/* name */
+    union u {
+	snmp_int32_t  i32;
+	snmp_uint32_t u32;
+	snmp_uint64_t u64;
+	snmp_octs_t   octs;
+	snmp_oid_t    oid;
+	snmp_ipaddr_t ip; 
+    }
     void	   *value;	/* value (one of above defined types) */
     struct
      _snmp_varbind *next;	/* next varbind (linked list) */
@@ -88,11 +96,9 @@ typedef struct {
     snmp_attr_t     attr;	/* attributes */
 } snmp_var_bindings_t;
 
-/* used for pdu.trap.agent-addr */
 typedef struct {
-    struct sockaddr_storage
-			value;	/* ip address value */
-    snmp_attr_t attr;		/* attributes */
+    in_addr_t	    value;	/* ip address value */
+    snmp_attr_t     attr;	/* attributes */
 } snmp_ipaddr_t;
 
 #define SNMP_PDU_GET		0x01
@@ -123,7 +129,8 @@ typedef struct {
 
 typedef struct {
     snmp_int32_t version;
-    snmp_octs_t  community;
+    snmp_octs_t  community;	/* only SNMPv1/SNMPv2c */
+    
     snmp_pdu_t	 pdu;
     snmp_attr_t  attr;
 } snmp_msg_t;
@@ -132,7 +139,26 @@ typedef struct {
     struct sockaddr_storage src;
     struct sockaddr_storage dst;
     struct timeval time;
-    unsigned long delta;
     snmp_msg_t message;
-} packet_t;
+} snmp_packet_t;
 
+/*
+ *
+ */
+
+typedef void (*snmp_callback)(snmp_packet_t *pkt, void *user_data);
+
+snmp_read_xml_file(const char *file,
+		   snmp_callback func, void *user_data);
+snmp_read_xml_stream(const FILE *stream,
+		     snmp_callback func, void *user_data);
+
+snmp_write_xml_stream_begin(FILE *stream);
+snmp_write_xml_stream(FILE *stream, snmp_packet_t *pkt);
+snmp_write_xml_stream_end(FILE *stream);
+
+snmp_read_pcap_file(const char *file, const char *filter,
+		    snmp_callback func, void *user_data);
+#if 0
+snmp_read_pcap_life(const char *file, snmp_callback func, void *user_data);
+#endif
