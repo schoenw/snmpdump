@@ -14,6 +14,9 @@ edit src/Makefile
 	replace NIDSLIB = -L/usr/local/lib -lnids
 	with NIDSLIB = -L/usr/local/lib -lnids -lnet
 
+edit src/snmpdump.c
+	comment out line 52:
+	#define HACK_AROUND_LIBNET_API_CHANGES
 make
 
 ---------------------------------------------------------------------
