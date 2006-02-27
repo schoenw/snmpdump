@@ -55,7 +55,10 @@ Afterwards, a key is set with the anon_[type]_set_key function. In
 case this is omitted a random key is generated. The key is used for
 the cryptographic functions for anonymizing IP addresses. Using the
 same key one can obtain consisten anonymization of IP addresses (given
-the same set of used addresses). For other data types, the key is used
+the same set of used addresses).
+
+
+For other data types, the key is used
 to seed the random number generator. This, however, does not guarantee
 consisten anonymization as the openssl random number generator is
 using also other entropy sources.
@@ -109,6 +112,8 @@ There may be some more.
 .SH "SEE ALSO"
 .BR anon (1),
 .BR anon-ip (3),
+.BR anon-int (3),
+.BR anon-string (3),
 .BR anon-ipv6 (3),
 .BR anon-mac (3),
 .BR anon-int64 (3),
