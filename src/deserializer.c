@@ -20,7 +20,7 @@
 #include <libxml/xmlreader.h>
 #include <assert.h>
 #include <string.h>
-#include <netinet/in.h> /* maybe this should go into snmp.h */
+#include <netinet/in.h>
 
 static const char *progname = "deserializer";
 
@@ -30,6 +30,8 @@ static const char *progname = "deserializer";
 #else
 #define DEBUG(format, ...)
 #endif
+
+#define ERROR(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
 
 static enum {
 	IN_NONE,
@@ -96,11 +98,11 @@ UTF8atoi(const xmlChar* xmlstr) {
 */
 
 /*
- * deallocate packet_t and all its data members
+ * deallocate snmp_packet_t and all its data members
  * TODO: (xml)string deallocation (also in other parts of packet)
  */
 void
-snmp_packet_free(packet_t* packet) {
+snmp_packet_free(snmp_packet_t* packet) {
     snmp_varbind_t* varbind;
     snmp_varbind_t* next;
     assert(packet);
@@ -109,21 +111,15 @@ snmp_packet_free(packet_t* packet) {
     while (next) {
 	varbind = next;
 	//DEBUG("freeing... varbind: %x\n", varbind);
-	if (varbind->value) {
-	    if (varbind->type == SNMP_TYPE_OCTS) {
-		if (((snmp_octs_t*)(varbind->value))->value) {
-		    //free(((snmp_octs_t*)(varbind->value))->value);
-		    xmlFree(((snmp_octs_t*)(varbind->value))->value);
-		}
+	if (varbind->type == SNMP_TYPE_OCTS) {
+	    if (varbind->value.octs.value) {
+		free(varbind->value.octs.value);
+		//xmlFree(varbind->value.octs.value);
 	    }
-	    assert(varbind->type == SNMP_TYPE_INT32
-		   || varbind->type == SNMP_TYPE_UINT32
-		   || varbind->type == SNMP_TYPE_UINT64
-		   || varbind->type == SNMP_TYPE_IPADDR
-		   || varbind->type == SNMP_TYPE_OCTS
-		   || varbind->type == SNMP_TYPE_OID);
-	    //DEBUG("freeing... varbind->value: %x\n", varbind->value);
-	    free(varbind->value);
+	}  else if (varbind->type == SNMP_TYPE_OCTS) {
+	    if (varbind->value.oid.value) {
+		free(varbind->value.oid.value);
+	    }
 	}
 	next = next->next;
 	free(varbind);
@@ -150,7 +146,6 @@ process_snmp_int32(xmlTextReaderPtr reader, snmp_int32_t* snmpint) {
     assert(snmpint);
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
-	/* snmpint->value = atoi((char *) value); */
 	snmpint->value = (int32_t) strtol((char *) value, &end, 10);
 	if (*end == '\0') {
 	    snmpint->attr.flags |= SNMP_FLAG_VALUE;
@@ -164,7 +159,6 @@ process_snmp_int32(xmlTextReaderPtr reader, snmp_int32_t* snmpint) {
 static void
 process_snmp_uint32(xmlTextReaderPtr reader, snmp_uint32_t* snmpint) {
     char *end;
-    DEBUG("process_snmp_uint32(): snmpint:%x\n", snmpint);
     assert(snmpint);
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
@@ -201,10 +195,67 @@ process_snmp_ipaddr(xmlTextReaderPtr reader, snmp_ipaddr_t* snmpaddr) {
     if (value) {
 	if (inet_pton(AF_INET, value, &(snmpaddr->value)) > 0) {
 	    snmpaddr->attr.flags |= SNMP_FLAG_VALUE;
-	} else if (inet_pton(AF_INET6, value,  &(snmpaddr->value)) > 0) {
+	}
+	/*
+	// IPv6 not allowed here
+	else if (inet_pton(AF_INET6, value,  &(snmpaddr->value)) > 0) {
 	    snmpaddr->attr.flags |= SNMP_FLAG_VALUE;
 	}
+	*/
     }
+}
+
+/* helper function for dehexify */
+static int
+char_to_i(char c){
+    int n = c;
+    if (n >= '0' && n <= '9') {
+	n -= '0';
+    } else if (n >= 'a' && n <= 'f') {
+	n -= 'a' - 10;
+    } else if (n >= 'A' && n <= 'F') {
+	n -= 'F' - 10;
+    } else {
+	n = -1;
+    }
+    return n;
+}
+
+/*
+ * convert octet string into string (i.e. xml -> pcap)
+ * user has to deallocate returned buffer
+ */
+static char*
+dehexify(const char *str) {
+    static size_t size = 0; /* buffer size, i.e. length of output 
+			     * which is strlen(str)/2
+			     */
+    static char *buffer = NULL;
+    int i;
+    int n;
+    int tmp, tmp2;
+    
+    if (strlen(str)%2 != 0) {
+	/* octet string implies pairs of hex numbers */
+	return NULL;
+    }
+    size = strlen(str)/2;
+    assert(size);
+    buffer = malloc(size);
+    assert(buffer);
+    memset(buffer, 0, size);
+    for (i = 0; i < size; i++) {
+	tmp = char_to_i(str[2*i]);
+	tmp2 = char_to_i(str[2*i+1]);
+	if (tmp < 0 || tmp2 < 0) {
+	    /* encountered invalid character */
+	    free(buffer);
+	    return NULL;
+	}
+	buffer[i] = tmp*16 + tmp2;
+    }
+    DEBUG("dehexify(%s): %s\n", str, buffer);
+    return buffer;
 }
 
 /*
@@ -215,11 +266,32 @@ process_snmp_ipaddr(xmlTextReaderPtr reader, snmp_ipaddr_t* snmpaddr) {
 static void
 process_snmp_octs(xmlTextReaderPtr reader, snmp_octs_t* snmpstr) {
     assert(snmpstr);
-    xmlChar* value = xmlTextReaderValue(reader);
+    //xmlChar* value = xmlTextReaderValue(reader);
+    const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
-	snmpstr->value = value;
-	snmpstr->attr.flags |= SNMP_FLAG_VALUE;
+	snmpstr->value = (unsigned char*) dehexify((const char *) value);
+	if (snmpstr->value)
+	    snmpstr->attr.flags |= SNMP_FLAG_VALUE;
     }
+}
+
+/*
+ * return number of numbers in oid (number of dots + 1)
+ * WARNING: not xmlChar-safe
+ */
+static int
+count_snmp_oid(const char* value) {
+    int count = 0;
+    int pos;
+    if (value) {
+	count = 1;
+	for(pos=0;pos<strlen(value);pos++) {
+	    if (value[pos] == '.') {
+		count++;
+	    }
+	}
+    }
+    return count;
 }
 
 /*
@@ -229,23 +301,33 @@ static void
 process_snmp_oid(xmlTextReaderPtr reader, snmp_oid_t* snmpoid) {
     int i;
     char *end;
+    int count = 0;
     assert(snmpoid);
     const xmlChar* value = xmlTextReaderConstValue(reader);
-    if (value) {
+    count = count_snmp_oid((const char*) value);
+    if (value && count > 0) {
+	snmpoid->value = malloc(sizeof(uint32_t)*count);
+	assert(snmpoid->value);
+	memset(snmpoid->value, 0, sizeof(uint32_t)*count);
+	
 	snmpoid->value[0] = (uint32_t) strtoul((const char *) value, &end, 10);
 	if (*end == '\0' || *end == '.') {
-	    /* maybe this should be "if (!...) return" rather than assert */
-	    assert(snmpoid->value[0] >= 0 && snmpoid->value[0] <= 2);
+	    if (!(snmpoid->value[0] >= 0 && snmpoid->value[0] <= 2)) {
+		ERROR("warning: oid dirst value %d should be in  0..2\n",
+		      snmpoid->value[0]);
+	    }
 	}
-	for(i=1;i<128 && *end == '.';i++) {
-	    value = (xmlChar*) end;
+	for(i=1;i<128 && i<count && *end == '.';i++) {
+	    value = (xmlChar*) end+1;
 	    //end = NULL;
 	    snmpoid->value[i] = (uint32_t) strtoul((const char *) value, &end, 10);
 	}
+	
 	if (*end == '\0') {
 	    snmpoid->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
+    DEBUG("process_snmp_oid() done\n");
 }
 
 /*
@@ -275,13 +357,13 @@ process_snmp_attr(xmlTextReaderPtr reader, snmp_attr_t* attr) {
 }
 
 /*
- * process node currently in reader by filling in packet_t structure
- * allocates a new packet_t when new "packet" xml node is reached
+ * process node currently in reader by filling in snmp_packet_t structure
+ * allocates a new snmp_packet_t when new "packet" xml node is reached
  * when end of "packet" xml node is reached, callback function is called
  */
 static void
-process_node(xmlTextReaderPtr reader, packet_t** packet,
-	    snmp_varbind_t** varbind) {
+process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
+	     snmp_varbind_t** varbind) {
     const xmlChar *name, *value;
     xmlChar* attr;
     int i;
@@ -304,9 +386,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	if (name && xmlStrcmp(name, BAD_CAST("packet")) == 0) {
 	    DEBUG("in PACKET\n");
 	    set_state(IN_PACKET);
-	    *packet = (packet_t*) malloc(sizeof(packet_t));
+	    *packet = (snmp_packet_t*) malloc(sizeof(snmp_packet_t));
 	    assert(*packet);
-	    memset(*packet, 0, sizeof(packet_t));
+	    memset(*packet, 0, sizeof(snmp_packet_t));
 	    *varbind = NULL;
 	    /* attributes */
 	    /* date */
@@ -317,7 +399,8 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 		xmlFree(attr);
 	    }
 	    /* delta */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("date"));
+	    /*
+	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("delta"));
 	    if (attr) {
 		(*packet)->delta =
 		    (unsigned long) strtoll((char*) attr, &end, 10);
@@ -327,6 +410,7 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 		}
 		xmlFree(attr);
 	    }
+	    */
 	    //value = xmlTextReaderGetAttribute(reader, BAD_CAST("delta"));
 	/* src */
 	} else if (name && xmlStrcmp(name, BAD_CAST("src")) == 0) {
@@ -349,25 +433,23 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    /* port */
 	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("port"));
 	    if (attr) {
-		/* sin_port is the same for both ipv4 and ipv6 */
-		
+		/*
 		((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
 		    htons(atoi((char*) attr));
 		(*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
-		
-		/* this swtich should be unneccessary
-		switch((*packet)->src.ss_family)
-		    {
-		    case AF_INET6:
-			((struct sockaddr_in6)(*packet)->src).sin6_port =
-			    atoi(attr);
-			break;
-		    default:
-			((struct sockaddr_in)(*packet)->src).sin_port =
-			    atoi(attr);
-			break;
-		    }
 		*/
+		switch((*packet)->src.ss_family) {
+		case AF_INET6:
+		    ((struct sockaddr_in6*)(&((*packet)->src)))->sin6_port =
+			htons(atoi((char*) attr));
+		    (*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
+		    break;
+		default:
+		    ((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
+			htons(atoi((char*) attr));
+		    (*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
+		    break;
+		}
 		xmlFree(attr);
 	    }
 	/* dst */
@@ -391,10 +473,23 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    /* port */
 	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("port"));
 	    if (attr) {
-		/* sin_port is the same for both ipv4 and ipv6 */
+		/*
 		((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
 		    htons(atoi((char*) attr));
 		(*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		*/
+		switch((*packet)->dst.ss_family) {
+		case AF_INET6:
+		    ((struct sockaddr_in6*)(&((*packet)->dst)))->sin6_port =
+			htons(atoi((char*) attr));
+		    (*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		    break;
+		default:
+		    ((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
+			htons(atoi((char*) attr));
+		    (*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		    break;
+		}
 		xmlFree(attr);
 	    }
 	/* snmp */
@@ -580,7 +675,7 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NULL;
-	    assert((*varbind)->value == NULL);
+	    //assert((*varbind)->value == NULL);
 	    /* should be empty */
 	/* varbind (- value) - integer32 */
 	} else if (name && xmlStrcmp(name, BAD_CAST("integer32")) == 0) {
@@ -591,13 +686,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_INT32;
-	    (*varbind)->value = (snmp_int32_t*) malloc(sizeof(snmp_int32_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_int32_t));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader,
-			    &(((snmp_int32_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.i32.attr));
 	/* varbind (- value) - unsigned32 */
 	} else if (name && xmlStrcmp(name, BAD_CAST("unsigned32")) == 0) {
 	    DEBUG("in UNSIGNED32\n");
@@ -607,14 +698,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_UINT32;
-	    (*varbind)->value = (snmp_uint32_t*) malloc(sizeof(snmp_uint32_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_uint32_t));
-	    //DEBUG("malloc... (*varbind)->value: %x\n", (*varbind)->value);
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader,
-			    &(((snmp_uint32_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
 	/* varbind (- value) - unsigned64 */
 	} else if (name && xmlStrcmp(name, BAD_CAST("unsigned64")) == 0) {
 	    DEBUG("in UNSIGNED64\n");
@@ -624,13 +710,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_UINT64;
-	    (*varbind)->value = (snmp_uint64_t*) malloc(sizeof(snmp_uint64_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_uint64_t));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader,
-			    &(((snmp_uint64_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.u64.attr));
 	/* varbind (- value) - ipaddress */
 	} else if (name && xmlStrcmp(name, BAD_CAST("ipaddress")) == 0) {
 	    DEBUG("in IPADDRESS\n");
@@ -640,13 +722,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_IPADDR;
-	    (*varbind)->value = (snmp_ipaddr_t*) malloc(sizeof(snmp_ipaddr_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_ipaddr_t));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader,
-			    &(((snmp_ipaddr_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.ip.attr));
 	/* varbind (- value) - octet-string */
 	} else if (name && xmlStrcmp(name, BAD_CAST("octet-string")) == 0) {
 	    DEBUG("in OCTET-STRING\n");
@@ -656,13 +734,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_OCTS;
-	    (*varbind)->value = (snmp_octs_t*) malloc(sizeof(snmp_octs_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_octs_t));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader,
-			    &(((snmp_octs_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.octs.attr));
 	/* varbind (- value) - object-identifier */
 	} else if (name &&
 		   xmlStrcmp(name, BAD_CAST("object-identifier")) == 0) {
@@ -673,12 +747,9 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_OID;
-	    (*varbind)->value = (snmp_oid_t*) malloc(sizeof(snmp_oid_t));
-	    assert((*varbind)->value);
-	    memset((*varbind)->value,0,sizeof(snmp_oid_t));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &(((snmp_oid_t*)(*varbind)->value)->attr));
+	    process_snmp_attr(reader, &((*varbind)->value.oid.attr));
 	/* varbind (- value) - no-such-object */
 	} else if (name && xmlStrcmp(name, BAD_CAST("no-such-object")) == 0) {
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
@@ -687,7 +758,6 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_OBJ;
-	    assert((*varbind)->value == NULL);
 	    /* should be empty */
 	/* varbind (- value) - no-such-instance */
 	} else if (name && xmlStrcmp(name, BAD_CAST("no-such-instance")) == 0){
@@ -697,7 +767,6 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_INST;
-	    assert((*varbind)->value == NULL);
 	    /* should be empty */
 	/* varbind (- value) - end-of-mib-view */
 	} else if (name && xmlStrcmp(name, BAD_CAST("end-of-mib-view")) == 0) {
@@ -707,7 +776,6 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_END_MIB_VIEW;
-	    assert((*varbind)->value == NULL);
 	    /* should be empty */
 	/* varbind (- value) - value */
 	} else if (name && xmlStrcmp(name, BAD_CAST("value")) == 0) {
@@ -717,7 +785,6 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_VALUE;
-	    assert((*varbind)->value == NULL);
 	    /* should be empty */
 
 	/* message */
@@ -814,34 +881,32 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	case IN_INTEGER32:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_INT32);
-	    process_snmp_int32(reader, (snmp_int32_t*) (*varbind)->value);
+	    process_snmp_int32(reader, &((*varbind)->value.i32));
 	    break;
 	case IN_UNSIGNED32:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_UINT32);
-	    DEBUG("calling process_snmp_uint32() with (*varbind)->value:%x\n",
-		  (*varbind)->value);
-	    process_snmp_uint32(reader, (snmp_uint32_t*) (*varbind)->value);
+	    process_snmp_uint32(reader, &((*varbind)->value.u32));
 	    break;
 	case IN_UNSIGNED64:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_UINT64);
-	    process_snmp_uint64(reader, (snmp_uint64_t*) (*varbind)->value);
+	    process_snmp_uint64(reader, &((*varbind)->value.u64));
 	    break;
 	case IN_IPADDRESS:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_IPADDR);
-	    process_snmp_ipaddr(reader, (snmp_ipaddr_t*) (*varbind)->value);
+	    process_snmp_ipaddr(reader, &((*varbind)->value.ip));
 	    break;
 	case IN_OCTET_STRING:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_OCTS);
-	    process_snmp_octs(reader, (snmp_octs_t*) (*varbind)->value);
+	    process_snmp_octs(reader, &((*varbind)->value.octs));
 	    break;
 	case IN_OBJECT_IDENTIFIER:
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_OID);
-	    process_snmp_oid(reader, (snmp_oid_t*) (*varbind)->value);
+	    process_snmp_oid(reader, &((*varbind)->value.oid));
 	    break;
 	}
 	break;
@@ -855,7 +920,7 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 	    name = BAD_CAST "--";
 	/* packet */
 	if (name && xmlStrcmp(name, BAD_CAST("packet")) == 0) {
-	    // call calback function and give it filled-in packet_t object
+	    // call calback function and give it filled-in snmp_packet_t object
 	    DEBUG("out PACKET\n");
 	    snmp_packet_free(*packet);
 	}
@@ -894,7 +959,7 @@ process_node(xmlTextReaderPtr reader, packet_t** packet,
 static int
 stream_file(char *filename)
 {
-    packet_t *packet = NULL;
+    snmp_packet_t *packet = NULL;
     snmp_varbind_t *varbind = NULL;
     xmlTextReaderPtr reader;
     int i, ret;

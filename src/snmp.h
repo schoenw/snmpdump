@@ -11,9 +11,11 @@
  */
 
 #include <stdint.h>
+#include <stdio.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #define SNMP_FLAG_VALUE	0x01
 #define SNMP_FLAG_BLEN	0x02
@@ -62,6 +64,11 @@ typedef struct {
     snmp_attr_t attr;		/* attributes */
 } snmp_oid_t;
 
+typedef struct {
+    in_addr_t	    value;	/* ip address value */
+    snmp_attr_t     attr;	/* attributes */
+} snmp_ipaddr_t;
+
 #define SNMP_TYPE_NULL		0x01
 #define SNMP_TYPE_INT32		0x02
 #define SNMP_TYPE_UINT32	0x04
@@ -83,9 +90,9 @@ typedef struct _snmp_varbind {
 	snmp_uint64_t u64;
 	snmp_octs_t   octs;
 	snmp_oid_t    oid;
-	snmp_ipaddr_t ip; 
-    }
-    void	   *value;	/* value (one of above defined types) */
+	snmp_ipaddr_t ip;
+    } value;
+    //void	   *value;	/* value (one of above defined types) */
     struct
      _snmp_varbind *next;	/* next varbind (linked list) */
     snmp_attr_t     attr;	/* attributes */
@@ -95,11 +102,6 @@ typedef struct {
     snmp_varbind_t *varbind;	/* linked list of varbinds */
     snmp_attr_t     attr;	/* attributes */
 } snmp_var_bindings_t;
-
-typedef struct {
-    in_addr_t	    value;	/* ip address value */
-    snmp_attr_t     attr;	/* attributes */
-} snmp_ipaddr_t;
 
 #define SNMP_PDU_GET		0x01
 #define SNMP_PDU_GETNEXT	0x02
@@ -123,7 +125,7 @@ typedef struct {
     snmp_int32_t specific_trap;
     snmp_int32_t time_stamp;
     snmp_var_bindings_t
-		varbindings;     /* variable-bindings here */
+		varbindings;     /* variable-bindings */
     snmp_attr_t  attr;		 /* attributes */
 } snmp_pdu_t;
 
@@ -148,17 +150,18 @@ typedef struct {
 
 typedef void (*snmp_callback)(snmp_packet_t *pkt, void *user_data);
 
-snmp_read_xml_file(const char *file,
-		   snmp_callback func, void *user_data);
-snmp_read_xml_stream(const FILE *stream,
-		     snmp_callback func, void *user_data);
+void snmp_read_xml_file(const char *file,
+			snmp_callback func, void *user_data);
+void snmp_read_xml_stream(const FILE *stream,
+			  snmp_callback func, void *user_data);
 
-snmp_write_xml_stream_begin(FILE *stream);
-snmp_write_xml_stream(FILE *stream, snmp_packet_t *pkt);
-snmp_write_xml_stream_end(FILE *stream);
+void snmp_write_xml_stream_begin(FILE *stream);
+void snmp_write_xml_stream(FILE *stream, snmp_packet_t *pkt);
+void snmp_write_xml_stream_end(FILE *stream);
 
-snmp_read_pcap_file(const char *file, const char *filter,
+void snmp_read_pcap_file(const char *file, const char *filter,
 		    snmp_callback func, void *user_data);
 #if 0
-snmp_read_pcap_life(const char *file, snmp_callback func, void *user_data);
+void snmp_read_pcap_life(const char *file, snmp_callback func, void *user_data);
 #endif
+
