@@ -54,14 +54,14 @@ typedef struct {
 
 typedef struct {
     unsigned char *value;	/* octet string value */
-    unsigned       len;		/* length of the octet string */
+    unsigned       len;		/* length of the octet string  - IGNORED !!! */
     snmp_attr_t    attr;	/* attributes */
 } snmp_octs_t;
 
 typedef struct {
     uint32_t    *value;		/* oid value (sequence of unsigned ints) */
-    unsigned    len;		/* number of oids present */
-    snmp_attr_t attr;		/* attributes */
+    unsigned     len;		/* number of oids present */
+    snmp_attr_t  attr;		/* attributes */
 } snmp_oid_t;
 
 typedef struct {
@@ -125,14 +125,41 @@ typedef struct {
     snmp_int32_t specific_trap;
     snmp_int32_t time_stamp;
     snmp_var_bindings_t
-		varbindings;     /* variable-bindings */
+		 varbindings;     /* variable-bindings */
     snmp_attr_t  attr;		 /* attributes */
 } snmp_pdu_t;
 
 typedef struct {
+    snmp_octs_t   auth_engine_id;
+    snmp_uint32_t auth_engine_boots;
+    snmp_uint32_t auth_engine_time;
+    snmp_octs_t   user;  /* should be type text according to schema */
+    snmp_octs_t   auth_params;
+    snmp_octs_t   priv_params;
+    snmp_attr_t   attr; /* missing in the xml, used to determine if present */
+} snmp_usm_t;
+
+typedef struct {
+    snmp_octs_t   context_engine_id;
+    snmp_octs_t   context_name;  /* should be type text according to schema */
+    /* snmp_pdu_t	  pdu; */ /* present in snmp_msg_t, not duplicating */
+    snmp_attr_t   attr;
+} snmp_scoped_pdu_t;
+
+typedef struct {
+    snmp_uint32_t     msg_id;
+    snmp_uint32_t     max_size;
+    snmp_octs_t       flags; /* should be type text according to schema */
+    snmp_uint32_t     sec_model;
+    snmp_usm_t	      usm;
+    snmp_scoped_pdu_t scoped_pdu;
+    snmp_attr_t	      attr;
+} snmp_msgv3_t;
+
+typedef struct {
     snmp_int32_t version;
     snmp_octs_t  community;	/* only SNMPv1/SNMPv2c */
-    
+    snmp_msgv3_t msgv3;
     snmp_pdu_t	 pdu;
     snmp_attr_t  attr;
 } snmp_msg_t;

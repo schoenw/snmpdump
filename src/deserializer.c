@@ -40,13 +40,22 @@ static enum {
 	IN_SNMP,
 	IN_VERSION,
 	IN_COMMUNITY,
-	
 	/* add SNMPv3 stuff here */
 	IN_MESSAGE,
-	IN_MSG_IG,
+	IN_MSG_ID,
 	IN_MAX_SIZE,
 	IN_FLAGS,
 	IN_SEC_MODEL,
+	IN_USM,
+	IN_AUTH_ENGINE_ID,
+	IN_AUTH_ENGINE_BOOTS,
+	IN_AUTH_ENGINE_TIME,
+	IN_USER,
+	IN_AUTH_PARAMS,
+	IN_PRIV_PARAMS,
+	IN_SCOPED_PDU,
+	IN_CONTEXT_ENGINE_ID,
+	IN_CONTEXT_NAME,
 	
 	IN_TRAP,
 	IN_ENTERPRISE,
@@ -132,6 +141,11 @@ snmp_packet_free(snmp_packet_t* packet) {
     free(packet);
 }
 
+/*
+ * just set the state
+ * could evolve into some error-checking and state-keeping fct
+ * using a linked listto keep track of parent-states
+ */
 static void
 set_state(int newState) {
     state = newState;
@@ -313,7 +327,7 @@ process_snmp_oid(xmlTextReaderPtr reader, snmp_oid_t* snmpoid) {
 	snmpoid->value[0] = (uint32_t) strtoul((const char *) value, &end, 10);
 	if (*end == '\0' || *end == '.') {
 	    if (!(snmpoid->value[0] >= 0 && snmpoid->value[0] <= 2)) {
-		ERROR("warning: oid dirst value %d should be in  0..2\n",
+		ERROR("warning: oid first value %d should be in  0..2\n",
 		      snmpoid->value[0]);
 	    }
 	}
@@ -327,7 +341,6 @@ process_snmp_oid(xmlTextReaderPtr reader, snmp_oid_t* snmpoid) {
 	    snmpoid->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
-    DEBUG("process_snmp_oid() done\n");
 }
 
 /*
@@ -779,25 +792,136 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* should be empty */
 	/* varbind (- value) - value */
 	} else if (name && xmlStrcmp(name, BAD_CAST("value")) == 0) {
-	    assert(state == IN_NAME); /* maybe not needed/wanted */
-	    /* we should also check if parrent is varbind */
+	    if (state != IN_NAME) {
+		ERROR("varbind value before name\n");
+	    }
+	    /* we should also check if parrent is a varbind */
 	    set_state(IN_VALUE); 
 	    assert(*packet);
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_VALUE;
 	    /* should be empty */
 
-	/* message */
-	/* NOT FINISHED !!! */
-	/* also missing msg-id, max-size, flags, security-model, usm */
+	/* SNMPv3 message */
 	} else if (name && xmlStrcmp(name, BAD_CAST("message")) == 0) {
 	    set_state(IN_MESSAGE);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    /*
-	    process_snmp_attr(reader, &((*packet)->message.attr));
-	    */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.attr));
+	/* msg-id */
+	} else if (name && xmlStrcmp(name, BAD_CAST("msg-id")) == 0) {
+	    set_state(IN_MSG_ID);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.msg_id.attr));
+	/* max-size */
+	} else if (name && xmlStrcmp(name, BAD_CAST("max-size")) == 0) {
+	    set_state(IN_MAX_SIZE);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader,
+			      &((*packet)->message.msgv3.max_size.attr));
+	/* flags */
+	} else if (name && xmlStrcmp(name, BAD_CAST("flags")) == 0) {
+	    set_state(IN_FLAGS);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.flags.attr));
+	/* security-model */
+	} else if (name && xmlStrcmp(name, BAD_CAST("security-model")) == 0) {
+	    set_state(IN_SEC_MODEL);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader,
+			      &((*packet)->message.msgv3.sec_model.attr));
+	/* usm */
+	} else if (name && xmlStrcmp(name, BAD_CAST("usm")) == 0) {
+	    set_state(IN_USM);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    /* !!! these attr are missing in the relax ng schema !!! */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.attr));
+	/* scoped-pdu */
+	} else if (name && xmlStrcmp(name, BAD_CAST("scoped-pdu")) == 0) {
+	    set_state(IN_SCOPED_PDU);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader,
+			      &((*packet)->message.msgv3.scoped_pdu.attr));
+	/* context-engine-id */
+	} else if (name
+		   && xmlStrcmp(name, BAD_CAST("context-engine-id")) == 0) {
+	    set_state(IN_CONTEXT_ENGINE_ID);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.scoped_pdu.
+					context_engine_id.attr));
+	/* context-name */
+	} else if (name && xmlStrcmp(name, BAD_CAST("context-name")) == 0) {
+	    set_state(IN_CONTEXT_NAME);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.scoped_pdu.
+					context_name.attr));
+	/* auth-engine-id */
+	} else if (name && xmlStrcmp(name, BAD_CAST("auth-engine-id")) == 0) {
+	    set_state(IN_AUTH_ENGINE_ID);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					auth_engine_id.attr));
+	/* auth-engine-boots */
+	} else if (name 
+		   && xmlStrcmp(name, BAD_CAST("auth-engine-boots")) == 0) {
+	    set_state(IN_AUTH_ENGINE_BOOTS);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					auth_engine_boots.attr));
+	/* auth-engine-time */
+	} else if (name
+		   && xmlStrcmp(name, BAD_CAST("auth-engine-time")) == 0) {
+	    set_state(IN_AUTH_ENGINE_TIME);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					auth_engine_time.attr));
+	/* user */
+	} else if (name && xmlStrcmp(name, BAD_CAST("user")) == 0) {
+	    set_state(IN_USER);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					user.attr));
+	/* auth-params */
+	} else if (name && xmlStrcmp(name, BAD_CAST("auth-params")) == 0) {
+	    set_state(IN_AUTH_PARAMS);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					auth_params.attr));
+	/* priv-params */
+	} else if (name && xmlStrcmp(name, BAD_CAST("priv-params")) == 0) {
+	    set_state(IN_PRIV_PARAMS);
+	    assert((*packet));
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*packet)->message.msgv3.usm.
+					priv_params.attr));
 	} else {
 	    state = IN_NONE;
 	}
@@ -822,12 +946,15 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    break;
 	case IN_COMMUNITY:
 	    assert(*packet);
+	    /*
 	    value = xmlTextReaderValue(reader);
 	    if (value) {
 		(*packet)->message.community.value = (unsigned char*)value;
 		(*packet)->message.community.len = xmlStrlen(value);
 		(*packet)->message.community.attr.flags |= SNMP_FLAG_VALUE;
 	    }
+	    */
+	    process_snmp_octs(reader, &((*packet)->message.community));
 	    break;
 	case IN_ENTERPRISE:
 	    assert(*packet);
@@ -907,6 +1034,62 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_OID);
 	    process_snmp_oid(reader, &((*varbind)->value.oid));
+	    break;
+	/* snmpv3 */
+	case IN_MSG_ID:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->message.msgv3.msg_id));
+	    break;
+	case IN_MAX_SIZE:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->message.msgv3.max_size));
+	    break;
+	case IN_FLAGS:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.flags));
+	    break;
+	case IN_SEC_MODEL:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->message.msgv3.sec_model));
+	    break;
+	case IN_AUTH_ENGINE_ID:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.usm.
+					auth_engine_id));
+	    break;
+	case IN_AUTH_ENGINE_BOOTS:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->message.msgv3.usm.
+					  auth_engine_boots));
+	    break;
+	case IN_AUTH_ENGINE_TIME:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->message.msgv3.usm.
+				    auth_engine_time));
+	    break;
+	case IN_USER:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.usm.user));
+	    break;
+	case IN_AUTH_PARAMS:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.usm.
+					auth_params));
+	    break;
+	case IN_PRIV_PARAMS:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.usm.
+					priv_params));
+	    break;
+	case IN_CONTEXT_ENGINE_ID:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.scoped_pdu.
+				    context_engine_id));
+	    break;
+	case IN_CONTEXT_NAME:
+	    assert(*packet);
+	    process_snmp_octs(reader, &((*packet)->message.msgv3.scoped_pdu.
+				    context_name));
 	    break;
 	}
 	break;
