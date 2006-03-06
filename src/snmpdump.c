@@ -1182,7 +1182,7 @@ usm_print(const u_char *np, u_int length, int indent)
 		fputs("[msgAuthoritativeEngineID!=STR]\n", stderr);
 		return;
 	}
-	xml_leaf(indent+2, "auth-engine", count, elem.asnlen,
+	xml_leaf(indent+2, "auth-engine-id", count, elem.asnlen,
 		 "%s", hexify(elem.asnlen, elem.data.str));
 	length -= count;
 	np += count;

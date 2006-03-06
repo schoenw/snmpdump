@@ -142,10 +142,11 @@ typedef struct {
 typedef struct {
     snmp_octs_t   context_engine_id;
     snmp_octs_t   context_name;  /* should be type text according to schema */
-    /* snmp_pdu_t	  pdu; */ /* present in snmp_msg_t, not duplicating */
+    snmp_pdu_t	  pdu;           /* present in snmp_msg_t, not duplicating */
     snmp_attr_t   attr;
 } snmp_scoped_pdu_t;
 
+#if 0
 typedef struct {
     snmp_uint32_t     msg_id;
     snmp_uint32_t     max_size;
@@ -157,11 +158,31 @@ typedef struct {
 } snmp_msgv3_t;
 
 typedef struct {
-    snmp_int32_t version;
     snmp_octs_t  community;	/* only SNMPv1/SNMPv2c */
-    snmp_msgv3_t msgv3;
     snmp_pdu_t	 pdu;
+} snmp_msgv12_t;
+
+typedef struct {
+    snmp_int32_t      version;
+    union u {
+	snmp_msgv12_t msg12;
+	snmp_msgv3_t  msg3;
+    }
     snmp_attr_t  attr;
+} snmp_msg_t;
+#endif
+
+typedef struct {
+    snmp_int32_t      version;
+    snmp_octs_t       community;	/* only SNMPv1/SNMPv2c */
+    snmp_uint32_t     msg_id;
+    snmp_uint32_t     msg_max_size;
+    snmp_octs_t       msg_flags; /* should be type text according to schema */
+    snmp_attr_t	      msg_attr;
+    snmp_uint32_t     msg_sec_model;
+    snmp_usm_t	      usm;
+    snmp_scoped_pdu_t scoped_pdu;
+    snmp_attr_t	      attr;
 } snmp_msg_t;
 
 typedef struct {
