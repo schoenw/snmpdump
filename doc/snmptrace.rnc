@@ -5,8 +5,8 @@ start =
 
 packet.elem = 
   element packet {
-    attribute date { xsd:dateTime },
-    attribute delta { xsd:unsignedInt },
+    attribute sec { xsd:unsignedInt },
+    attribute usec { xsd:unsignedInt },
     element src { addr.attrs },
     element dst { addr.attrs },
     snmp.elem
@@ -29,22 +29,23 @@ message.elem |=
     length.attrs,
     element msg-id { length.attrs, xsd:unsignedInt },
     element max-size { length.attrs, xsd:unsignedInt },
-    element flags { length.attrs, text },
+    element flags { length.attrs, xsd:hexBinary },
     element security-model { length.attrs, xsd:unsignedInt },
     usm.elem?
   },
   element scoped-pdu {
     length.attrs,
     element context-engine-id { length.attrs, xsd:hexBinary },
-    element context-name { length.attrs, text },
+    element context-name { length.attrs, xsd:string },
     pdu.elem
   }
 
 usm.elem =
+  length.attrs,
   element auth-engine-id { length.attrs, xsd:hexBinary },
   element auth-engine-boots { length.attrs, xsd:unsignedInt },
   element auth-engine-time { length.attrs, xsd:unsignedInt },
-  element user { length.attrs, text },
+  element user { length.attrs, xsd:string },
   element auth-params { length.attrs, xsd:hexBinary },
   element priv-params { length.attrs, xsd:hexBinary }
 
@@ -83,8 +84,7 @@ value.elem =
   element ipaddress { length.attrs, ipaddress.type } |
   element octet-string { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
-  element (no-such-object | no-such-instance | end-of-mib-view) { empty } |
-  element value { empty }
+  element (no-such-object | no-such-instance | end-of-mib-view) { empty }
 
 # The blen attribute indicates the number of bytes used by the BER
 # encoded tag / length / value triple. The vlen attribute indicates
@@ -103,6 +103,9 @@ oid.type =
     pattern =
       """[0-2](\.[0-9]+)+"""
   }
+
+# Someone should extend the regular expression below to cover also
+# IPv6 addresses (including zone indexes ;-).
 
 ipaddress.type =
   xsd:string {
