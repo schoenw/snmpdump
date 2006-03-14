@@ -14,6 +14,8 @@
  * and XML writer API in order to be fast and memory efficient.
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
+ *
+ * $Id$
  */
 
 #define _GNU_SOURCE
@@ -28,10 +30,13 @@
 
 static const char *progname = "snmpdump";
 
+typedef enum {
+    FORMAT_XML = 1,
+    FORMAT_CSV = 2
+} format_t;
+
 static regex_t _clr_regex, _del_regex;
 static regex_t *clr_regex = NULL, *del_regex = NULL;
-
-static int iflag = 0;
 
 
 static void
@@ -69,6 +74,7 @@ main(int argc, char **argv)
     int i, c, errcode;
     char *expr = NULL;
     char buffer[256];
+    format_t format = FORMAT_XML;
 
     while ((c = getopt(argc, argv, "Vc:d:f:ih")) != -1) {
 	switch (c) {
@@ -95,9 +101,6 @@ main(int argc, char **argv)
 	case 'f':
 	    expr = optarg;
 	    break;
-	case 'i':
-	    iflag = 1;
-	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
@@ -108,12 +111,22 @@ main(int argc, char **argv)
 	}
     }
 
-    snmp_xml_write_stream_begin(stdout);
-    for (i = optind; i < argc; i++) {
-	// snmp_pcap_read_file(argv[i], expr, print_xml, stdout);
-	snmp_pcap_read_file(argv[i], expr, print_csv, stdout);
+    switch (format) {
+    case FORMAT_XML:
+	snmp_xml_write_stream_begin(stdout);
+	for (i = optind; i < argc; i++) {
+	    snmp_pcap_read_file(argv[i], expr, print_xml, stdout);
+	}
+	snmp_xml_write_stream_end(stdout);
+	break;
+    case FORMAT_CSV:
+	snmp_csv_write_stream_begin(stdout);
+	for (i = optind; i < argc; i++) {
+	    snmp_pcap_read_file(argv[i], expr, print_csv, stdout);
+	}
+	snmp_csv_write_stream_end(stdout);
+	break;
     }
-    snmp_xml_write_stream_end(stdout);
 
     return 0;
 }

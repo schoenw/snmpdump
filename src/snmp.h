@@ -3,11 +3,13 @@
  *
  * Internal representation of an SNMP message read from either a raw
  * pcap file or an XML serialization. The data structure described
- * here must be semantically equivalent to the snmptrace.rnc
+ * here must be semantically equivalent to the snmptrace.rnc relaxng
  * definition.
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
  * Copyright (c) 2006 Matus Harvan
+ *
+ * $Id$
  */
 
 #include <stdint.h>
@@ -146,32 +148,6 @@ typedef struct {
     snmp_attr_t   attr;
 } snmp_scoped_pdu_t;
 
-#if 0
-typedef struct {
-    snmp_uint32_t     msg_id;
-    snmp_uint32_t     max_size;
-    snmp_octs_t       flags; /* should be type text according to schema */
-    snmp_uint32_t     sec_model;
-    snmp_usm_t	      usm;
-    snmp_scoped_pdu_t scoped_pdu;
-    snmp_attr_t	      attr;
-} snmp_msgv3_t;
-
-typedef struct {
-    snmp_octs_t  community;	/* only SNMPv1/SNMPv2c */
-    snmp_pdu_t	 pdu;
-} snmp_msgv12_t;
-
-typedef struct {
-    snmp_int32_t      version;
-    union u {
-	snmp_msgv12_t msg12;
-	snmp_msgv3_t  msg3;
-    }
-    snmp_attr_t  attr;
-} snmp_msg_t;
-#endif
-
 typedef struct {
     snmp_int32_t      version;
     snmp_octs_t       community;	/* only SNMPv1/SNMPv2c */
@@ -188,8 +164,9 @@ typedef struct {
 typedef struct {
     struct sockaddr_storage src;
     struct sockaddr_storage dst;
-    struct timeval time;
-    snmp_msg_t message;
+    struct timeval	    time;
+    snmp_msg_t		    msg;
+    snmp_attr_t		    attr;
 } snmp_packet_t;
 
 /*

@@ -1,5 +1,5 @@
 /*
- * snmpdump.c --
+ * pcap-read.c --
  *
  * A utility to convert pcap capture files containing SNMP messages
  * into snmp trace files. To create these pcap files, you can use:
@@ -1416,9 +1416,9 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 	if ((u_int)count < length)
 		fprintf(stderr, "[%d extra after iSEQ]\n", length - count);
 
-	pkt->message.attr.blen = length;
-	pkt->message.attr.vlen = elem.asnlen;
-	pkt->message.attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	pkt->msg.attr.blen = length;
+	pkt->msg.attr.vlen = elem.asnlen;
+	pkt->msg.attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
 
         /* descend */
 	length = elem.asnlen;
@@ -1432,10 +1432,10 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	pkt->message.version.value = elem.data.integer;
-	pkt->message.version.attr.blen = count;
-	pkt->message.version.attr.vlen = elem.asnlen;
-	pkt->message.version.attr.flags
+	pkt->msg.version.value = elem.data.integer;
+	pkt->msg.version.attr.blen = count;
+	pkt->msg.version.attr.vlen = elem.asnlen;
+	pkt->msg.version.attr.flags
 		= SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
 
 	switch (elem.data.integer) {
@@ -1490,6 +1490,9 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     sock->sin_family = AF_INET;
     sock->sin_addr.s_addr = addr->daddr;
     sock->sin_port = addr->dest;
+
+    pkt->attr.flags = SNMP_FLAG_SADDR | SNMP_FLAG_SPORT
+	    | SNMP_FLAG_DADDR | SNMP_FLAG_DPORT;
 
     snmp_parse((unsigned char *) buf, len, pkt);
 

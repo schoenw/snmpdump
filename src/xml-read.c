@@ -114,7 +114,7 @@ snmp_packet_free(snmp_packet_t* packet) {
     snmp_varbind_t* next;
     assert(packet);
     /* free varbinds */
-    next = packet->message.scoped_pdu.pdu.varbindings.varbind;
+    next = packet->msg.scoped_pdu.pdu.varbindings.varbind;
     while (next) {
 	varbind = next;
 	//DEBUG("freeing... varbind: %x\n", varbind);
@@ -132,9 +132,9 @@ snmp_packet_free(snmp_packet_t* packet) {
 	free(varbind);
     }
     /* free community string */
-    if (packet->message.community.attr.flags & SNMP_FLAG_VALUE) {
-	assert(packet->message.community.value);
-	xmlFree(packet->message.community.value);
+    if (packet->msg.community.attr.flags & SNMP_FLAG_VALUE) {
+	assert(packet->msg.community.value);
+	xmlFree(packet->msg.community.value);
     }
     free(packet);
 }
@@ -406,7 +406,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("date"));
 	    if (attr) {
 		strptime(attr, "%FT%H:%M:%S", &((*packet)->time));
-		(*packet)->message.attr.flags |= SNMP_FLAG_DATE;
+		(*packet)->msg.attr.flags |= SNMP_FLAG_DATE;
 		xmlFree(attr);
 	    }
 	    /* delta */
@@ -417,7 +417,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 		    (unsigned long) strtoll((char*) attr, &end, 10);
 		assert(strtoll((char*) attr, &end, 10) >= 0);
 		if (*end == '\0') {
-		    (*packet)->message.attr.flags |= SNMP_FLAG_DELTA;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_DELTA;
 		}
 		xmlFree(attr);
 	    }
@@ -434,9 +434,9 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("ip"));
 	    if (attr) {
 		if (inet_pton(AF_INET, attr, &((*packet)->src)) > 0) {
-		    (*packet)->message.attr.flags |= SNMP_FLAG_SADDR;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_SADDR;
 		} else if (inet_pton(AF_INET6, attr, &((*packet)->src)) > 0) {
-			(*packet)->message.attr.flags |= SNMP_FLAG_SADDR;
+			(*packet)->msg.attr.flags |= SNMP_FLAG_SADDR;
 		}
 		//DEBUG("ip: %s\n", inet_ntoa((*packet)->src));
 		xmlFree(attr);
@@ -447,18 +447,18 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 		/*
 		((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
 		    htons(atoi((char*) attr));
-		(*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
+		(*packet)->msg.attr.flags |= SNMP_FLAG_SPORT;
 		*/
 		switch((*packet)->src.ss_family) {
 		case AF_INET6:
 		    ((struct sockaddr_in6*)(&((*packet)->src)))->sin6_port =
 			htons(atoi((char*) attr));
-		    (*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_SPORT;
 		    break;
 		default:
 		    ((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
 			htons(atoi((char*) attr));
-		    (*packet)->message.attr.flags |= SNMP_FLAG_SPORT;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_SPORT;
 		    break;
 		}
 		xmlFree(attr);
@@ -474,9 +474,9 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("ip"));
 	    if (attr) {
 		if (inet_pton(AF_INET, attr, &((*packet)->dst)) > 0) {
-		    (*packet)->message.attr.flags |= SNMP_FLAG_DADDR;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_DADDR;
 		} else if (inet_pton(AF_INET6, attr, &((*packet)->dst)) > 0) {
-		    (*packet)->message.attr.flags |= SNMP_FLAG_DADDR;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_DADDR;
 		}
 		//DEBUG("ip: %s\n", inet_ntoa((*packet)->dst));
 		xmlFree(attr);
@@ -487,18 +487,18 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 		/*
 		((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
 		    htons(atoi((char*) attr));
-		(*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		(*packet)->msg.attr.flags |= SNMP_FLAG_DPORT;
 		*/
 		switch((*packet)->dst.ss_family) {
 		case AF_INET6:
 		    ((struct sockaddr_in6*)(&((*packet)->dst)))->sin6_port =
 			htons(atoi((char*) attr));
-		    (*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_DPORT;
 		    break;
 		default:
 		    ((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
 			htons(atoi((char*) attr));
-		    (*packet)->message.attr.flags |= SNMP_FLAG_DPORT;
+		    (*packet)->msg.attr.flags |= SNMP_FLAG_DPORT;
 		    break;
 		}
 		xmlFree(attr);
@@ -511,7 +511,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.attr));
 	/* version */
 	} else if (name && xmlStrcmp(name, BAD_CAST("version")) == 0) {
 	    assert(state == IN_SNMP);
@@ -519,36 +519,36 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.version.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.version.attr));
 	/* community */
 	} else if (name && xmlStrcmp(name, BAD_CAST("community")) == 0) {
 	    set_state(IN_COMMUNITY);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.community.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.community.attr));
 	/* trap */
 	} else if (name && xmlStrcmp(name, BAD_CAST("trap")) == 0) {
 	    set_state(IN_TRAP);
 	    assert((*packet));
-	    (*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_TRAP1;
+	    (*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_TRAP1;
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.scoped_pdu.pdu.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.scoped_pdu.pdu.attr));
 	/* enterprise */
 	} else if (name && xmlStrcmp(name, BAD_CAST("enterprise")) == 0) {
 	    set_state(IN_ENTERPRISE);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.scoped_pdu.pdu.enterprise.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.scoped_pdu.pdu.enterprise.attr));
 	/* agent-addr */
 	} else if (name && xmlStrcmp(name, BAD_CAST("agent-addr")) == 0) {
 	    set_state(IN_AGENT_ADDR);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.scoped_pdu.pdu.agent_addr.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.scoped_pdu.pdu.agent_addr.attr));
 	/* generic-trap */
 	} else if (name && xmlStrcmp(name, BAD_CAST("generic-trap")) == 0) {
 	    set_state(IN_GENERIC_TRAP);
@@ -556,7 +556,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.generic_trap.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.generic_trap.attr));
 	/* specific-trap */
 	} else if (name && xmlStrcmp(name, BAD_CAST("specific-trap")) == 0) {
 	    set_state(IN_SPECIFIC_TRAP);
@@ -564,7 +564,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.specific_trap.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.specific_trap.attr));
 	/* time-stamp */
 	} else if (name && xmlStrcmp(name, BAD_CAST("time-stamp")) == 0) {
 	    set_state(IN_TIME_STAMP);
@@ -572,7 +572,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.time_stamp.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.time_stamp.attr));
 	/*
 	 * get-request | get-next-request | get-bulk-request |
          * set-request | inform | trap2 | response | report
@@ -591,33 +591,33 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    if (xmlStrcmp(name, BAD_CAST("get-request")) == 0) {
 		set_state(IN_GET_REQUEST);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_GET;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_GET;
 	    } else if (xmlStrcmp(name, BAD_CAST("get-next-request")) == 0) {
 		set_state(IN_GET_NEXT_REQUEST);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_GETNEXT;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_GETNEXT;
 	    } else if (xmlStrcmp(name, BAD_CAST("get-bulk-request")) == 0) {
 		set_state(IN_GET_BULK_REQUEST);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_GETBULK;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_GETBULK;
 	    } else if (xmlStrcmp(name, BAD_CAST("set-request")) == 0) {
 		set_state(IN_SET_REQUEST);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_SET;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_SET;
 	    } else if (xmlStrcmp(name, BAD_CAST("inform")) == 0) {
 		set_state(IN_INFORM);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_INFORM;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_INFORM;
 	    } else if (xmlStrcmp(name, BAD_CAST("trap2")) == 0) {
 		set_state(IN_TRAP2);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_TRAP2;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_TRAP2;
 	    } else if (xmlStrcmp(name, BAD_CAST("response")) == 0) {
 		set_state(IN_RESPONSE);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_RESPONSE;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_RESPONSE;
 	    } else if (xmlStrcmp(name, BAD_CAST("report")) == 0) {
 		set_state(IN_REPORT);
-		(*packet)->message.scoped_pdu.pdu.type = SNMP_PDU_REPORT;
+		(*packet)->msg.scoped_pdu.pdu.type = SNMP_PDU_REPORT;
 	    }
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.attr));
 	/* request-id */
 	} else if (name && xmlStrcmp(name, BAD_CAST("request-id")) == 0) {
 	    set_state(IN_REQUEST_ID);
@@ -625,7 +625,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.req_id.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.req_id.attr));
 	/* error-status */
 	} else if (name && xmlStrcmp(name, BAD_CAST("error-status")) == 0) {
 	    set_state(IN_ERROR_STATUS);
@@ -633,7 +633,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.err_status.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.err_status.attr));
 	/* error-index */
 	} else if (name && xmlStrcmp(name, BAD_CAST("error-index")) == 0) {
 	    set_state(IN_ERROR_INDEX);
@@ -641,7 +641,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.err_index.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.err_index.attr));
 	/* variable-bindings */
 	} else if (name
 		   && xmlStrcmp(name, BAD_CAST("variable-bindings")) == 0) {
@@ -650,7 +650,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			    &((*packet)->message.scoped_pdu.pdu.varbindings.attr));
+			    &((*packet)->msg.scoped_pdu.pdu.varbindings.attr));
 	/* varbind */
 	} else if (name && xmlStrcmp(name, BAD_CAST("varbind")) == 0) {
 	    set_state(IN_VARBIND);
@@ -661,7 +661,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 		*varbind = (*varbind)->next;
 	    } else {
 		*varbind = (snmp_varbind_t*) malloc(sizeof(snmp_varbind_t));
-		(*packet)->message.scoped_pdu.pdu.varbindings.varbind = *varbind;
+		(*packet)->msg.scoped_pdu.pdu.varbindings.varbind = *varbind;
 	    }
 	    assert(*varbind);
 	    memset(*varbind,0,sizeof(snmp_varbind_t));
@@ -800,20 +800,20 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    (*varbind)->type = SNMP_TYPE_VALUE;
 	    /* should be empty */
 
-	/* SNMPv3 message */
-	} else if (name && xmlStrcmp(name, BAD_CAST("message")) == 0) {
+	/* SNMPv3 msg */
+	} else if (name && xmlStrcmp(name, BAD_CAST("msg")) == 0) {
 	    set_state(IN_MESSAGE);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.attr));
 	/* msg-id */
 	} else if (name && xmlStrcmp(name, BAD_CAST("msg-id")) == 0) {
 	    set_state(IN_MSG_ID);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.msg_id.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.msg_id.attr));
 	/* max-size */
 	} else if (name && xmlStrcmp(name, BAD_CAST("max-size")) == 0) {
 	    set_state(IN_MAX_SIZE);
@@ -821,14 +821,14 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			      &((*packet)->message.msg_max_size.attr));
+			      &((*packet)->msg.msg_max_size.attr));
 	/* flags */
 	} else if (name && xmlStrcmp(name, BAD_CAST("flags")) == 0) {
 	    set_state(IN_FLAGS);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.msg_flags.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.msg_flags.attr));
 	/* security-model */
 	} else if (name && xmlStrcmp(name, BAD_CAST("security-model")) == 0) {
 	    set_state(IN_SEC_MODEL);
@@ -836,7 +836,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			      &((*packet)->message.msg_sec_model.attr));
+			      &((*packet)->msg.msg_sec_model.attr));
 	/* usm */
 	} else if (name && xmlStrcmp(name, BAD_CAST("usm")) == 0) {
 	    set_state(IN_USM);
@@ -844,7 +844,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    /* !!! these attr are missing in the relax ng schema !!! */
-	    process_snmp_attr(reader, &((*packet)->message.usm.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.usm.attr));
 	/* scoped-pdu */
 	} else if (name && xmlStrcmp(name, BAD_CAST("scoped-pdu")) == 0) {
 	    set_state(IN_SCOPED_PDU);
@@ -852,7 +852,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			      &((*packet)->message.scoped_pdu.attr));
+			      &((*packet)->msg.scoped_pdu.attr));
 	/* context-engine-id */
 	} else if (name
 		   && xmlStrcmp(name, BAD_CAST("context-engine-id")) == 0) {
@@ -860,7 +860,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.scoped_pdu.
+	    process_snmp_attr(reader, &((*packet)->msg.scoped_pdu.
 					context_engine_id.attr));
 	/* context-name */
 	} else if (name && xmlStrcmp(name, BAD_CAST("context-name")) == 0) {
@@ -868,7 +868,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.scoped_pdu.
+	    process_snmp_attr(reader, &((*packet)->msg.scoped_pdu.
 					context_name.attr));
 	/* auth-engine-id */
 	} else if (name && xmlStrcmp(name, BAD_CAST("auth-engine-id")) == 0) {
@@ -876,7 +876,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					auth_engine_id.attr));
 	/* auth-engine-boots */
 	} else if (name 
@@ -885,7 +885,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					auth_engine_boots.attr));
 	/* auth-engine-time */
 	} else if (name
@@ -894,7 +894,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					auth_engine_time.attr));
 	/* user */
 	} else if (name && xmlStrcmp(name, BAD_CAST("user")) == 0) {
@@ -902,7 +902,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					user.attr));
 	/* auth-params */
 	} else if (name && xmlStrcmp(name, BAD_CAST("auth-params")) == 0) {
@@ -910,7 +910,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					auth_params.attr));
 	/* priv-params */
 	} else if (name && xmlStrcmp(name, BAD_CAST("priv-params")) == 0) {
@@ -918,7 +918,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->message.usm.
+	    process_snmp_attr(reader, &((*packet)->msg.usm.
 					priv_params.attr));
 	} else {
 	    state = IN_NONE;
@@ -934,11 +934,11 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	case IN_VERSION:
 	    assert(*packet);
 	    if (value) {
-		(*packet)->message.version.value = (int32_t)
+		(*packet)->msg.version.value = (int32_t)
 		    strtol((char *) value, &end, 10);
-		if (*end == '\0'&& (*packet)->message.version.value >=0
-		    && (*packet)->message.version.value <3) {
-		    (*packet)->message.version.attr.flags |= SNMP_FLAG_VALUE;
+		if (*end == '\0'&& (*packet)->msg.version.value >=0
+		    && (*packet)->msg.version.value <3) {
+		    (*packet)->msg.version.attr.flags |= SNMP_FLAG_VALUE;
 		}
 	    }
 	    break;
@@ -947,28 +947,28 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /*
 	    value = xmlTextReaderValue(reader);
 	    if (value) {
-		(*packet)->message.community.value = (unsigned char*)value;
-		(*packet)->message.community.len = xmlStrlen(value);
-		(*packet)->message.community.attr.flags |= SNMP_FLAG_VALUE;
+		(*packet)->msg.community.value = (unsigned char*)value;
+		(*packet)->msg.community.len = xmlStrlen(value);
+		(*packet)->msg.community.attr.flags |= SNMP_FLAG_VALUE;
 	    }
 	    */
-	    process_snmp_octs(reader, &((*packet)->message.community));
+	    process_snmp_octs(reader, &((*packet)->msg.community));
 	    break;
 	case IN_ENTERPRISE:
 	    assert(*packet);
-	    process_snmp_oid(reader, &((*packet)->message.scoped_pdu.pdu.enterprise));
+	    process_snmp_oid(reader, &((*packet)->msg.scoped_pdu.pdu.enterprise));
 	    break;
 	case IN_AGENT_ADDR:
 	    assert(*packet);
 	    if (value) {
 		if (inet_pton(AF_INET, attr,
-			      &((*packet)->message.scoped_pdu.pdu.agent_addr.value)) > 0){
-		    (*packet)->message.scoped_pdu.pdu.agent_addr.attr.flags
+			      &((*packet)->msg.scoped_pdu.pdu.agent_addr.value)) > 0){
+		    (*packet)->msg.scoped_pdu.pdu.agent_addr.attr.flags
 			|= SNMP_FLAG_VALUE;
 		} else {
 		    if (inet_pton(AF_INET6, attr,
-			      &((*packet)->message.scoped_pdu.pdu.agent_addr.value)) > 0){
-			(*packet)->message.scoped_pdu.pdu.agent_addr.attr.flags
+			      &((*packet)->msg.scoped_pdu.pdu.agent_addr.value)) > 0){
+			(*packet)->msg.scoped_pdu.pdu.agent_addr.attr.flags
 			    |= SNMP_FLAG_VALUE;
 		    }
 		}
@@ -976,27 +976,27 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    break;
 	case IN_GENERIC_TRAP:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.generic_trap));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.generic_trap));
 	    break;
 	case IN_SPECIFIC_TRAP:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.specific_trap));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.specific_trap));
 	    break;
 	case IN_TIME_STAMP:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.time_stamp));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.time_stamp));
 	    break;
 	case IN_REQUEST_ID:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.req_id));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.req_id));
 	    break;
 	case IN_ERROR_STATUS:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.err_status));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.err_status));
 	    break;
 	case IN_ERROR_INDEX:
 	    assert(*packet);
-	    process_snmp_int32(reader, &((*packet)->message.scoped_pdu.pdu.err_index));
+	    process_snmp_int32(reader, &((*packet)->msg.scoped_pdu.pdu.err_index));
 	    break;
 	/* varbind */
 	case IN_NAME:
@@ -1036,57 +1036,57 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	/* snmpv3 */
 	case IN_MSG_ID:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->message.msg_id));
+	    process_snmp_uint32(reader, &((*packet)->msg.msg_id));
 	    break;
 	case IN_MAX_SIZE:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->message.msg_max_size));
+	    process_snmp_uint32(reader, &((*packet)->msg.msg_max_size));
 	    break;
 	case IN_FLAGS:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.msg_flags));
+	    process_snmp_octs(reader, &((*packet)->msg.msg_flags));
 	    break;
 	case IN_SEC_MODEL:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->message.msg_sec_model));
+	    process_snmp_uint32(reader, &((*packet)->msg.msg_sec_model));
 	    break;
 	case IN_AUTH_ENGINE_ID:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.usm.
+	    process_snmp_octs(reader, &((*packet)->msg.usm.
 					auth_engine_id));
 	    break;
 	case IN_AUTH_ENGINE_BOOTS:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->message.usm.
+	    process_snmp_uint32(reader, &((*packet)->msg.usm.
 					  auth_engine_boots));
 	    break;
 	case IN_AUTH_ENGINE_TIME:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->message.usm.
+	    process_snmp_uint32(reader, &((*packet)->msg.usm.
 				    auth_engine_time));
 	    break;
 	case IN_USER:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.usm.user));
+	    process_snmp_octs(reader, &((*packet)->msg.usm.user));
 	    break;
 	case IN_AUTH_PARAMS:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.usm.
+	    process_snmp_octs(reader, &((*packet)->msg.usm.
 					auth_params));
 	    break;
 	case IN_PRIV_PARAMS:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.usm.
+	    process_snmp_octs(reader, &((*packet)->msg.usm.
 					priv_params));
 	    break;
 	case IN_CONTEXT_ENGINE_ID:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.scoped_pdu.
+	    process_snmp_octs(reader, &((*packet)->msg.scoped_pdu.
 				    context_engine_id));
 	    break;
 	case IN_CONTEXT_NAME:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->message.scoped_pdu.
+	    process_snmp_octs(reader, &((*packet)->msg.scoped_pdu.
 				    context_name));
 	    break;
 	}
