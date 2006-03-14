@@ -24,9 +24,9 @@
 #define SNMP_FLAG_SADDR	0x10
 #define SNMP_FLAG_DPORT	0x20
 #define SNMP_FLAG_DADDR	0x40
-#define SNMP_FLAG_CLEAR	0x80 /* ??? */
-#define SNMP_FLAG_DATE	0x100
-#define SNMP_FLAG_DELTA	0x200
+#define SNMP_FLAG_CLEAR	0x80	/* ??? */
+#define SNMP_FLAG_DATE	0x100	/* what does this flag mean? */
+#define SNMP_FLAG_DELTA	0x200	/* what does this flag mean? */
 
 typedef struct {
     int      blen;	/* length of the BER encided TLV triple */
@@ -198,18 +198,32 @@ typedef struct {
 
 typedef void (*snmp_callback)(snmp_packet_t *pkt, void *user_data);
 
-void snmp_read_xml_file(const char *file,
+/*
+ * XML input and output functions.
+ */
+
+void snmp_xml_read_file(const char *file,
 			snmp_callback func, void *user_data);
-void snmp_read_xml_stream(const FILE *stream,
+void snmp_xml_read_stream(const FILE *stream,
 			  snmp_callback func, void *user_data);
 
-void snmp_write_xml_stream_begin(FILE *stream);
-void snmp_write_xml_stream(FILE *stream, snmp_packet_t *pkt);
-void snmp_write_xml_stream_end(FILE *stream);
+void snmp_xml_write_stream_begin(FILE *stream);
+void snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt);
+void snmp_xml_write_stream_end(FILE *stream);
 
-void snmp_read_pcap_file(const char *file, const char *filter,
-		    snmp_callback func, void *user_data);
-#if 0
-void snmp_read_pcap_life(const char *file, snmp_callback func, void *user_data);
-#endif
+/*
+ * PCAP input functions (we do not write pcap files)
+ */
 
+void snmp_pcap_read_file(const char *file, const char *filter,
+			 snmp_callback func, void *user_data);
+void snmp_pcap_read_life(const char *file,
+			 snmp_callback func, void *user_data);
+
+/*
+ * CSV output functions (we do not read CVS files)
+ */
+
+void snmp_csv_write_stream_begin(FILE *stream);
+void snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt);
+void snmp_csv_write_stream_end(FILE *stream);
