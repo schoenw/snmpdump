@@ -15,7 +15,7 @@ AUTOMAKE_OPTIONS        = no-dependencies foreign
 
 EXTRA_DIST		= libanon.pc
 
-SUBDIRS			= src doc test
+SUBDIRS			= libanon src doc test
 
 pkgconfigdir		= $(libdir)/pkgconfig
 pkgconfig_DATA		= libanon.pc
