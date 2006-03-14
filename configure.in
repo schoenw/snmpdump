@@ -106,4 +106,4 @@ dnl Further substitutions
 AC_SUBST(VERSION_STRING)
 AC_SUBST(VERSION_LIBTOOL)
 
-AC_OUTPUT(Makefile src/Makefile doc/Makefile test/Makefile libanon.pc)
+AC_OUTPUT(Makefile libanon/Makefile src/Makefile doc/Makefile test/Makefile libanon.pc)
