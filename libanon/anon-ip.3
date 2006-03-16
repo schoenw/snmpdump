@@ -1,5 +1,5 @@
 .\"                              hey, Emacs:   -*- nroff -*-
-.TH LIBANON 3 "February 12, 2006"
+.TH anon-ip 3 "March 16, 2006"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -13,93 +13,118 @@
 .\" .sp <n>    insert n+1 empty lines
 .\" for manpage-specific macros, see man(7)
 .SH NAME
-libanon \- anonymization library
+anon-ip \- IP address anonymization functions of the \fBlibanon\fP
+anonymization library
 .SH SYNOPSIS
 .B #include <libanon.h>
 .sp
-struct _anon_ip {
+/*
+ * IPv4 address anonymization API.
+ */
+
+struct _anon_ipv4 {
     struct node *tree;
     int nodes;
     AES_KEY aes_key;	/* AES key */
     uint8_t m_key[16];	/* 128 bit secret key */
     uint8_t m_pad[16];	/* 128 bit secret pad */
 };
-typedef struct _anon_ip anon_ip_t;
+typedef struct _anon_ipv4 anon_ipv4_t;
 
-.BI "anon_ip_t* anon_ip_new();"
+.BI "anon_ipv4_t* anon_ipv4_new();"
 .br
-.BI "void anon_ip_set_key(anon_ip_t *" a ", const uint8_t *" key ");"
+.BI "void anon_ipv4_set_key(anon_ipv4_t *" a ", const uint8_t *" key ");"
 .br
-.BI "int anon_ip_set_used(anon_ip_t *" a ", in_addr_t " ip ", int " prefixlen ");"
+.BI "int anon_ipv4_set_used(anon_ipv4_t *" a ", in_addr_t " ip ", int " prefixlen ");"
 .br
-.BI "int anon_ip_map_pref(anon_ip_t *" a ", const in_addr_t" ip ","
+.BI "int anon_ipv4_map_pref(anon_ipv4_t *" a ", const in_addr_t" ip ","
 .br
 .BI "					in_addr_t *" aip ");"
 .br
-.BI "int anon_ip_map_pref_lex(anon_ip_t *" a ", const in_addr_t " ip ","
+.BI "int anon_ipv4_map_pref_lex(anon_ipv4_t *" a ", const in_addr_t " ip ","
 .br
 .BI "				in_addr_t *" aip ");"
 .br
-.BI "void anon_ip_delete(anon_ip_t *" a ");"
+.BI "void anon_ipv4_delete(anon_ipv_t *" a ");"
+
+/*
+ * IPv6 address anonymization API.
+ */
+
+typedef struct _anon_ipv6 anon_ipv6_t;
+.br
+typedef struct in6_addr in6_addr_t;
+
+.BI "anon_ipv6_t* anon_ipv6_new();"
+.br
+.BI "void anon_ipv6_set_key(anon_ipv6_t *" a ", const uint8_t *" key ");"
+.br
+.BI "int anon_ipv6_set_used(anon_ipv6_t *" a ", in6_addr_t " ip ", int " prefixlen ");"
+.br
+.BI "int anon_ipv6_map_pref(anon_ipv6_t *" a ", const in6_addr_t" ip ","
+.br
+.BI "					in6_addr_t *" aip ");"
+.br
+.BI "int anon_ipv6_map_pref_lex(anon_ipv_t *" a ", const in6_addr_t " ip ","
+.br
+.BI "				in6_addr_t *" aip ");"
+.br
+.BI "void anon_ipv6_delete(anon_ipv6_t *" a ");"
 
 .SH DESCRIPTION
-\fBlibanon\fP is an anonymization library. Functions for IPv4 address
-anonymization are prefixed with
-.IR anon_ip .
+This man page descirbes IP address anonymization functions (both IPv4
+and IPv6) of the \fBlibanon\fP anonymization library. We give a
+detailed description of the IPv4 API, IPv6 is similar. 
 
-\fBanon_[type]_new\fP create a new anonymization object. An
+\fBanon_ipv4_new\fP create a new anonymization object. An
 anonymization object has to be created for each data type that should
-be anonymized.
-
-Afterwards, a key is set with the anon_[type]_set_key function. In
-case this is omitted a random key is generated. The key is used for
-the cryptographic functions for anonymizing IP addresses. Using the
-same key one can obtain consisten anonymization of IP addresses (given
-the same set of used addresses).
+be anonymized, i.e. IPv4, IPv6,integers,... At the end of
+anonymization, resources of the anonymization obejct have to be freed
+up with \fBanon_[type]_delete\fP.
 
 
-For other data types, the key is used
-to seed the random number generator. This, however, does not guarantee
-consisten anonymization as the openssl random number generator is
-using also other entropy sources.
+Afterwards, a key  is set with the anon_ipv4_set_key function.
+.\" TODO:
+.\" In
+.\" case this is omitted a random key is generated.
+The key is used for the cryptographic functions for
+anonymization. Using the same key one can obtain consistent
+anonymization of IP addresses (given the same set of used addresses).
 
+For prefix-presering only anonymization, simply use
+\fBanon_ipv4_map_pref\fP for every IP address to be
+anonymized. \fUip\fP is expected in \fBNetwork-byte\fP order, as
+returned by inet_pton(3). The anonymized address \fUaip\fP is returned
+in Network-byte order as well.
 
+The prefix- and lexicographical-order-preserving anonymization works
+in two passes. First, all addresses in the trace need to be marked as
+used (for given anonymization object) by calling the
+\fBanon_ipv4_map_pref\fP function. One can also mark a complete subnet
+as used by using a shorter prefix length
+\fUprefixlen\fP. \fUprefixlen\fP values < 1 imply only one IP address
+has to be marked as used rather than a subnet. After all addresses
+have been marked as used, i.e. in the second pass, one can start with
+retrieving the anonymized versions of the addresses. This is done by
+calling the \fBanon_ipv4_map_pref_lex\fP function.
 
-
-At the end its
-resources have to be freed up with \fBanon_[type]_delete\fP.
+One can obtain consistent anonymization by using the same key for
+prefix-preserving only anonymization. For prefix- and
+lexicographical-order-preserving anonymization, one needs the same key
+and set of used addresses to obtain consistent anonymization. One way
+of achieving the same set of used addresses is to mark complete
+subnets as used.
 
 .SH "RETURN VALUES"
+\fBanon_ipv4_set_used\fP, \fBanon_ipv4_map_pref\fP and
+\fBanon_ipv4_map_pref_lex\fP return zero on success, non-zero
+otherwise.
+.br
+\fBanon_ipv4_new\fP return the anonymization object on success, NULL
+otherwise.
 
 .SH EXAMPLES
-.br
-A very good source of examples is the anon.c program.
-.br
-.if \w'\*(Pi'=0 .ds Pi pi
-To print \*(Pi to five decimal places:
-.RS
-.nf
-#include <math.h>
-#include <stdio.h>
-fprintf(stdout, "pi = %.5f\en", 4 * atan(1.0));
-.fi
-.RE
-.PP
-To print a date and time in the form `Sunday, July 3, 10:02',
-where
-.I weekday
-and
-.I month
-are pointers to strings:
-.RS
-.nf
-#include <stdio.h>
-fprintf(stdout, "%s, %s %d, %.2d:%.2d\en",
-	weekday, month, day, hour, min);
-.fi
-.RE
-.PP
-Many countries use the day-month-year order.
+A very good source of examples is the libanon/anon.c program.
 
 .SH BUGS
 Because
@@ -107,7 +132,7 @@ Because
 does not have a return code to detect errors, we do not detect
 insertion fails.
 .PP
-There may be some more.
+There may be more.
 
 .SH "SEE ALSO"
 .BR anon (1),

@@ -42,7 +42,7 @@ struct _anon_ipv4 {
 
 #define IPv4LENGTH 32
 
-static int canflip(anon_ipv4_t *a, in_addr_t ip, int prefixlen);
+static int canflip(anon_ipv4_t *a, const in_addr_t ip, const int prefixlen);
 static void delete_node(struct node* n);
 static struct node* add_new_node(struct node* parent, int right);
 static void canflip_count_n(struct node* p,int* n, int level);
@@ -133,7 +133,7 @@ anon_ipv4_set_key(anon_ipv4_t *a, const uint8_t *key)
  */
 
 int
-anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen) 
+anon_ipv4_set_used(anon_ipv4_t *a, const in_addr_t ip, const int prefixlen) 
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
@@ -141,17 +141,20 @@ anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
     int first_bit; /* first (most significant) bit of ip address
 		    * - currently to be considered in traversing the tree
 		    */
+    uint8_t* c = (uint8_t*) &(ip); /* cut-down representation of ip */
+    int pfl = prefixlen;
+    
     assert(a);
 
-    if (prefixlen > 32) prefixlen = 32;
+    if (prefixlen > 32 || prefixlen < 1) pfl = 32;
 
-    while (n < prefixlen) {
+    while (n < pfl) {
 	// printf("n: %02d, ip: %d\n",n,ip >> n);
 	if (nodep->complete) {
 	    // printf("hit complete...\n");
 	    return 0;
 	}
-	first_bit = ip & (((in_addr_t) 1) << (IPv4LENGTH-1));
+	first_bit = c[n/8] & ( 0x80 >> (n % 8)); //( 1 << (7-(n%8)));
 	// printf("going %s\n", first_bit ? "right" : "left");
 	if (first_bit) {
 	    childp = nodep->right;
@@ -167,7 +170,6 @@ anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
 	    a->nodes++;
 	}
 	nodep = childp;
-	ip <<= 1;
 	n++;
     }
     nodep->complete = 1;
@@ -175,6 +177,8 @@ anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
 }
 
 /* 
+ * ip is expected in network byte order (the one from inet_pton)
+ * 
  * can i-th (1-based indexing) bit in ip be flipped?
  * returns !( used_i(a_1 a_2 ... a_{i-1}0)
  *	&&  used_i(a_1 a_2 ... a_{i-1}1) )
@@ -182,20 +186,21 @@ anon_ipv4_set_used(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
  */
 
 static int
-canflip(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
+canflip(anon_ipv4_t *a, const in_addr_t ip, const int prefixlen)
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
+    uint8_t* c = (uint8_t*) &(ip); /* cut-down representation of ip */
     int n = 0;
-    prefixlen--; /* need a_1 a_2 ... a_{i-1} [0,1] */
+    int pfl = prefixlen-1; /* need a_1 a_2 ... a_{i-1} [0,1] */
     int first_bit; /* last bit of ip address - currently to be considered */
-    while (n < prefixlen) {
+    while (n < pfl) {
 	// printf("n: %02d, ip: %d\n",n,ip >> n);
 	if (nodep->complete) {
 	    // printf("hit complete... (n=%d)\n",n);
 	    return 0;
 	}
-	first_bit = ip & (((in_addr_t) 1) << (IPv4LENGTH-1));
+	first_bit = c[n/8] & ( 0x80 >> (n % 8)); //( 1 << (7-(n%8)));
 	if (first_bit) {
 	    childp = nodep->right;
 	} else {
@@ -206,7 +211,6 @@ canflip(anon_ipv4_t *a, in_addr_t ip, int prefixlen)
 	    return 0;
 	}
 	nodep = childp;
-	ip <<= 1;
 	n++;
     }
     if (nodep->complete) {
@@ -295,6 +299,7 @@ delete_node(struct node* n) {
 
 /*
  * prefix-preserving anonymization on ip
+ * ip and aip are expected in network byte order (as returned by inet_pton
  * slightly modified version of PAnonymizer::anonymize() from Crypto-PAn
  */
 int
@@ -302,19 +307,14 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
-    
-    uint32_t first4bytes_pad, first4bytes_input;
-    int pos;
+    int pos, i;
+    uint8_t* c = (uint8_t*) &(ip); /* cut-down representation of ip */
+    uint8_t* ac = (uint8_t*) aip ; /* cut-down representation of aip */
 
     assert(a);
 
-    *aip = 0;
-    
+    memset(aip, 0, sizeof(in_addr_t));
     memcpy(rin_input, a->m_pad, 16);
-    first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
-	+ (((uint32_t) a->m_pad[1]) << 16)
-	+ (((uint32_t) a->m_pad[2]) << 8)
-	+ (uint32_t) a->m_pad[3]; 
 
     /* For each prefix with length from 0 to 31, generate a bit
      * using the Rijndael cipher, which is used as a pseudorandom
@@ -323,34 +323,33 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
      */
     for (pos = 0; pos <= 31 ; pos++) { 
 	/* Padding: The most significant pos bits are taken from
-	 * ip. The other 128-pos bits are taken from m_pad. The
-	 * variables first4bytes_pad and first4bytes_input are used
-	 * to handle the annoying byte order problem.
+	 * ip. The other 128-pos bits are taken from m_pad.
 	 */
-	if (pos==0) {
-	    first4bytes_input =  first4bytes_pad; 
+	for(i=0;i<pos/8;i++) {
+	    rin_input[i] = c[i];
 	}
-	else {
-	    first4bytes_input = ((ip >> (32-pos)) << (32-pos))
-		| ((first4bytes_pad<<pos) >> pos);
+	rin_input[pos/8] = (c[pos/8] >> (8-pos%8)) << (8-pos%8);
+	
+	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	for(i=(pos/8)+1;i<16;i++) {
+	    rin_input[i] = a->m_pad[i];
 	}
-	rin_input[0] = (uint8_t) (first4bytes_input >> 24);
-	rin_input[1] = (uint8_t) ((first4bytes_input << 8) >> 24);
-	rin_input[2] = (uint8_t) ((first4bytes_input << 16) >> 24);
-	rin_input[3] = (uint8_t) ((first4bytes_input << 24) >> 24);
 	
 	/* Encryption: The Rijndael cipher is used as pseudorandom
 	 * function. During each round, only the first bit of
 	 * rin_output is used.
 	 */
 	AES_ecb_encrypt(rin_input, rin_output, &(a->aes_key), AES_ENCRYPT);
+
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad
 	 */
-	*aip |=  (rin_output[0] >> 7) << (31-pos);
+	ac[pos/8] |=  (rin_output[0] >> 7) << (7-(pos%8));
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    *aip = *aip ^ ip;
+    for(i=0;i<16;i++) {
+	ac[i] = ac[i] ^ c[i];
+    }
     return 0;
 }
 
@@ -364,19 +363,15 @@ anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 {
     uint8_t rin_output[16];
     uint8_t rin_input[16];
+    int pos, i;
+    uint8_t* c = (uint8_t*) &(ip); /* cut-down representation of ip */
+    uint8_t* ac = (uint8_t*) aip ; /* cut-down representation of aip */
     
-    uint32_t first4bytes_pad, first4bytes_input;
-    int pos;
-    
+
     assert(a);
 
-    *aip = 0;
-
+    memset(aip, 0, sizeof(in_addr_t));
     memcpy(rin_input, a->m_pad, 16);
-    first4bytes_pad = (((uint32_t) a->m_pad[0]) << 24)
-	+ (((uint32_t) a->m_pad[1]) << 16)
-	+ (((uint32_t) a->m_pad[2]) << 8)
-	+ (uint32_t) a->m_pad[3]; 
 
     /* For each prefix with length from 0 to 31, generate a bit
      * using the Rijndael cipher, which is used as a pseudorandom
@@ -385,21 +380,17 @@ anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
      */
     for (pos = 0; pos <= 31 ; pos++) { 
 	/* Padding: The most significant pos bits are taken from
-	 * ip. The other 128-pos bits are taken from m_pad. The
-	 * variables first4bytes_pad and first4bytes_input are used
-	 * to handle the annoying byte order problem.
+	 * ip. The other 128-pos bits are taken from m_pad.
 	 */
-	if (pos==0) {
-	    first4bytes_input =  first4bytes_pad; 
+	for(i=0;i<pos/8;i++) {
+	    rin_input[i] = c[i];
 	}
-	else {
-	    first4bytes_input = ((ip >> (32-pos)) << (32-pos))
-		| ((first4bytes_pad<<pos) >> pos);
+	rin_input[pos/8] = (c[pos/8] >> (8-pos%8)) << (8-pos%8);
+	
+	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	for(i=(pos/8)+1;i<16;i++) {
+	    rin_input[i] = a->m_pad[i];
 	}
-	rin_input[0] = (uint8_t) (first4bytes_input >> 24);
-	rin_input[1] = (uint8_t) ((first4bytes_input << 8) >> 24);
-	rin_input[2] = (uint8_t) ((first4bytes_input << 16) >> 24);
-	rin_input[3] = (uint8_t) ((first4bytes_input << 24) >> 24);
 	
 	/* Encryption: The Rijndael cipher is used as pseudorandom
 	 * function. During each round, only the first bit of
@@ -411,13 +402,19 @@ anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	if (! canflip(a, ip, pos+1)) {
 	    rin_output[0] = 0;
 	}
+	/*
+	fprintf(stderr, "canflip pos %d: %d\n",
+	pos+1, canflip(a, ip, pos+1));
+	*/
 	
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad
 	 */
-	*aip |=  (rin_output[0] >> 7) << (31-pos);
+	ac[pos/8] |=  (rin_output[0] >> 7) << (7-(pos%8));
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    *aip = *aip ^ ip;
+    for(i=0;i<16;i++) {
+	ac[i] = ac[i] ^ c[i];
+    }
     return 0;
 }

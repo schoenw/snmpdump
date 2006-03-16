@@ -43,7 +43,7 @@ struct _anon_ipv6 {
 
 #define IPv6LENGTH 128
 
-static int canflip(anon_ipv6_t *a, in6_addr_t ip, int prefixlen);
+static int canflip(anon_ipv6_t *a, const in6_addr_t ip, const int prefixlen);
 static void delete_node(struct node* n);
 static struct node* add_new_node(struct node* parent, int right);
 static void canflip_count_n(struct node* p,int* n, int level);
@@ -136,26 +136,27 @@ anon_ipv6_set_key(anon_ipv6_t *a, const uint8_t *key)
  */
 
 int
-anon_ipv6_set_used(anon_ipv6_t *a, const struct in6_addr ip, int prefixlen) 
+anon_ipv6_set_used(anon_ipv6_t *a, const struct in6_addr ip,
+		   const int prefixlen) 
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
     int n = 0;
-    int first_bit; /* first (most significant) bit of ip address
-		    */
+    int first_bit; /* first (most significant) bit of ip address */
+    int pfl = prefixlen;
+    
     assert(a);
 
     /* this should be an assert */
-    if (prefixlen > 128) prefixlen = 128;
+    if (prefixlen > 128 || prefixlen < 1) pfl = 128;
 
-    while (n < prefixlen) {
+    while (n < pfl) {
 	// printf("n: %02d, ip: %d\n",n,ip >> n);
 	if (nodep->complete) {
 	    // printf("hit complete...\n");
 	    return 0;
 	}
-	first_bit = ip.s6_addr[n / 8]
-	    & (((unsigned char) 0x80) >> (n % 8));
+	first_bit = ip.s6_addr[n / 8] & ( 0x80 >> (n % 8));
 	// printf("going %s\n", first_bit ? "right" : "left");
 	if (first_bit) {
 	    childp = nodep->right;
@@ -185,21 +186,20 @@ anon_ipv6_set_used(anon_ipv6_t *a, const struct in6_addr ip, int prefixlen)
  */
 
 static int
-canflip(anon_ipv6_t *a, const in6_addr_t ip, int prefixlen)
+canflip(anon_ipv6_t *a, const in6_addr_t ip, const int prefixlen)
 {
     struct node* nodep = a->tree; /* current node */
     struct node* childp = NULL; /* child node to be followed */
     int n = 0;
-    prefixlen--; /* need a_1 a_2 ... a_{i-1} [0,1] */
+    int pfl = prefixlen-1; /* need a_1 a_2 ... a_{i-1} [0,1] */
     int first_bit; /* last bit of ip address - currently to be considered */
-    while (n < prefixlen) {
+    while (n < pfl) {
 	// printf("n: %02d, ip: %d\n",n,ip >> n);
 	if (nodep->complete) {
 	    // printf("hit complete... (n=%d)\n",n);
 	    return 0;
 	}
-	first_bit = ip.s6_addr[n / 8]
-	    & (((unsigned char) 0x80) >> (n % 8));
+	first_bit = ip.s6_addr[n / 8] & (0x80 >> (n % 8));
 	if (first_bit) {
 	    childp = nodep->right;
 	} else {
@@ -310,7 +310,7 @@ anon_ipv6_map_pref(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
     assert(a);
 
     memset(aip, 0, sizeof(in6_addr_t));
-    //memcpy(rin_input, a->m_pad, 16);
+    memcpy(rin_input, a->m_pad, 16);
 
     /* For each prefix with length from 0 to 31, generate a using
      * bit the Rijndael cipher, which is used as a pseudorandom
@@ -369,7 +369,7 @@ anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
     assert(a);
 
     memset(aip, 0, sizeof(in6_addr_t));
-    //memcpy(rin_input, a->m_pad, 16);
+    memcpy(rin_input, a->m_pad, 16);
 
     /* For each prefix with length from 0 to 31, generate a using
      * bit the Rijndael cipher, which is used as a pseudorandom
@@ -406,6 +406,8 @@ anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
 	if (! canflip(a, ip, pos+1)) {
 	    rin_output[0] = 0;
 	}
+	fprintf(stderr, "canflip pos %d: %d\n",
+	pos+1, canflip(a, ip, pos+1));
 
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad
