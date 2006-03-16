@@ -67,6 +67,47 @@ csv_write_int32(FILE *stream, snmp_int32_t *val)
     }
 }
 
+static void
+csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
+{
+    const char *name = NULL;
+    
+    if (attr->flags & SNMP_FLAG_VALUE) {
+	switch (type) {
+	case SNMP_PDU_GET:
+	    name = "get-request";
+	    break;
+	case SNMP_PDU_GETNEXT:
+	    name = "get-next-request";
+	    break;
+	case SNMP_PDU_GETBULK:
+	    name = "get-bulk-request";
+	    break;
+	case SNMP_PDU_SET:
+	    name = "set-request";
+	    break;
+	case SNMP_PDU_RESPONSE:
+	    name = "response";
+	    break;
+	case SNMP_PDU_TRAP1:
+	    name = "trap";
+	    break;
+	case SNMP_PDU_TRAP2:
+	    name = "trap2";
+	    break;
+	case SNMP_PDU_INFORM:
+	    name = "inform";
+	    break;
+	case SNMP_PDU_REPORT:
+	    name = "report";
+	    break;
+	}
+	fprintf(stream, "%c%s", sep, name ? name : "");
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
 void
 snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
@@ -88,6 +129,15 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
     }
 
     csv_write_int32(stream, &pkt->msg.version);
+
+    csv_write_type(stream, pkt->msg.scoped_pdu.pdu.type,
+		   &pkt->msg.scoped_pdu.pdu.attr);
+
+    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.req_id);
+
+    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_status);
+    
+    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_index);
 
     fprintf(stream, "\n");
 }

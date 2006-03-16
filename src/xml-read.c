@@ -293,17 +293,16 @@ process_snmp_octs(xmlTextReaderPtr reader, snmp_octs_t* snmpstr) {
  */
 static int
 count_snmp_oid(const char* value) {
+    char *p;
     int count = 0;
-    int pos;
+
     if (value) {
-	count = 1;
-	for(pos=0;pos<strlen(value);pos++) {
-	    if (value[pos] == '.') {
-		count++;
-	    }
+	count++;
+	for (p = value; *p; p++) {
+	    count += (*p == '.');
 	}
     }
-    return count;
+    return count
 }
 
 /*

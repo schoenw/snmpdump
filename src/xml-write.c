@@ -32,11 +32,132 @@ xml_write_addr(FILE *stream, char *name, struct sockaddr *addr,
 	if (show_port) {
 	    fprintf(stream, " port=\"%d\"", sinv4->sin_port);
 	}
-	fprintf(stream, ">");
+	fprintf(stream, "/>");
 	break;
     default:
 	break;
     }
+}
+
+static void
+xml_write_attr(FILE *stream, snmp_attr_t *attr)
+{
+    if (attr->flags & SNMP_FLAG_BLEN) {
+	fprintf(stream, " blen=\"%d\"", attr->blen);
+    }
+    if (attr->flags & SNMP_FLAG_VLEN) {
+	fprintf(stream, " vlen=\"%d\"", attr->vlen);
+    }
+}
+
+static void
+xml_write_open(FILE *stream, char *name, snmp_attr_t *attr)
+{
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, attr);
+    fprintf(stream, ">");
+}
+
+static void
+xml_write_close(FILE *stream, char *name)
+{
+    fprintf(stream, "</%s>", name);
+}
+
+static void
+xml_write_int32(FILE *stream, char *name, snmp_int32_t *v)
+{
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%d", v->value);
+    }
+    fprintf(stream, "</%s>", name);
+}
+
+static void
+xml_write_octs(FILE *stream, char *name, snmp_octs_t *v)
+{
+    int i;
+
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	for (i = 0; i < v->len; i++) {
+	    fprintf(stream, "%.2x", v->value[i]);
+	}
+    }
+    fprintf(stream, "</%s>", name);
+}
+
+static void
+xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
+{
+    char *name = NULL;
+    
+    if (pdu->attr.flags & SNMP_FLAG_VALUE) {
+	switch (pdu->type) {
+	case SNMP_PDU_GET:
+	    name = "get-request";
+	    break;
+	case SNMP_PDU_GETNEXT:
+	    name = "get-next-request";
+	    break;
+	case SNMP_PDU_GETBULK:
+	    name = "get-bulk-request";
+	    break;
+	case SNMP_PDU_SET:
+	    name = "set-request";
+	    break;
+	case SNMP_PDU_RESPONSE:
+	    name = "response";
+	    break;
+	case SNMP_PDU_TRAP1:
+	    name = "trap";
+	    break;
+	case SNMP_PDU_TRAP2:
+	    name = "trap2";
+	    break;
+	case SNMP_PDU_INFORM:
+	    name = "inform";
+	    break;
+	case SNMP_PDU_REPORT:
+	    name = "report";
+	    break;
+	}
+    }
+    
+    xml_write_open(stream, name, &pdu->attr);
+
+    xml_write_int32(stream, "request-id", &pdu->req_id);
+    xml_write_int32(stream, "error-status", &pdu->err_status);
+    xml_write_int32(stream, "error-index", &pdu->err_index);
+
+    xml_write_close(stream, name);
+}
+
+static void
+xml_write_msg(FILE *stream, snmp_msg_t *msg)
+{
+    xml_write_open(stream, "snmp", &msg->attr);
+    
+    xml_write_int32(stream, "version", &msg->version);
+    
+    switch (msg->version.value) {
+    case 0:
+    case 1:
+	xml_write_octs(stream, "community", &msg->community);
+	xml_write_pdu(stream, &msg->scoped_pdu.pdu);
+	break;
+    case 3:
+	break;
+    default:
+	break;
+    }
+
+    xml_write_close(stream, "snmp");
 }
 
 void
@@ -54,8 +175,7 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 		   pkt->attr.flags & SNMP_FLAG_DADDR,
 		   pkt->attr.flags & SNMP_FLAG_DPORT);
 
-    fprintf(stream, "<snmp>");
-    fprintf(stream, "</snmp>");
+    xml_write_msg(stream, &pkt->msg);
 
     fprintf(stream, "</packet>\n");
 }
@@ -70,5 +190,4 @@ void
 snmp_xml_write_stream_end(FILE *stream)
 {
     fprintf(stream, "</snmptrace>\n");
-
 }

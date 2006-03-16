@@ -70,6 +70,7 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include <stdarg.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <assert.h>
 
 #include <sys/types.h>
 #include <regex.h>
@@ -91,8 +92,6 @@ extern struct pcap_pkthdr *nids_last_pcap_header;
 static snmp_callback user_callback = NULL;
 static void *user_data = NULL;
 
-static const char *progname = "snmpdump";
-
 static int iflag = 0;
 
 #define timediff2(t1,t2)  (((t2).tv_sec - (t1).tv_sec) * 1000 \
@@ -105,6 +104,7 @@ static regex_t *clr_regex = NULL, *del_regex = NULL;
 
 /* static int in_delete = 0; */
 /* static int in_clear = 0; */
+
 
 /*
  * Start an xml element with the given indentation and name and add
@@ -793,11 +793,80 @@ asn1_print(struct be *elem)
 }
 
 /*
+ * Helper to fill an snmp_int32_t with values.
+ */
+
+static void
+set_int32(snmp_int32_t *v, int count, struct be *elem)
+{
+    v->value = elem->data.integer;
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
+ * Helper to fill an snmp_uint32_t with values.
+ */
+
+static void
+set_uint32(snmp_uint32_t *v, int count, struct be *elem)
+{
+    v->value = elem->data.uns;
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
+ * Helper to fill an snmp_octs_t with values.
+ */
+
+static void
+set_octs(snmp_octs_t *v, int count, struct be *elem)
+{
+    v->value = (unsigned char *) elem->data.raw;
+    v->len = elem->asnlen;
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
+ * Helper to fill an snmp_oid_t with values.
+ */
+
+static void
+set_oid(snmp_oid_t *v, int count, struct be *elem)
+{
+    v->value = NULL;		/* XXX fix me XXX */
+    v->len = 0;
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
+ * Helper to fill an snmp_ipaddr_t with values.
+ */
+
+static void
+set_ipaddr(snmp_ipaddr_t *v, int count, struct be *elem)
+{
+    v->value = 0;		/* XXX fix me XXX */
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+
+
+/*
  * Decode an SNMP varbind list.
  */
 
 static void
-varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
+varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 {
 	const char *val;
 	
@@ -815,13 +884,26 @@ varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
 		fprintf(stderr, "[%d extra after SEQ of varbind]\n",
 			length - count);
 
-	xml_elem_start(indent, "variable-bindings", length, elem.asnlen);
+	pkt->msg.scoped_pdu.pdu.varbindings.attr.blen
+		= length;
+	pkt->msg.scoped_pdu.pdu.varbindings.attr.vlen
+		= elem.asnlen;
+	pkt->msg.scoped_pdu.pdu.varbindings.attr.flags
+		= SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
 	for (ind = 1; length > 0; ind++) {
 		const u_char *vbend;
 		u_int vblength;
+		snmp_varbind_t *vb;
+
+		vb = (snmp_varbind_t *) malloc(sizeof(snmp_varbind_t));
+		if (! vb) {
+			abort();
+		}
+		memset(vb, 0, sizeof(snmp_varbind_t));
 
 		/* Sequence */
 		if ((count = asn1_parse(np, length, &elem)) < 0)
@@ -831,7 +913,11 @@ varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
 			return;
 		}
 
-		xml_elem_start(indent+2, "varbind", count, elem.asnlen);
+		vb->attr.blen = count;
+		vb->attr.vlen = elem.asnlen;
+		vb->attr.flags
+			= SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+		
 		vbend = np + count;
 		vblength = length - count;
 		/* descend */
@@ -874,7 +960,6 @@ varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
 		length = vblength;
 		np = vbend;
 	}
-	xml_elem_end(indent, "variable-bindings");
 }
 
 /*
@@ -883,7 +968,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, int indent)
  */
 
 static void
-snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
+snmppdu_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 {
 	struct be elem;
 	int count = 0;
@@ -896,8 +981,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "request-id",
-		 count, elem.asnlen, "%d", elem.data.integer);
+	set_int32(&pkt->msg.scoped_pdu.pdu.req_id, count, &elem);
+
 	length -= count;
 	np += count;
 
@@ -909,8 +994,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "error-status",
-		 count, elem.asnlen, "%d", elem.data.integer);
+	set_int32(&pkt->msg.scoped_pdu.pdu.err_status, count, &elem);
+
 	length -= count;
 	np += count;
 
@@ -922,12 +1007,12 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "error-index",
-		 count, elem.asnlen, "%d", elem.data.integer);
+	set_int32(&pkt->msg.scoped_pdu.pdu.err_index, count, &elem);
+
 	length -= count;
 	np += count;
 
-	varbind_print(pduid, np, length, indent);
+	varbind_print(pduid, np, length, pkt);
 	return;
 }
 
@@ -936,10 +1021,8 @@ snmppdu_print(u_char pduid, const u_char *np, u_int length, int indent)
  */
 
 static void
-trappdu_print(const u_char *np, u_int length, int indent)
+trappdu_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 {
-	const char *val;
-
 	struct be elem;
 	int count = 0;
 
@@ -950,10 +1033,8 @@ trappdu_print(const u_char *np, u_int length, int indent)
 		fputs("[enterprise!=OID]\n", stderr);
 		return;
 	}
-	
-	val = asn1_print(&elem);
-	xml_leaf(indent, "enterprise",
-		 count, elem.asnlen, "%s", val);
+
+	set_oid(&pkt->msg.scoped_pdu.pdu.enterprise, count, &elem);
 
 	length -= count;
 	np += count;
@@ -966,9 +1047,7 @@ trappdu_print(const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	val = asn1_print(&elem);
-	xml_leaf(indent, "agent-addr",
-		 count, elem.asnlen, "%s", val);
+	set_ipaddr(&pkt->msg.scoped_pdu.pdu.agent_addr, count, &elem);
 
 	length -= count;
 	np += count;
@@ -981,8 +1060,7 @@ trappdu_print(const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "generic-trap",
-		 count, elem.asnlen, "%d", elem.data.integer);
+	set_int32(&pkt->msg.scoped_pdu.pdu.generic_trap, count, &elem);
 
 	length -= count;
 	np += count;
@@ -995,8 +1073,7 @@ trappdu_print(const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "specific-trap",
-		 count, elem.asnlen, "%d", elem.data.integer);
+	set_int32(&pkt->msg.scoped_pdu.pdu.specific_trap, count, &elem);
 
 	length -= count;
 	np += count;
@@ -1009,13 +1086,12 @@ trappdu_print(const u_char *np, u_int length, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "time-stamp",
-		 count, elem.asnlen, "%u", elem.data.uns);
-	
+	set_int32(&pkt->msg.scoped_pdu.pdu.time_stamp, count, &elem);
+ 
 	length -= count;
 	np += count;
 
-	varbind_print(TRAP, np, length, indent);
+	varbind_print(TRAP, np, length, pkt);
 	return;
 }
 
@@ -1024,10 +1100,8 @@ trappdu_print(const u_char *np, u_int length, int indent)
  */
 
 static void
-pdu_print(const u_char *np, u_int length, int version, int indent)
+pdu_print(const u_char *np, u_int length, int version, snmp_packet_t *pkt)
 {
-	const char *name;
-	
 	struct be pdu;
 	int count = 0;
 
@@ -1041,8 +1115,44 @@ pdu_print(const u_char *np, u_int length, int version, int indent)
 	if ((u_int)count < length)
 		fprintf(stderr, "[%d extra after PDU]\n", length - count);
 
-	name = Class[CONTEXT].Id[pdu.id];
-	xml_elem_start(indent, name, length, pdu.asnlen);
+	pkt->msg.scoped_pdu.pdu.attr.blen
+	    = length;
+	pkt->msg.scoped_pdu.pdu.attr.vlen
+	    = pdu.asnlen;
+	pkt->msg.scoped_pdu.pdu.attr.flags
+	    = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	switch (pdu.id) {
+	case TRAP:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_TRAP1;
+	    break;
+	case GETREQ:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_GET;
+	    break;
+	case GETNEXTREQ:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_GETNEXT;
+	    break;
+	case GETRESP:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_RESPONSE;
+	    break;
+	case SETREQ:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_SET;
+	    break;
+	case GETBULKREQ:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_GETBULK;
+	    break;
+	case INFORMREQ:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_INFORM;
+	    break;
+	case V2TRAP:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_TRAP2;
+	    break;
+	case REPORT:
+	    pkt->msg.scoped_pdu.pdu.type = SNMP_PDU_REPORT;
+	    break;
+	default:
+	    pkt->msg.scoped_pdu.pdu.attr.flags &= ~SNMP_FLAG_VALUE;
+	}
+	
 	/* descend into PDU */
 	length = pdu.asnlen;
 	np = (u_char *)pdu.data.raw;
@@ -1061,7 +1171,7 @@ pdu_print(const u_char *np, u_int length, int version, int indent)
 
 	switch (pdu.id) {
 	case TRAP:
-		trappdu_print(np, length, indent+2);
+		trappdu_print(np, length, pkt);
 		break;
 	case GETREQ:
 	case GETNEXTREQ:
@@ -1071,11 +1181,9 @@ pdu_print(const u_char *np, u_int length, int version, int indent)
 	case INFORMREQ:
 	case V2TRAP:
 	case REPORT:
-		snmppdu_print(pdu.id, np, length, indent+2);
+		snmppdu_print(pdu.id, np, length, pkt);
 		break;
 	}
-
-	xml_elem_end(indent, name);
 }
 
 /*
@@ -1083,11 +1191,10 @@ pdu_print(const u_char *np, u_int length, int version, int indent)
  */
 
 static void
-scopedpdu_print(const u_char *np, u_int length, int version, int indent)
+scopedpdu_print(const u_char *np, u_int length, int version, snmp_packet_t *pkt)
 {
 	struct be elem;
 	int count = 0;
-	const char *val;
 
 	/* Sequence */
 	if ((count = asn1_parse(np, length, &elem)) < 0)
@@ -1096,7 +1203,14 @@ scopedpdu_print(const u_char *np, u_int length, int version, int indent)
 		fputs("[!scoped PDU]\n", stderr);
 		return;
 	}
-	xml_elem_start(indent, "scoped-pdu", length, elem.asnlen);
+
+	pkt->msg.scoped_pdu.attr.blen
+	    = length;
+	pkt->msg.scoped_pdu.attr.vlen
+	    = elem.asnlen;
+	pkt->msg.scoped_pdu.attr.flags
+	    = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -1107,8 +1221,9 @@ scopedpdu_print(const u_char *np, u_int length, int version, int indent)
 		fputs("[contextEngineID!=STR]\n", stderr);
 		return;
 	}
-	val = asn1_print(&elem);
-	xml_leaf(indent+2, "context-engine-id", length, elem.asnlen, "%s", val);
+
+	set_octs(&pkt->msg.scoped_pdu.context_engine_id, count, &elem);
+
 	length -= count;
 	np += count;
 
@@ -1119,13 +1234,13 @@ scopedpdu_print(const u_char *np, u_int length, int version, int indent)
 		fputs("[contextName!=STR]\n", stderr);
 		return;
 	}
-	val = asn1_print(&elem);
-	xml_leaf(indent+2, "context-name", length, elem.asnlen, "%s", val);
+
+	set_octs(&pkt->msg.scoped_pdu.context_name, count, &elem);
+
 	length -= count;
 	np += count;
 
-	pdu_print(np, length, version, indent+2);
-	xml_elem_end(indent, "scoped-pdu");
+	pdu_print(np, length, version, pkt);
 }
 
 /*
@@ -1134,7 +1249,7 @@ scopedpdu_print(const u_char *np, u_int length, int version, int indent)
  */
 
 static void
-v12msg_print(const u_char *np, u_int length, int version, int indent)
+v12msg_parse(const u_char *np, u_int length, int version, snmp_packet_t *pkt)
 {
 	struct be elem;
 	int count = 0;
@@ -1147,12 +1262,12 @@ v12msg_print(const u_char *np, u_int length, int version, int indent)
 		return;
 	}
 
-	xml_leaf(indent, "community", count, elem.asnlen,
-		 "%s", hexify(elem.asnlen, elem.data.str));
+	set_octs(&pkt->msg.community, count, &elem);
+
 	length -= count;
 	np += count;
 
-	pdu_print(np, length, version, indent);
+	pdu_print(np, length, version, pkt);
 }
 
 /*
@@ -1261,7 +1376,7 @@ usm_print(const u_char *np, u_int length, int indent)
  */
 
 static void
-v3msg_print(const u_char *np, u_int length, int indent)
+v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 {
 	struct be elem;
 	int count = 0;
@@ -1269,7 +1384,6 @@ v3msg_print(const u_char *np, u_int length, int indent)
 	int model;
 	const u_char *xnp = np;
 	int xlength = length;
-	char buffer[8];
 
 	/* Sequence */
 	if ((count = asn1_parse(np, length, &elem)) < 0)
@@ -1280,7 +1394,9 @@ v3msg_print(const u_char *np, u_int length, int indent)
 		return;
 	}
 
+#if 0		/* XXX fixme XXX */
 	xml_elem_start(indent, "message", count, elem.asnlen);
+#endif
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
 
@@ -1291,8 +1407,9 @@ v3msg_print(const u_char *np, u_int length, int indent)
 		fputs("[msgID!=INT]\n", stderr);
 		return;
 	}
-	xml_leaf(indent+2, "msg-id",
-		 count, elem.asnlen, "%d", elem.data.integer);
+
+	set_uint32(&pkt->msg.msg_id, count, &elem);
+	
 	length -= count;
 	np += count;
 
@@ -1303,8 +1420,9 @@ v3msg_print(const u_char *np, u_int length, int indent)
 		fputs("[msgMaxSize!=INT]\n", stderr);
 		return;
 	}
-	xml_leaf(indent+2, "max-size",
-		 count, elem.asnlen, "%d", elem.data.integer);
+
+	set_uint32(&pkt->msg.msg_max_size, count, &elem);
+	
 	length -= count;
 	np += count;
 
@@ -1325,14 +1443,9 @@ v3msg_print(const u_char *np, u_int length, int indent)
 		fprintf(stderr, "[msgFlags=0x%02X]\n", flags);
 		return;
 	}
-	buffer[0] = 0;
-	if (flags & 0x01)
-		strcat(buffer, "a");
-	if (flags & 0x02)
-		strcat(buffer, "p");
-	if (flags & 0x04)
-		strcat(buffer, "r");
-	xml_leaf(indent+2, "flags", count, elem.asnlen, "%s", buffer);
+
+	set_octs(&pkt->msg.msg_flags, count, &elem);
+
 	length -= count;
 	np += count;
 
@@ -1344,9 +1457,9 @@ v3msg_print(const u_char *np, u_int length, int indent)
 		asn1_print(&elem);
 		return;
 	}
-	xml_leaf(indent+2, "security-model",
-		 count, elem.asnlen, "%d", elem.data.integer);
-	model = elem.data.integer;
+	
+	set_uint32(&pkt->msg.msg_sec_model, count, &elem);
+
 	length -= count;
 	np += count;
 
@@ -1383,12 +1496,10 @@ v3msg_print(const u_char *np, u_int length, int indent)
 	np += count;
 
 	if (model == 3) {
-		usm_print(elem.data.str, elem.asnlen, indent+2);
+		usm_print(elem.data.str, elem.asnlen, 4242);
 	}
 
-	scopedpdu_print(np, length, 3, indent+2);
-
-	xml_elem_end(indent, "message");
+	scopedpdu_print(np, length, 3, pkt);
 }
 
 /*
@@ -1432,11 +1543,7 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	pkt->msg.version.value = elem.data.integer;
-	pkt->msg.version.attr.blen = count;
-	pkt->msg.version.attr.vlen = elem.asnlen;
-	pkt->msg.version.attr.flags
-		= SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	set_int32(&pkt->msg.version, count, &elem);
 
 	switch (elem.data.integer) {
 	case SNMP_VERSION_1:
@@ -1454,10 +1561,10 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 	switch (version) {
 	case SNMP_VERSION_1:
         case SNMP_VERSION_2:
-		v12msg_print(np, length, version, 4+2);
+		v12msg_parse(np, length, version, pkt);
 		break;
 	case SNMP_VERSION_3:
-		v3msg_print(np, length, 4+2);
+		v3msg_print(np, length, pkt);
 		break;
 	default:
 	        fprintf(stderr, "[version = %d]\n", elem.data.integer);
@@ -1501,6 +1608,11 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     }
 }
 
+/*
+ * Entry point which reads a pcap file, applies the given pcap filter
+ * and then calls the callback func for each SNMP message, passing the
+ * user data pointer as well.
+ */
 
 void
 snmp_pcap_read_file(const char *file, const char *filter,
@@ -1514,8 +1626,7 @@ snmp_pcap_read_file(const char *file, const char *filter,
     user_data = data;
 	
     if (! nids_init()) {
-	fprintf(stderr, "%s: libnids initialization failed: %s\n",
-		progname, nids_errbuf);
+	fprintf(stderr, "libnids initialization failed: %s\n", nids_errbuf);
 	exit(1);
     }
 
