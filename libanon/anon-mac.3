@@ -1,0 +1,111 @@
+.\"                              hey, Emacs:   -*- nroff -*-
+.TH anon-mac 3 "March 16, 2006"
+.\" Please update the above date whenever this man page is modified.
+.\"
+.\" Some roff macros, for reference:
+.\" .nh        disable hyphenation
+.\" .hy        enable hyphenation
+.\" .ad l      left justify
+.\" .ad b      justify to both left and right margins (default)
+.\" .nf        disable filling
+.\" .fi        enable filling
+.\" .br        insert line break
+.\" .sp <n>    insert n+1 empty lines
+.\" for manpage-specific macros, see man(7)
+.SH NAME
+anon-mac \- IEEE MAC address anonymization functions of the \fBlibanon\fP
+anonymization library
+.SH SYNOPSIS
+.B #include <libanon.h>
+.sp
+/*
+ * IEEE MAC address anonymization API.
+ */
+
+typedef struct _anon_mac anon_mac_t;
+
+.BI "anon_mac_t*	anon_mac_new();"
+.br
+.BI "void		anon_mac_set_key(anon_mac_t *" a ", const uint8_t *" key ");"
+.br
+.BI "int		anon_mac_set_used(anon_mac_t * "a ", const uint8_t *" mac ");"
+.br
+.BI "int		anon_mac_map(anon_mac_t *" a ", const uint8_t *" mac
+				", uint8_t *" amac ");"
+.br
+.BI "int		anon_mac_map_lex(anon_mac_t *" a ", const uint8_t *" mac ", uint8_t *" amac ");"
+.br
+.BI "void		anon_mac_delete(anon_mac_t *" a ");"
+
+.SH DESCRIPTION
+This man page descirbes IEEE MAC address anonymization functions of
+the \fBlibanon\fP anonymization library.
+
+The MAC address anonymization preserves broadcast addresses. Other
+multicast addresses are anonymized, but the first bit is preserved.
+
+\fBanon_mac_new\fP creates a new anonymization object. At the end of
+anonymization, resources of the anonymization obejct have to be freed
+up with \fBanon_mac_delete\fP.
+
+The \fBanon_mac_set_key\fP function is currently NOT used.
+
+For non-lexicographical-order-preserving anonymization, simply use
+\fBanon_mac_map\fP for every MAC address to be anonymized.
+
+The lexicographical-order-preserving anonymization works in two
+passes. First, all addresses in the trace need to be marked as used
+(for given anonymization object) by calling the
+\fBanon_mac_set_used\fP function. After all addresses have been marked
+as used, i.e. in the second pass, one can start with retrieving the
+anonymized versions of the addresses. This is done by calling the
+\fBanon_mac_map_lex\fP function.
+
+Currently, the anonymization is done by generating random addresses
+and assigning the to the input addresses. Hence, it is not possible to
+obtain consistent anonymization for several aonnymization runs.
+
+.SH "RETURN VALUES"
+\fBanon_mac_set_used\fP, \fBanon_mac_map\fP and
+\fBanon_mac_map_lex\fP return zero on success, non-zero
+otherwise.
+.br
+\fBanon_mac_new\fP return the anonymization object on success, NULL
+otherwise.
+
+.SH EXAMPLES
+A very good source of examples is the libanon/anon.c program.
+
+.SH BUGS
+Because
+.B lh_insert
+does not have a return code to detect errors, we do not detect
+insertion fails.
+.PP
+If the space for adresses is used densely, i.e. there are many
+different addresses to be anonymized, the chances of randomly
+generating a corresponding number of different addresses decreases.
+Trying to randomly generate the complete address space could take very
+long.
+.PP
+It would be nice to allow for consistent anonymizations across several
+runs by setting always the same key.
+.PP
+There may be more.
+
+.SH "SEE ALSO"
+.BR anon (1),
+.BR anon-ip (3),
+.BR anon-int (3),
+.BR anon-string (3),
+.BR anon-ipv6 (3),
+.BR anon-mac (3),
+.BR anon-int64 (3),
+.BR anon-uint64 (3),
+.BR anon (3)
+
+
+.SH AUTHOR
+Matus Harvan <m.harvan@iu-bremen.de>
+.br
+Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>.

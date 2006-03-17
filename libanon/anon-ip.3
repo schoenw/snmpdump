@@ -76,11 +76,11 @@ This man page descirbes IP address anonymization functions (both IPv4
 and IPv6) of the \fBlibanon\fP anonymization library. We give a
 detailed description of the IPv4 API, IPv6 is similar. 
 
-\fBanon_ipv4_new\fP create a new anonymization object. An
+\fBanon_ipv4_new\fP creates a new anonymization object. An
 anonymization object has to be created for each data type that should
 be anonymized, i.e. IPv4, IPv6,integers,... At the end of
 anonymization, resources of the anonymization obejct have to be freed
-up with \fBanon_[type]_delete\fP.
+up with \fBanon_ipv4_delete\fP.
 
 
 Afterwards, a key  is set with the anon_ipv4_set_key function.
@@ -100,7 +100,7 @@ in Network-byte order as well.
 The prefix- and lexicographical-order-preserving anonymization works
 in two passes. First, all addresses in the trace need to be marked as
 used (for given anonymization object) by calling the
-\fBanon_ipv4_map_pref\fP function. One can also mark a complete subnet
+\fBanon_ipv4_set_used\fP function. One can also mark a complete subnet
 as used by using a shorter prefix length
 \fUprefixlen\fP. \fUprefixlen\fP values < 1 imply only one IP address
 has to be marked as used rather than a subnet. After all addresses

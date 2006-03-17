@@ -7,7 +7,7 @@ bin_PROGRAMS		= anon
 anon_SOURCES		= anon.c
 anon_LDADD		= libanon.la $(OPENSSL_LIBS)
 
-man_MANS		= anon.1 anon-ip.3
+man_MANS		= anon.1 anon-ip.3 anon-mac.3
 
 include_HEADERS		= libanon.h
 lib_LTLIBRARIES		= libanon.la
