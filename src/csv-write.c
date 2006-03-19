@@ -142,7 +142,7 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
     if (! pkt) return;
 
-    fprintf(stream, "\n%u.%06u", pkt->time.tv_sec, pkt->time.tv_usec);
+    fprintf(stream, "%u.%06u", pkt->time.tv_sec, pkt->time.tv_usec);
 
     csv_write_addr(stream, (struct sockaddr *) &pkt->src,
 		   pkt->attr.flags & SNMP_FLAG_SADDR,

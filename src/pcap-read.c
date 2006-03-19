@@ -983,11 +983,15 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		if (Types[i].id == BE_NOSUCHOBJECT
 		    || Types[i].id == BE_NOSUCHINST
 		    || Types[i].id == BE_ENDOFMIBVIEW) {
+#if 0
 			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
 				 count, elem.asnlen, NULL);
+#endif
 		} else {
+#if 0
 			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
 				 count, elem.asnlen, "%s", val);
+#endif
 		}
 		
 		length = vblength;

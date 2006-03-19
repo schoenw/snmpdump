@@ -92,6 +92,52 @@ xml_write_octs(FILE *stream, char *name, snmp_octs_t *v)
     fprintf(stream, "</%s>", name);
 }
 
+
+static void
+xml_write_oid(FILE *stream, char *name, snmp_oid_t *v)
+{
+    int i;
+
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	for (i = 0; i < v->len; i++) {
+	    fprintf(stream, "%s%u", (i == 0) ? "" : ".", v->value[i]);
+	}
+    }
+    fprintf(stream, "</%s>", name);
+}
+
+
+static void
+xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
+{
+    char *name = "varbind";
+    
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &varbind->attr);
+    fprintf(stream, ">");
+    xml_write_oid(stream, "name", &varbind->name);
+    fprintf(stream, "</%s>", name);
+}
+
+static void
+xml_write_varbindlist(FILE *stream, snmp_var_bindings_t *varbindlist)
+{
+    snmp_varbind_t *vb;
+    
+    fprintf(stream, "<variable-bindings");
+    xml_write_attr(stream, &varbindlist->attr);
+    fprintf(stream, ">");
+
+    for (vb = varbindlist->varbind; vb; vb = vb->next) {
+	xml_write_varbind(stream, vb);
+    }
+    
+    fprintf(stream, "</variable-bindings>");
+}
+
 static void
 xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
 {
@@ -134,6 +180,7 @@ xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
     xml_write_int32(stream, "request-id", &pdu->req_id);
     xml_write_int32(stream, "error-status", &pdu->err_status);
     xml_write_int32(stream, "error-index", &pdu->err_index);
+    xml_write_varbindlist(stream, &pdu->varbindings);
 
     xml_write_close(stream, name);
 }
