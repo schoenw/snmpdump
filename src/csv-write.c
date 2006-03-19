@@ -108,6 +108,24 @@ csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
     }
 }
 
+static void
+csv_write_varbinds(FILE *stream, snmp_varbind_t *varbind)
+{
+    int i;
+    snmp_oid_t *name;
+
+    for (; varbind; varbind = varbind->next) {
+	name = &varbind->name;
+	if (name->attr.flags & SNMP_FLAG_VALUE) {
+	    for (i = 0; i < name->len; i++) {
+		fprintf(stream, "%c%u", (i == 0) ? sep : '.', name->value[i]);
+	    }
+	} else {
+	    fprintf(stream, "%c", sep);
+	}
+    }
+}
+
 void
 snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
@@ -138,6 +156,8 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
     csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_status);
     
     csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_index);
+
+    csv_write_varbinds(stream, pkt->msg.scoped_pdu.pdu.varbindings.varbind);
 
     fprintf(stream, "\n");
 }

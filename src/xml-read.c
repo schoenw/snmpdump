@@ -8,19 +8,18 @@
  * (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
  */
 
-/*
- * compile with: gcc -g `xml2-config --cflags` `xml2-config --libs`
- *	deserializer.c -o deserializer
- */
-
-//#include <config.h>
+#include "config.h"
 
 #include "snmp.h"
 
 #include <libxml/xmlreader.h>
 #include <assert.h>
 #include <string.h>
+
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 static const char *progname = "deserializer";
 
@@ -244,7 +243,6 @@ dehexify(const char *str) {
 			     */
     static char *buffer = NULL;
     int i;
-    int n;
     int tmp, tmp2;
     
     if (strlen(str)%2 != 0) {
@@ -293,7 +291,7 @@ process_snmp_octs(xmlTextReaderPtr reader, snmp_octs_t* snmpstr) {
  */
 static int
 count_snmp_oid(const char* value) {
-    char *p;
+    const char *p;
     int count = 0;
 
     if (value) {
@@ -302,7 +300,7 @@ count_snmp_oid(const char* value) {
 	    count += (*p == '.');
 	}
     }
-    return count
+    return count;
 }
 
 /*
@@ -376,7 +374,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	     snmp_varbind_t** varbind) {
     const xmlChar *name, *value;
     xmlChar* attr;
-    int i;
     char *end;
 
     /* 1, 3, 8, 14, 15 */

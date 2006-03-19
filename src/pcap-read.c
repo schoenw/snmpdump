@@ -839,8 +839,39 @@ set_octs(snmp_octs_t *v, int count, struct be *elem)
 static void
 set_oid(snmp_oid_t *v, int count, struct be *elem)
 {
-    v->value = NULL;		/* XXX fix me XXX */
+    uint32_t o = 0;
+    int first = -1, i = elem->asnlen;
+    u_char *p = (u_char *)elem->data.raw;
+    
+    v->value = malloc((1 + elem->asnlen) * sizeof(uint32_t));
+    if (! v->value) {
+	abort();
+    }
     v->len = 0;
+
+    for (; i-- > 0; p++) {
+	o = (o << ASN_SHIFT7) + (*p & ~ASN_BIT8);
+	if (*p & ASN_LONGLEN) continue;
+
+	/*
+	 * first subitem encodes two items with 1st*OIDMUX+2nd
+	 * (see X.690:1997 clause 8.19 for the details)
+	 */
+	if (first < 0) {
+	    uint32_t s;
+	    first = 0;
+	    s = o / OIDMUX;
+	    if (s > 2) s = 2;
+	    v->value[v->len++] = s;
+	    o -= s * OIDMUX;
+	}
+	v->value[v->len++] = o;
+	if (--first < 0) {
+	    first = 0;
+	}
+	o = 0;
+    }
+    
     v->attr.blen = count;
     v->attr.vlen = elem->asnlen;
     v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
@@ -872,6 +903,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 	
 	struct be elem;
 	int i, count = 0, ind;
+	snmp_varbind_t **lvbp;
 
 	/* Sequence of varBind */
 	if ((count = asn1_parse(np, length, &elem)) < 0)
@@ -893,6 +925,8 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
+
+	lvbp = &pkt->msg.scoped_pdu.pdu.varbindings.varbind;
 
 	for (ind = 1; length > 0; ind++) {
 		const u_char *vbend;
@@ -932,8 +966,8 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 			return;
 		}
 
-		val = asn1_print(&elem);
-		xml_leaf(indent+4, "name", count, elem.asnlen, "%s", val);
+		set_oid(&vb->name, count, &elem);
+
 		length -= count;
 		np += count;
 
@@ -949,16 +983,18 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		if (Types[i].id == BE_NOSUCHOBJECT
 		    || Types[i].id == BE_NOSUCHINST
 		    || Types[i].id == BE_ENDOFMIBVIEW) {
-			xml_leaf(indent+4, Types[i].name ? Types[i].name : "value",
+			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
 				 count, elem.asnlen, NULL);
 		} else {
-			xml_leaf(indent+4, Types[i].name ? Types[i].name : "value",
+			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
 				 count, elem.asnlen, "%s", val);
 		}
-		xml_elem_end(indent+2, "varbind");
 		
 		length = vblength;
 		np = vbend;
+
+		*lvbp = vb;
+		lvbp = &vb->next;
 	}
 }
 
@@ -1459,6 +1495,7 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 	}
 	
 	set_uint32(&pkt->msg.msg_sec_model, count, &elem);
+	model = elem.data.integer;
 
 	length -= count;
 	np += count;
@@ -1573,6 +1610,27 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 }
 
 /*
+ * Deallocate memory for a parsed SNMP packet.
+ */
+
+static void
+snmp_free(snmp_packet_t *pkt)
+{
+    snmp_varbind_t *varbind, *last_varbind;
+
+    varbind = pkt->msg.scoped_pdu.pdu.varbindings.varbind;
+
+    while (varbind) {
+	if (varbind->name.value) {
+	    free(varbind->name.value);
+	}
+	last_varbind = varbind;
+	varbind = varbind->next;
+	/* free(last_varbind); */ /* XXX fixme XXX */
+    }
+}
+
+/*
  * Callback invoked by libnids for every UPD datagram that we have
  * received. Note that the datagram might have been reassembled from
  * multiple IP packets. The time information belongs to the last
@@ -1585,6 +1643,8 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     snmp_packet_t _pkt, *pkt = &_pkt;
     struct sockaddr_in *sock = NULL;
 
+    memset(pkt, 0, sizeof(snmp_packet_t));
+    
     pkt->time.tv_sec = nids_last_pcap_header->ts.tv_sec;
     pkt->time.tv_usec = nids_last_pcap_header->ts.tv_usec;
 
@@ -1602,6 +1662,8 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 	    | SNMP_FLAG_DADDR | SNMP_FLAG_DPORT;
 
     snmp_parse((unsigned char *) buf, len, pkt);
+
+    snmp_free(pkt);
 
     if (user_callback) {
 	user_callback(pkt, user_data);

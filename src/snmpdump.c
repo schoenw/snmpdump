@@ -74,7 +74,7 @@ main(int argc, char **argv)
     int i, c, errcode;
     char *expr = NULL;
     char buffer[256];
-    format_t format = FORMAT_XML;
+    format_t format = FORMAT_CSV;
 
     while ((c = getopt(argc, argv, "Vc:d:f:ih")) != -1) {
 	switch (c) {

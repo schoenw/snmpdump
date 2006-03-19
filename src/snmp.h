@@ -84,8 +84,8 @@ typedef struct {
 #define SNMP_TYPE_VALUE		0x400
 
 typedef struct _snmp_varbind {
-    uint32_t	    type;	/* type of value */
-    snmp_oid_t	    name;	/* name */
+    uint32_t	          type;	/* type of value */
+    snmp_oid_t	          name;	/* name */
     union u {
 	snmp_int32_t  i32;
 	snmp_uint32_t u32;
@@ -94,10 +94,8 @@ typedef struct _snmp_varbind {
 	snmp_oid_t    oid;
 	snmp_ipaddr_t ip;
     } value;
-    //void	   *value;	/* value (one of above defined types) */
-    struct
-     _snmp_varbind *next;	/* next varbind (linked list) */
-    snmp_attr_t     attr;	/* attributes */
+    struct _snmp_varbind *next;	/* next varbind (linked list) */
+    snmp_attr_t		  attr;	/* attributes */
 } snmp_varbind_t;
 
 typedef struct {
