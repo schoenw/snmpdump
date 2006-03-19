@@ -25,6 +25,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <regex.h>
 
@@ -74,16 +75,17 @@ main(int argc, char **argv)
     int i, c, errcode;
     char *expr = NULL;
     char buffer[256];
-    format_t format = FORMAT_CSV;
+    format_t format = FORMAT_XML;
 
-    while ((c = getopt(argc, argv, "Vc:d:f:ih")) != -1) {
+    while ((c = getopt(argc, argv, "Vc:d:f:F:ih")) != -1) {
 	switch (c) {
 	case 'c':
 	    errcode = regcomp(&_clr_regex, optarg,
 			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
 	    if (errcode) {
 		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
-		fprintf(stderr, "%s: ignoring clear regex: %s\n", progname, buffer);
+		fprintf(stderr, "%s: ignoring clear regex: %s\n",
+			progname, buffer);
 		continue;
 	    }
 	    clr_regex = &_clr_regex;
@@ -93,12 +95,23 @@ main(int argc, char **argv)
 			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
 	    if (errcode) {
 		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
-		fprintf(stderr, "%s: ignoring delete regex: %s\n", progname, buffer);
+		fprintf(stderr, "%s: ignoring delete regex: %s\n",
+			progname, buffer);
 		continue;
 	    }
 	    del_regex = &_del_regex;
 	    break;
 	case 'f':
+	    if (strcmp(optarg, "csv") == 0) {
+		format = FORMAT_CSV;
+	    } else if (strcmp(optarg, "xml") == 0) {
+		format = FORMAT_XML;
+	    } else {
+		fprintf(stderr, "%s: ignoring output format: %s unknown\n",
+			progname, optarg);
+	    }
+	    break;
+	case 'F':
 	    expr = optarg;
 	    break;
 	case 'V':
