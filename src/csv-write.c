@@ -16,6 +16,7 @@
  *   i) request ID
  *   j) error status
  *   k) error index
+ *   l) number of varbinds
  *   *) list of object names in dotted notation
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
@@ -109,7 +110,17 @@ csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
 }
 
 static void
-csv_write_varbinds(FILE *stream, snmp_varbind_t *varbind)
+csv_write_varbind_count(FILE *stream, snmp_varbind_t *varbind)
+{
+    int c;
+
+    for (c = 0; varbind; varbind = varbind->next, c++) ;
+
+    fprintf(stream, "%c%d", sep, c);
+}
+
+static void
+csv_write_varbind_names(FILE *stream, snmp_varbind_t *varbind)
 {
     int i;
     snmp_oid_t *name;
@@ -157,7 +168,11 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
     
     csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_index);
 
-    csv_write_varbinds(stream, pkt->msg.scoped_pdu.pdu.varbindings.varbind);
+    csv_write_varbind_count(stream,
+			    pkt->msg.scoped_pdu.pdu.varbindings.varbind);
+
+    csv_write_varbind_names(stream,
+			    pkt->msg.scoped_pdu.pdu.varbindings.varbind);
 
     fprintf(stream, "\n");
 }

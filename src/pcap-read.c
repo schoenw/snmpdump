@@ -1626,7 +1626,7 @@ snmp_free(snmp_packet_t *pkt)
 	}
 	last_varbind = varbind;
 	varbind = varbind->next;
-	/* free(last_varbind); */ /* XXX fixme XXX */
+	free(last_varbind);
     }
 }
 
@@ -1663,11 +1663,11 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 
     snmp_parse((unsigned char *) buf, len, pkt);
 
-    snmp_free(pkt);
-
     if (user_callback) {
 	user_callback(pkt, user_data);
     }
+
+    snmp_free(pkt);
 }
 
 /*
