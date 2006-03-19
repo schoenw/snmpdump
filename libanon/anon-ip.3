@@ -72,14 +72,14 @@ typedef struct in6_addr in6_addr_t;
 .BI "void anon_ipv6_delete(anon_ipv6_t *" a ");"
 
 .SH DESCRIPTION
-This man page descirbes IP address anonymization functions (both IPv4
+This man page describes IP address anonymization functions (both IPv4
 and IPv6) of the \fBlibanon\fP anonymization library. We give a
 detailed description of the IPv4 API, IPv6 is similar. 
 
 \fBanon_ipv4_new\fP creates a new anonymization object. An
 anonymization object has to be created for each data type that should
-be anonymized, i.e. IPv4, IPv6,integers,... At the end of
-anonymization, resources of the anonymization obejct have to be freed
+be anonymized, i.e., IPv4, IPv6, integers,... At the end of
+anonymization, resources of the anonymization object have to be freed
 up with \fBanon_ipv4_delete\fP.
 
 
@@ -91,7 +91,7 @@ The key is used for the cryptographic functions for
 anonymization. Using the same key one can obtain consistent
 anonymization of IP addresses (given the same set of used addresses).
 
-For prefix-presering only anonymization, simply use
+For prefix-preserving only anonymization, simply use
 \fBanon_ipv4_map_pref\fP for every IP address to be
 anonymized. \fUip\fP is expected in \fBNetwork-byte\fP order, as
 returned by inet_pton(3). The anonymized address \fUaip\fP is returned
@@ -104,7 +104,7 @@ used (for given anonymization object) by calling the
 as used by using a shorter prefix length
 \fUprefixlen\fP. \fUprefixlen\fP values < 1 imply only one IP address
 has to be marked as used rather than a subnet. After all addresses
-have been marked as used, i.e. in the second pass, one can start with
+have been marked as used, i.e., in the second pass, one can start with
 retrieving the anonymized versions of the addresses. This is done by
 calling the \fBanon_ipv4_map_pref_lex\fP function.
 

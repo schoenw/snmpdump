@@ -38,14 +38,14 @@ typedef struct _anon_mac anon_mac_t;
 .BI "void		anon_mac_delete(anon_mac_t *" a ");"
 
 .SH DESCRIPTION
-This man page descirbes IEEE MAC address anonymization functions of
+This man page describes IEEE MAC address anonymization functions of
 the \fBlibanon\fP anonymization library.
 
 The MAC address anonymization preserves broadcast addresses. Other
 multicast addresses are anonymized, but the first bit is preserved.
 
 \fBanon_mac_new\fP creates a new anonymization object. At the end of
-anonymization, resources of the anonymization obejct have to be freed
+anonymization, resources of the anonymization object have to be freed
 up with \fBanon_mac_delete\fP.
 
 The \fBanon_mac_set_key\fP function is currently NOT used.
@@ -57,13 +57,13 @@ The lexicographical-order-preserving anonymization works in two
 passes. First, all addresses in the trace need to be marked as used
 (for given anonymization object) by calling the
 \fBanon_mac_set_used\fP function. After all addresses have been marked
-as used, i.e. in the second pass, one can start with retrieving the
+as used, i.e., in the second pass, one can start with retrieving the
 anonymized versions of the addresses. This is done by calling the
 \fBanon_mac_map_lex\fP function.
 
 Currently, the anonymization is done by generating random addresses
 and assigning the to the input addresses. Hence, it is not possible to
-obtain consistent anonymization for several aonnymization runs.
+obtain consistent anonymization for several anonymization runs.
 
 .SH "RETURN VALUES"
 \fBanon_mac_set_used\fP, \fBanon_mac_map\fP and
@@ -82,7 +82,7 @@ Because
 does not have a return code to detect errors, we do not detect
 insertion fails.
 .PP
-If the space for adresses is used densely, i.e. there are many
+If the space for addresses is used densely, i.e., there are many
 different addresses to be anonymized, the chances of randomly
 generating a corresponding number of different addresses decreases.
 Trying to randomly generate the complete address space could take very
