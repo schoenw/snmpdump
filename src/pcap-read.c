@@ -1498,7 +1498,7 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	set_uint32(&pkt->msg.msg_id, count, &elem);
+	set_uint32(&pkt->msg.header.msg_id, count, &elem);
 	
 	length -= count;
 	np += count;
@@ -1511,7 +1511,7 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	set_uint32(&pkt->msg.msg_max_size, count, &elem);
+	set_uint32(&pkt->msg.header.msg_max_size, count, &elem);
 	
 	length -= count;
 	np += count;
@@ -1534,7 +1534,7 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	set_octs(&pkt->msg.msg_flags, count, &elem);
+	set_octs(&pkt->msg.header.msg_flags, count, &elem);
 
 	length -= count;
 	np += count;
@@ -1548,7 +1548,7 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 	
-	set_uint32(&pkt->msg.msg_sec_model, count, &elem);
+	set_uint32(&pkt->msg.header.msg_sec_model, count, &elem);
 	model = elem.data.integer;
 
 	length -= count;

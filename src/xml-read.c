@@ -807,7 +807,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->msg.msg_id.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.header.msg_id.attr));
 	/* max-size */
 	} else if (name && xmlStrcmp(name, BAD_CAST("max-size")) == 0) {
 	    set_state(IN_MAX_SIZE);
@@ -815,14 +815,14 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			      &((*packet)->msg.msg_max_size.attr));
+			      &((*packet)->msg.header.msg_max_size.attr));
 	/* flags */
 	} else if (name && xmlStrcmp(name, BAD_CAST("flags")) == 0) {
 	    set_state(IN_FLAGS);
 	    assert((*packet));
 	    /* attributes */
 	    /* blen, vlen */
-	    process_snmp_attr(reader, &((*packet)->msg.msg_flags.attr));
+	    process_snmp_attr(reader, &((*packet)->msg.header.msg_flags.attr));
 	/* security-model */
 	} else if (name && xmlStrcmp(name, BAD_CAST("security-model")) == 0) {
 	    set_state(IN_SEC_MODEL);
@@ -830,7 +830,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader,
-			      &((*packet)->msg.msg_sec_model.attr));
+			      &((*packet)->msg.header.msg_sec_model.attr));
 	/* usm */
 	} else if (name && xmlStrcmp(name, BAD_CAST("usm")) == 0) {
 	    set_state(IN_USM);
@@ -1030,19 +1030,19 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	/* snmpv3 */
 	case IN_MSG_ID:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->msg.msg_id));
+	    process_snmp_uint32(reader, &((*packet)->msg.header.msg_id));
 	    break;
 	case IN_MAX_SIZE:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->msg.msg_max_size));
+	    process_snmp_uint32(reader, &((*packet)->msg.header.msg_max_size));
 	    break;
 	case IN_FLAGS:
 	    assert(*packet);
-	    process_snmp_octs(reader, &((*packet)->msg.msg_flags));
+	    process_snmp_octs(reader, &((*packet)->msg.header.msg_flags));
 	    break;
 	case IN_SEC_MODEL:
 	    assert(*packet);
-	    process_snmp_uint32(reader, &((*packet)->msg.msg_sec_model));
+	    process_snmp_uint32(reader, &((*packet)->msg.header.msg_sec_model));
 	    break;
 	case IN_AUTH_ENGINE_ID:
 	    assert(*packet);
