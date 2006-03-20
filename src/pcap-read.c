@@ -909,7 +909,7 @@ set_oid(snmp_oid_t *v, int count, struct be *elem)
 static void
 set_ipaddr(snmp_ipaddr_t *v, int count, struct be *elem)
 {
-    v->value = 0;		/* XXX fix me XXX */
+    memcpy(&v->value, elem->data.raw, 4);
     v->attr.blen = count;
     v->attr.vlen = elem->asnlen;
     v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
