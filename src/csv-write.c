@@ -152,28 +152,28 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 		   pkt->attr.flags & SNMP_FLAG_DADDR,
 		   pkt->attr.flags & SNMP_FLAG_DPORT);
     
-    if (pkt->msg.attr.flags & SNMP_FLAG_BLEN) {
-	fprintf(stream, "%c%d", sep, pkt->msg.attr.blen);
+    if (pkt->snmp.attr.flags & SNMP_FLAG_BLEN) {
+	fprintf(stream, "%c%d", sep, pkt->snmp.attr.blen);
     } else {
 	fprintf(stream, "%c", sep);
     }
 
-    csv_write_int32(stream, &pkt->msg.version);
+    csv_write_int32(stream, &pkt->snmp.version);
 
-    csv_write_type(stream, pkt->msg.scoped_pdu.pdu.type,
-		   &pkt->msg.scoped_pdu.pdu.attr);
+    csv_write_type(stream, pkt->snmp.scoped_pdu.pdu.type,
+		   &pkt->snmp.scoped_pdu.pdu.attr);
 
-    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.req_id);
+    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.req_id);
 
-    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_status);
+    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_status);
     
-    csv_write_int32(stream, &pkt->msg.scoped_pdu.pdu.err_index);
+    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_index);
 
     csv_write_varbind_count(stream,
-			    pkt->msg.scoped_pdu.pdu.varbindings.varbind);
+			    pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
 
     csv_write_varbind_names(stream,
-			    pkt->msg.scoped_pdu.pdu.varbindings.varbind);
+			    pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
 
     fprintf(stream, "\n");
 }

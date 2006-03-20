@@ -157,22 +157,22 @@ typedef struct {
     snmp_octs_t       msg_flags; /* should be type text according to schema */
     snmp_uint32_t     msg_sec_model;
     snmp_attr_t       attr;
-} snmp_msgv3_t;
+} snmp_msg_t;
 
 typedef struct {
     snmp_int32_t      version;
     snmp_octs_t       community;	/* only SNMPv1/SNMPv2c */
-    snmp_msgv3_t      header;		/* only SNMPv3 */
+    snmp_msg_t        message;		/* only SNMPv3 */
     snmp_usm_t	      usm;		/* only SNMPv3/USM */
     snmp_scoped_pdu_t scoped_pdu;
     snmp_attr_t	      attr;
-} snmp_msg_t;
+} snmp_snmp_t;
 
 typedef struct {
     struct sockaddr_storage src;
     struct sockaddr_storage dst;
     struct timeval	    time;
-    snmp_msg_t		    msg;
+    snmp_snmp_t		    snmp;
     snmp_attr_t		    attr;
 } snmp_packet_t;
 

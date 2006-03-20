@@ -1,0 +1,417 @@
+<?xml version="1.0"?>
+<snmptrace>
+  <packet sec="1100094569" usec="370200">
+    <src ip="127.0.0.1" port="32768"/>
+    <dst ip="127.0.0.1" port="161"/>
+    <snmp blen="659" vlen="655">
+      <version blen="3" vlen="1">0</version>
+      <community blen="8" vlen="6">7075626c6963</community>
+      <get-next-request blen="644" vlen="640">
+        <request-id blen="6" vlen="4">1031235715</request-id>
+        <error-status blen="3" vlen="1">0</error-status>
+        <error-index blen="3" vlen="1">0</error-index>
+        <variable-bindings blen="628" vlen="624">
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.1</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.2</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.3</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.4</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.5</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.6</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.7</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.8</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.9</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.10</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.11</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.12</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.13</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.14</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.15</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.16</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.17</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.18</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.19</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.20</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.21</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.22</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.23</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.24</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.1</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.2</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.3</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.4</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.5</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.6</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.7</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.8</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.9</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.10</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.11</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.12</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.13</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.14</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.15</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.16</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.17</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.18</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.19</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.20</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.21</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.22</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.23</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.4.24</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+        </variable-bindings>
+      </get-next-request>
+    </snmp>
+  </packet>
+  <packet sec="1100094569" usec="371523">
+    <src ip="127.0.0.1" port="161"/>
+    <dst ip="127.0.0.1" port="32768"/>
+    <snmp blen="771" vlen="767">
+      <version blen="3" vlen="1">0</version>
+      <community blen="8" vlen="6">7075626c6963</community>
+      <response blen="756" vlen="752">
+        <request-id blen="6" vlen="4">1031235715</request-id>
+        <error-status blen="3" vlen="1">0</error-status>
+        <error-index blen="3" vlen="1">0</error-index>
+        <variable-bindings blen="740" vlen="736">
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.1.0</name>
+            <integer32 blen="3" vlen="1">2</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.2.0</name>
+            <integer32 blen="3" vlen="1">64</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.3.0</name>
+            <unsigned32 blen="3" vlen="1">26</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.4.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.5.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.6.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.7.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.8.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.9.0</name>
+            <unsigned32 blen="3" vlen="1">23</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.10.0</name>
+            <unsigned32 blen="3" vlen="1">23</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.11.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.12.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.13.0</name>
+            <integer32 blen="3" vlen="1">0</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.14.0</name>
+            <unsigned32 blen="3" vlen="1">6</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.15.0</name>
+            <unsigned32 blen="3" vlen="1">3</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.16.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.17.0</name>
+            <unsigned32 blen="3" vlen="1">3</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.18.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.19.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="23" vlen="21">
+            <name blen="15" vlen="13">1.3.6.1.2.1.4.20.1.1.127.0.0.1</name>
+            <ipaddress blen="6" vlen="4">127.0.0.1</ipaddress>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.5.1.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.1.0</name>
+            <integer32 blen="3" vlen="1">2</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.2.0</name>
+            <integer32 blen="3" vlen="1">64</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.3.0</name>
+            <unsigned32 blen="3" vlen="1">26</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.4.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.5.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.6.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.7.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.8.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.9.0</name>
+            <unsigned32 blen="3" vlen="1">23</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.10.0</name>
+            <unsigned32 blen="3" vlen="1">23</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.11.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.12.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.13.0</name>
+            <integer32 blen="3" vlen="1">0</integer32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.14.0</name>
+            <unsigned32 blen="3" vlen="1">6</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.15.0</name>
+            <unsigned32 blen="3" vlen="1">3</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.16.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.17.0</name>
+            <unsigned32 blen="3" vlen="1">3</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.18.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.19.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="23" vlen="21">
+            <name blen="15" vlen="13">1.3.6.1.2.1.4.20.1.1.127.0.0.1</name>
+            <ipaddress blen="6" vlen="4">127.0.0.1</ipaddress>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.4.23.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+          <varbind blen="15" vlen="13">
+            <name blen="10" vlen="8">1.3.6.1.2.1.5.1.0</name>
+            <unsigned32 blen="3" vlen="1">0</unsigned32>
+          </varbind>
+        </variable-bindings>
+      </response>
+    </snmp>
+  </packet>
+</snmptrace>

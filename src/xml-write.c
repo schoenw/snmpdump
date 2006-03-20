@@ -42,7 +42,7 @@ xml_write_addr(FILE *stream, char *name, struct sockaddr *addr,
 }
 
 
-static void
+static inline void
 xml_write_attr(FILE *stream, snmp_attr_t *attr)
 {
     if (attr->flags & SNMP_FLAG_BLEN) {
@@ -54,7 +54,7 @@ xml_write_attr(FILE *stream, snmp_attr_t *attr)
 }
 
 
-static void
+static inline void
 xml_write_open(FILE *stream, const char *name, snmp_attr_t *attr)
 {
     fprintf(stream, "<%s", name);
@@ -63,7 +63,7 @@ xml_write_open(FILE *stream, const char *name, snmp_attr_t *attr)
 }
 
 
-static void
+static inline void
 xml_write_close(FILE *stream, const char *name)
 {
     fprintf(stream, "</%s>", name);
@@ -268,45 +268,92 @@ xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
 
 
 static void
+xml_write_scoped_pdu(FILE *stream, snmp_scoped_pdu_t *scoped_pdu)
+{
+    const char *name = "scoped-pdu";
+    
+    xml_write_open(stream, name, &scoped_pdu->attr);
+    xml_write_octs(stream, "context-engine-id",
+		   &scoped_pdu->context_engine_id);
+    xml_write_octs(stream, "context-name",
+		   &scoped_pdu->context_name);
+    xml_write_pdu(stream, &scoped_pdu->pdu);
+    xml_write_close(stream, name);
+}
+
+
+static void
 xml_write_trap(FILE *stream, snmp_pdu_t *pdu)
 {
-    xml_write_open(stream, "trap", &pdu->attr);
+    const char *name = "trap";
     
+    xml_write_open(stream, name, &pdu->attr);
     xml_write_oid(stream, "enterprise", &pdu->enterprise);
     xml_write_ipaddr(stream, "agent-addr", &pdu->agent_addr);
     xml_write_int32(stream, "generic-trap", &pdu->generic_trap);
     xml_write_int32(stream, "specific-trap", &pdu->specific_trap);
     xml_write_int32(stream, "time-stamp", &pdu->time_stamp);
     xml_write_varbindlist(stream, &pdu->varbindings);
-
-    xml_write_close(stream, "trap");
+    xml_write_close(stream, name);
 }
 
 
 static void
-xml_write_msg(FILE *stream, snmp_msg_t *msg)
+xml_write_usm(FILE *stream, snmp_usm_t *usm)
 {
-    xml_write_open(stream, "snmp", &msg->attr);
+    const char *name = "usm";
+
+    xml_write_open(stream, name, &usm->attr);
+    xml_write_octs(stream, "auth-engine-id", &usm->auth_engine_id);
+    xml_write_uint32(stream, "auth-engine-boots", &usm->auth_engine_boots);
+    xml_write_uint32(stream, "auth-engine-time", &usm->auth_engine_time);
+    xml_write_octs(stream, "user", &usm->user);
+    xml_write_octs(stream, "auth-params", &usm->auth_params);
+    xml_write_octs(stream, "priv-params", &usm->priv_params);
+    xml_write_close(stream, name);
+}
+
+
+static void
+xml_write_message(FILE *stream, snmp_msg_t *msg)
+{
+    const char *name = "message";
+
+    xml_write_open(stream, name, &msg->attr);
+    xml_write_uint32(stream, "msg-id", &msg->msg_id);
+    xml_write_uint32(stream, "max-size", &msg->msg_max_size);
+    xml_write_octs(stream, "flags", &msg->msg_flags);
+    xml_write_uint32(stream, "security-model", &msg->msg_sec_model);
+    xml_write_close(stream, name);
+}
+
+
+static void
+xml_write_snmp(FILE *stream, snmp_snmp_t *snmp)
+{
+    const char *name = "snmp";
     
-    xml_write_int32(stream, "version", &msg->version);
-    
-    switch (msg->version.value) {
+    xml_write_open(stream, name, &snmp->attr);
+    xml_write_int32(stream, "version", &snmp->version);
+    switch (snmp->version.value) {
     case 0:
     case 1:
-	xml_write_octs(stream, "community", &msg->community);
-	if (msg->scoped_pdu.pdu.type == SNMP_PDU_TRAP1) {
-	    xml_write_trap(stream, &msg->scoped_pdu.pdu);
+	xml_write_octs(stream, "community", &snmp->community);
+	if (snmp->scoped_pdu.pdu.type == SNMP_PDU_TRAP1) {
+	    xml_write_trap(stream, &snmp->scoped_pdu.pdu);
 	} else {
-	    xml_write_pdu(stream, &msg->scoped_pdu.pdu);
+	    xml_write_pdu(stream, &snmp->scoped_pdu.pdu);
 	}
 	break;
     case 3:
+	xml_write_message(stream, &snmp->message);
+	xml_write_usm(stream, &snmp->usm);
+	xml_write_scoped_pdu(stream, &snmp->scoped_pdu);
 	break;
     default:
 	break;
     }
-
-    xml_write_close(stream, "snmp");
+    xml_write_close(stream, name);
 }
 
 
@@ -325,7 +372,7 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 		   pkt->attr.flags & SNMP_FLAG_DADDR,
 		   pkt->attr.flags & SNMP_FLAG_DPORT);
 
-    xml_write_msg(stream, &pkt->msg);
+    xml_write_snmp(stream, &pkt->snmp);
 
     fprintf(stream, "</packet>\n");
 }

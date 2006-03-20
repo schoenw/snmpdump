@@ -30,9 +30,9 @@ message.elem |=
     element msg-id { length.attrs, xsd:unsignedInt },
     element max-size { length.attrs, xsd:unsignedInt },
     element flags { length.attrs, xsd:hexBinary },
-    element security-model { length.attrs, xsd:unsignedInt },
-    usm.elem?
+    element security-model { length.attrs, xsd:unsignedInt }
   },
+  usm.elem?,
   element scoped-pdu {
     length.attrs,
     element context-engine-id { length.attrs, xsd:hexBinary },
@@ -41,13 +41,15 @@ message.elem |=
   }
 
 usm.elem =
-  length.attrs,
-  element auth-engine-id { length.attrs, xsd:hexBinary },
-  element auth-engine-boots { length.attrs, xsd:unsignedInt },
-  element auth-engine-time { length.attrs, xsd:unsignedInt },
-  element user { length.attrs, xsd:string },
-  element auth-params { length.attrs, xsd:hexBinary },
-  element priv-params { length.attrs, xsd:hexBinary }
+  element usm {
+    length.attrs,
+    element auth-engine-id { length.attrs, xsd:hexBinary },
+    element auth-engine-boots { length.attrs, xsd:unsignedInt },
+    element auth-engine-time { length.attrs, xsd:unsignedInt },
+    element user { length.attrs, xsd:hexBinary },
+    element auth-params { length.attrs, xsd:hexBinary },
+    element priv-params { length.attrs, xsd:hexBinary }
+  }
 
 pdu.elem =
   element trap { 
