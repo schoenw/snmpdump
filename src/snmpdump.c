@@ -32,9 +32,14 @@
 static const char *progname = "snmpdump";
 
 typedef enum {
-    FORMAT_XML = 1,
-    FORMAT_CSV = 2
-} format_t;
+    INPUT_XML = 1,
+    INPUT_PCAP = 2
+} input_t;
+
+typedef enum {
+    OUTPUT_XML = 1,
+    OUTPUT_CSV = 2
+} output_t;
 
 static regex_t _clr_regex, _del_regex;
 static regex_t *clr_regex = NULL, *del_regex = NULL;
@@ -75,9 +80,10 @@ main(int argc, char **argv)
     int i, c, errcode;
     char *expr = NULL;
     char buffer[256];
-    format_t format = FORMAT_XML;
+    output_t output = OUTPUT_XML;
+    input_t input = INPUT_PCAP;
 
-    while ((c = getopt(argc, argv, "Vc:d:f:F:ih")) != -1) {
+    while ((c = getopt(argc, argv, "Vc:d:f:i:o:h")) != -1) {
 	switch (c) {
 	case 'c':
 	    errcode = regcomp(&_clr_regex, optarg,
@@ -101,17 +107,27 @@ main(int argc, char **argv)
 	    }
 	    del_regex = &_del_regex;
 	    break;
-	case 'f':
-	    if (strcmp(optarg, "csv") == 0) {
-		format = FORMAT_CSV;
+	case 'i':
+	    if (strcmp(optarg, "pcap") == 0) {
+		input = INPUT_PCAP;
 	    } else if (strcmp(optarg, "xml") == 0) {
-		format = FORMAT_XML;
+		input = INPUT_XML;
+	    } else {
+		fprintf(stderr, "%s: ignoring input format: %s unknown\n",
+			progname, optarg);
+	    }
+	    break;
+	case 'o':
+	    if (strcmp(optarg, "csv") == 0) {
+		output = OUTPUT_CSV;
+	    } else if (strcmp(optarg, "xml") == 0) {
+		output = OUTPUT_XML;
 	    } else {
 		fprintf(stderr, "%s: ignoring output format: %s unknown\n",
 			progname, optarg);
 	    }
 	    break;
-	case 'F':
+	case 'f':
 	    expr = optarg;
 	    break;
 	case 'V':
@@ -119,23 +135,41 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c regex] [-d regex] [-F filter] [-f format] [-h] file ... \n", progname);
+	    printf("%s [-c regex] [-d regex] [-f filter] [-i format] [-o format] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
 
-    switch (format) {
-    case FORMAT_XML:
+    switch (output) {
+    case OUTPUT_XML:
 	snmp_xml_write_stream_begin(stdout);
 	for (i = optind; i < argc; i++) {
-	    snmp_pcap_read_file(argv[i], expr, print_xml, stdout);
+	    switch (input) {
+	    case INPUT_XML:
+#if 0
+		snmp_xml_read_file(argv[i], print_xml, stdout);
+#endif
+		break;
+	    case INPUT_PCAP:
+		snmp_pcap_read_file(argv[i], expr, print_xml, stdout);
+		break;
+	    }
 	}
 	snmp_xml_write_stream_end(stdout);
 	break;
-    case FORMAT_CSV:
+    case OUTPUT_CSV:
 	snmp_csv_write_stream_begin(stdout);
 	for (i = optind; i < argc; i++) {
-	    snmp_pcap_read_file(argv[i], expr, print_csv, stdout);
+	    switch (input) {
+	    case INPUT_XML:
+#if 0
+		snmp_xml_read_file(argv[i], print_csv, stdout);
+#endif
+		break;
+	    case INPUT_PCAP:
+		snmp_pcap_read_file(argv[i], expr, print_csv, stdout);
+		break;
+	    }
 	}
 	snmp_csv_write_stream_end(stdout);
 	break;

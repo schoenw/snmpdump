@@ -49,15 +49,20 @@ Delete all attributes or elements in the XML document where the name
 matches \fIregex\fR.  The regular expression \fIregex\fR is a case
 insensitive extended POSIX regular expression.
 .TP
-\fB-f \fIformat\fB, --format=\fIformat\fP
-Produce output of the given \fIformat\fR. The current version of
-snmpdump can generate XML output of CSV output. The default output
-format is XML.
-.TP
-\fB-F \fIexpression\fB, --filter=\fIexpression\fP
+\fB-f \fIexpression\fB, --filter=\fIexpression\fP
 Filter the input by applying the pcap filter \fIexpression\fR to the
 packets before they are processed by snmpdump. This option can only
 be used once.
+.TP
+\fB-i \fIformat\fB, --input=\fIformat\fP
+Process input of the given \fIformat\fR. The current version of
+snmpdump can process XML input and PCAP input. The default input
+format is PCAP.
+.TP
+\fB-o \fIformat\fB, --output=\fIformat\fP
+Produce output of the given \fIformat\fR. The current version of
+snmpdump can generate XML output and CSV output. The default output
+format is XML.
 .TP
 .B \-h, \-\-help
 Show summary of options.
