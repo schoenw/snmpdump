@@ -11,10 +11,12 @@
 
 #include "snmp.h"
 
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
 
 static void
 xml_write_addr(FILE *stream, char *name, struct sockaddr *addr,
@@ -39,6 +41,7 @@ xml_write_addr(FILE *stream, char *name, struct sockaddr *addr,
     }
 }
 
+
 static void
 xml_write_attr(FILE *stream, snmp_attr_t *attr)
 {
@@ -50,6 +53,7 @@ xml_write_attr(FILE *stream, snmp_attr_t *attr)
     }
 }
 
+
 static void
 xml_write_open(FILE *stream, char *name, snmp_attr_t *attr)
 {
@@ -58,11 +62,22 @@ xml_write_open(FILE *stream, char *name, snmp_attr_t *attr)
     fprintf(stream, ">");
 }
 
+
 static void
 xml_write_close(FILE *stream, char *name)
 {
     fprintf(stream, "</%s>", name);
 }
+
+
+static void
+xml_write_null(FILE *stream, char *name, snmp_null_t *v)
+{
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, "/>");
+}
+
 
 static void
 xml_write_int32(FILE *stream, char *name, snmp_int32_t *v)
@@ -71,10 +86,54 @@ xml_write_int32(FILE *stream, char *name, snmp_int32_t *v)
     xml_write_attr(stream, &v->attr);
     fprintf(stream, ">");
     if (v->attr.flags & SNMP_FLAG_VALUE) {
-	fprintf(stream, "%d", v->value);
+	fprintf(stream, "%"PRId32, v->value);
     }
     fprintf(stream, "</%s>", name);
 }
+
+
+static void
+xml_write_uint32(FILE *stream, char *name, snmp_uint32_t *v)
+{
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%"PRIu32, v->value);
+    }
+    fprintf(stream, "</%s>", name);
+}
+
+
+static void
+xml_write_uint64(FILE *stream, char *name, snmp_uint64_t *v)
+{
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%"PRIu64, v->value);
+    }
+    fprintf(stream, "</%s>", name);
+}
+
+
+static void
+xml_write_ipaddr(FILE *stream, char *name, snmp_ipaddr_t *v)
+{
+    char buffer[20];
+
+    fprintf(stream, "<%s", name);
+    xml_write_attr(stream, &v->attr);
+    fprintf(stream, ">");
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	if (inet_ntop(AF_INET, &v->value, buffer, sizeof(buffer))) {
+	    fprintf(stream, "%s", buffer);
+	}
+    }
+    fprintf(stream, "</%s>", name);
+}
+
 
 static void
 xml_write_octs(FILE *stream, char *name, snmp_octs_t *v)
@@ -103,7 +162,7 @@ xml_write_oid(FILE *stream, char *name, snmp_oid_t *v)
     fprintf(stream, ">");
     if (v->attr.flags & SNMP_FLAG_VALUE) {
 	for (i = 0; i < v->len; i++) {
-	    fprintf(stream, "%s%u", (i == 0) ? "" : ".", v->value[i]);
+	    fprintf(stream, "%s%"PRIu32, (i == 0) ? "" : ".", v->value[i]);
 	}
     }
     fprintf(stream, "</%s>", name);
@@ -119,8 +178,45 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
     xml_write_attr(stream, &varbind->attr);
     fprintf(stream, ">");
     xml_write_oid(stream, "name", &varbind->name);
+    switch (varbind->type) {
+    case SNMP_TYPE_NULL:
+	xml_write_null(stream, "null", &varbind->value.null);
+	break;
+    case SNMP_TYPE_INT32:
+	xml_write_int32(stream, "integer32", &varbind->value.i32);
+	break;
+    case SNMP_TYPE_UINT32:
+	xml_write_uint32(stream, "unsigned32", &varbind->value.u32);
+	break;
+    case SNMP_TYPE_UINT64:
+	xml_write_uint64(stream, "unsigned64", &varbind->value.u64);
+	break;
+    case SNMP_TYPE_IPADDR:
+	xml_write_ipaddr(stream, "ipaddress", &varbind->value.ip);
+	break;
+    case SNMP_TYPE_OCTS:
+	xml_write_octs(stream, "octet-string", &varbind->value.octs);
+	break;
+    case SNMP_TYPE_OID:
+	xml_write_oid(stream, "object-identifier", &varbind->value.oid);
+	break;
+    case SNMP_TYPE_NO_SUCH_OBJ:
+	xml_write_null(stream, "no-such-object", &varbind->value.null);
+	break;
+    case SNMP_TYPE_NO_SUCH_INST:
+	xml_write_null(stream, "no-such-instance", &varbind->value.null);
+	break;
+    case SNMP_TYPE_END_MIB_VIEW:
+	xml_write_null(stream, "end-of-mib-view", &varbind->value.null);
+	break;
+    default:
+	/* xxx */
+	break;
+    }
+    
     fprintf(stream, "</%s>", name);
 }
+
 
 static void
 xml_write_varbindlist(FILE *stream, snmp_var_bindings_t *varbindlist)
@@ -137,6 +233,7 @@ xml_write_varbindlist(FILE *stream, snmp_var_bindings_t *varbindlist)
     
     fprintf(stream, "</variable-bindings>");
 }
+
 
 static void
 xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
@@ -185,6 +282,7 @@ xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
     xml_write_close(stream, name);
 }
 
+
 static void
 xml_write_msg(FILE *stream, snmp_msg_t *msg)
 {
@@ -207,6 +305,7 @@ xml_write_msg(FILE *stream, snmp_msg_t *msg)
     xml_write_close(stream, "snmp");
 }
 
+
 void
 snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
@@ -227,11 +326,13 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
     fprintf(stream, "</packet>\n");
 }
 
+
 void
 snmp_xml_write_stream_begin(FILE *stream)
 {
     fprintf(stream, "<?xml version=\"1.0\"?>\n<snmptrace>\n");
 }
+
 
 void
 snmp_xml_write_stream_end(FILE *stream)

@@ -119,7 +119,7 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c regex] [-d regex] [-f filter] [-h] file ... \n", progname);
+	    printf("%s [-c regex] [-d regex] [-F filter] [-f format] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }

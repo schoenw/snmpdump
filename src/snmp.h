@@ -38,6 +38,10 @@ typedef struct {
 
 
 typedef struct {
+    snmp_attr_t attr;		/* attributes */
+} snmp_null_t;
+
+typedef struct {
     int32_t     value;		/* signed 32bit values (Integer32,
 				   Enumerations) */
     snmp_attr_t attr;		/* attributes */
@@ -87,6 +91,7 @@ typedef struct _snmp_varbind {
     uint32_t	          type;	/* type of value */
     snmp_oid_t	          name;	/* name */
     union u {
+	snmp_null_t   null;
 	snmp_int32_t  i32;
 	snmp_uint32_t u32;
 	snmp_uint64_t u64;

@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH SNMPDUMP 1 "December 2, 2005"
+.TH SNMPDUMP 1 "March 20, 2006"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -90,7 +90,7 @@ To filter out only certain SNMP packets from a given source using a
 non-standard port number, you can use the pcap filtering mechanism:
 .PP 
 .RS 
-\f(CWsnmpdump -f 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
+\f(CWsnmpdump -F 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
 .RE 
 .PP
 .SH SEE ALSO

@@ -793,6 +793,18 @@ asn1_print(struct be *elem)
 }
 
 /*
+ * Helper to fill an snmp_null_t with values.
+ */
+
+static void
+set_null(snmp_null_t *v, int count, struct be *elem)
+{
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
  * Helper to fill an snmp_int32_t with values.
  */
 
@@ -813,6 +825,19 @@ static void
 set_uint32(snmp_uint32_t *v, int count, struct be *elem)
 {
     v->value = elem->data.uns;
+    v->attr.blen = count;
+    v->attr.vlen = elem->asnlen;
+    v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+}
+
+/*
+ * Helper to fill an snmp_uint32_t with values.
+ */
+
+static void
+set_uint64(snmp_uint64_t *v, int count, struct be *elem)
+{
+    v->value = elem->data.uns64;
     v->attr.blen = count;
     v->attr.vlen = elem->asnlen;
     v->attr.flags = SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
@@ -899,10 +924,8 @@ set_ipaddr(snmp_ipaddr_t *v, int count, struct be *elem)
 static void
 varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 {
-	const char *val;
-	
 	struct be elem;
-	int i, count = 0, ind;
+	int count = 0, ind;
 	snmp_varbind_t **lvbp;
 
 	/* Sequence of varBind */
@@ -975,25 +998,52 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		if ((count = asn1_parse(np, length, &elem)) < 0)
 			return;
 
-		for (i = 0; Types[i].name; i++) {
-			if (Types[i].id == elem.type) break;
+		switch (elem.type) {
+		case BE_NULL:
+		    vb->type = SNMP_TYPE_NULL;
+		    set_null(&vb->value.null, count, &elem);
+		    break;
+		case BE_INT:
+		    vb->type = SNMP_TYPE_INT32;
+		    set_int32(&vb->value.i32, count, &elem);
+		    break;
+		case BE_UNS:
+		    vb->type = SNMP_TYPE_UINT32;
+		    set_uint32(&vb->value.u32, count, &elem);
+		    break;
+		case BE_UNS64:
+		    vb->type = SNMP_TYPE_UINT64;
+		    set_uint64(&vb->value.u64, count, &elem);
+		    break;
+		case BE_INETADDR:
+		    vb->type = SNMP_TYPE_IPADDR;
+		    set_ipaddr(&vb->value.ip, count, &elem);
+		    break;
+		case BE_STR:
+		    vb->type = SNMP_TYPE_OCTS;
+		    set_octs(&vb->value.octs, count, &elem);
+		    break;
+		case BE_OID:
+		    vb->type = SNMP_TYPE_OID;
+		    set_oid(&vb->value.oid, count, &elem);
+		    break;
+		case BE_NOSUCHOBJECT:
+		    vb->type = SNMP_TYPE_NO_SUCH_OBJ;
+		    set_null(&vb->value.null, count, &elem);
+		    break;
+		case BE_NOSUCHINST:
+		    vb->type = SNMP_TYPE_NO_SUCH_INST;
+		    set_null(&vb->value.null, count, &elem);
+		    break;
+		case BE_ENDOFMIBVIEW:
+		    vb->type = SNMP_TYPE_END_MIB_VIEW;
+		    set_null(&vb->value.null, count, &elem);
+		    break;
+		default:
+		    /* xxx ??? xxx */
+		    break;
 		}
 
-		val = asn1_print(&elem);
-		if (Types[i].id == BE_NOSUCHOBJECT
-		    || Types[i].id == BE_NOSUCHINST
-		    || Types[i].id == BE_ENDOFMIBVIEW) {
-#if 0
-			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
-				 count, elem.asnlen, NULL);
-#endif
-		} else {
-#if 0
-			xml_leaf(42+4, Types[i].name ? Types[i].name : "value",
-				 count, elem.asnlen, "%s", val);
-#endif
-		}
-		
 		length = vblength;
 		np = vbend;
 
@@ -1627,6 +1677,9 @@ snmp_free(snmp_packet_t *pkt)
     while (varbind) {
 	if (varbind->name.value) {
 	    free(varbind->name.value);
+	}
+	if (varbind->type == SNMP_TYPE_OID && varbind->value.oid.value) {
+	    free(varbind->value.oid.value);
 	}
 	last_varbind = varbind;
 	varbind = varbind->next;

@@ -5,7 +5,7 @@
  * as comma separated values (CSV). Every output line contains the
  * following fields:
  *
- *   a) time-stamp
+ *   a) time-stamp in seconds.microseconds format
  *   b) src address
  *   c) src port
  *   d) dst address
@@ -26,6 +26,7 @@
 
 #include "snmp.h"
 
+#include <inttypes.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -62,7 +63,7 @@ static void
 csv_write_int32(FILE *stream, snmp_int32_t *val)
 {
     if (val->attr.flags & SNMP_FLAG_VALUE) {
-	fprintf(stream, "%c%d", sep, val->value);
+	fprintf(stream, "%c%"PRId32, sep, val->value);
     } else {
 	fprintf(stream, "%c", sep);
     }
@@ -129,7 +130,7 @@ csv_write_varbind_names(FILE *stream, snmp_varbind_t *varbind)
 	name = &varbind->name;
 	if (name->attr.flags & SNMP_FLAG_VALUE) {
 	    for (i = 0; i < name->len; i++) {
-		fprintf(stream, "%c%u", (i == 0) ? sep : '.', name->value[i]);
+		fprintf(stream, "%c%"PRIu32, (i == 0) ? sep : '.', name->value[i]);
 	    }
 	} else {
 	    fprintf(stream, "%c", sep);

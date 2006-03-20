@@ -21,8 +21,6 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-static const char *progname = "deserializer";
-
 #define debug 1
 #ifdef debug
 #define DEBUG(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
