@@ -106,7 +106,7 @@ oid.type =
       """[0-2](\.[0-9]+)+"""
   }
 
-# Someone should extend the regular expression below to cover also
+# [XXX] We should extend the regular expression below to cover also
 # IPv6 addresses (including zone indexes ;-).
 
 ipaddress.type =
