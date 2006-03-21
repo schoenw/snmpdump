@@ -158,22 +158,24 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 	fprintf(stream, "%c", sep);
     }
 
-    csv_write_int32(stream, &pkt->snmp.version);
-
-    csv_write_type(stream, pkt->snmp.scoped_pdu.pdu.type,
-		   &pkt->snmp.scoped_pdu.pdu.attr);
-
-    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.req_id);
-
-    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_status);
-    
-    csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_index);
-
-    csv_write_varbind_count(stream,
-			    pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
-
-    csv_write_varbind_names(stream,
-			    pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
+    if (pkt->snmp.attr.flags & SNMP_FLAG_VALUE) {
+	csv_write_int32(stream, &pkt->snmp.version);
+	
+	csv_write_type(stream, pkt->snmp.scoped_pdu.pdu.type,
+		       &pkt->snmp.scoped_pdu.pdu.attr);
+	
+	csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.req_id);
+	
+	csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_status);
+	
+	csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_index);
+	
+	csv_write_varbind_count(stream,
+				pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
+	
+	csv_write_varbind_names(stream,
+				pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
+    }
 
     fprintf(stream, "\n");
 }

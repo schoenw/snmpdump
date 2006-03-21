@@ -1300,9 +1300,10 @@ usm_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 		return;
 	}
 
-	pkt->snmp.scoped_pdu.attr.blen = count;
-	pkt->snmp.scoped_pdu.attr.vlen = elem.asnlen;
-	pkt->snmp.scoped_pdu.attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	pkt->snmp.usm.attr.blen = count;
+	pkt->snmp.usm.attr.vlen = elem.asnlen;
+	pkt->snmp.usm.attr.flags
+		= SNMP_FLAG_BLEN | SNMP_FLAG_VLEN | SNMP_FLAG_VALUE;
 	
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
@@ -1415,7 +1416,8 @@ v3msg_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 
 	pkt->snmp.message.attr.blen = count;
 	pkt->snmp.message.attr.vlen = elem.asnlen;
-	pkt->snmp.message.attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	pkt->snmp.message.attr.flags
+		= SNMP_FLAG_BLEN | SNMP_FLAG_VLEN | SNMP_FLAG_VALUE;
 
 	length = elem.asnlen;
 	np = (u_char *)elem.data.raw;
@@ -1539,7 +1541,8 @@ snmp_parse(const u_char *np, u_int length, snmp_packet_t *pkt)
 
 	pkt->snmp.attr.blen = length;
 	pkt->snmp.attr.vlen = elem.asnlen;
-	pkt->snmp.attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+	pkt->snmp.attr.flags
+		= SNMP_FLAG_BLEN | SNMP_FLAG_VLEN | SNMP_FLAG_VALUE;
 
         /* descend */
 	length = elem.asnlen;
@@ -1635,7 +1638,7 @@ udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
     sock->sin_port = addr->dest;
 
     pkt->attr.flags = SNMP_FLAG_SADDR | SNMP_FLAG_SPORT
-	    | SNMP_FLAG_DADDR | SNMP_FLAG_DPORT;
+	    | SNMP_FLAG_DADDR | SNMP_FLAG_DPORT | SNMP_FLAG_VALUE;
 
     snmp_parse((unsigned char *) buf, len, pkt);
 

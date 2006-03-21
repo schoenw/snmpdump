@@ -42,32 +42,36 @@ typedef enum {
 } output_t;
 
 
-static snmp_filter_t *del_filter = NULL;
-static snmp_filter_t *clr_filter = NULL;
+typedef struct {
+    FILE *stream;
+    snmp_filter_t *filter;
+    void (*do_print)(FILE *stream, snmp_packet_t *pkt);
+    void (*do_filter)(snmp_filter_t *filter, snmp_packet_t *pkt);
+} callback_state_t;
 
 
-
-static void
-print_xml(snmp_packet_t *pkt, void *user_data)
-{
-    FILE *stream = (FILE *) user_data;
-    
-    assert(pkt && user_data);
-    
-    snmp_xml_write_stream(stream, pkt);
-}
-
+/*
+ * The per message callback which does all the processing and
+ * printing, controlled by the state argument.
+ */
 
 static void
-print_csv(snmp_packet_t *pkt, void *user_data)
+print(snmp_packet_t *pkt, void *user_data)
 {
-    FILE *stream = (FILE *) user_data;
+    callback_state_t *state = (callback_state_t *) user_data;
 
-    assert(pkt && user_data);
+    if (! state) {
+	return;
+    }
 
-    snmp_csv_write_stream(stream, pkt);
+    if (state->filter) {
+	state->do_filter(state->filter, pkt);
+    }
+
+    if (state->stream && state->do_print) {
+	state->do_print(state->stream, pkt);
+    }
 }
-
 
 
 /*
@@ -84,21 +88,15 @@ main(int argc, char **argv)
     output_t output = OUTPUT_XML;
     input_t input = INPUT_PCAP;
     char *errmsg;
+    snmp_filter_t *filter = NULL;
+    callback_state_t _state, *state = &_state;
 
-    while ((c = getopt(argc, argv, "Vc:d:f:i:o:h")) != -1) {
+    while ((c = getopt(argc, argv, "Vc:f:i:o:h")) != -1) {
 	switch (c) {
 	case 'c':
-	    clr_filter = snmp_filter_new(optarg, &errmsg);
-	    if (! clr_filter) {
+	    filter = snmp_filter_new(optarg, &errmsg);
+	    if (! filter) {
 		fprintf(stderr, "%s: ignoring clear filter: %s\n",
-			progname, errmsg);
-		continue;
-	    }
-	    break;
-	case 'd':
-	    del_filter = snmp_filter_new(optarg, &errmsg);
-	    if (! del_filter) {
-		fprintf(stderr, "%s: ignoring delete filter: %s\n",
 			progname, errmsg);
 		continue;
 	    }
@@ -131,10 +129,15 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c regex] [-d regex] [-f filter] [-i format] [-o format] [-h] file ... \n", progname);
+	    printf("%s [-c regex] [-f filter] [-i format] [-o format] [-h] file ... \n", progname);
 	    exit(0);
 	}
     }
+
+    state->stream = stdout;
+    state->filter = filter;
+    state->do_filter = snmp_filter_apply;
+    state->do_print = NULL;
 
     switch (output) {
     case OUTPUT_XML:
@@ -147,7 +150,8 @@ main(int argc, char **argv)
 #endif
 		break;
 	    case INPUT_PCAP:
-		snmp_pcap_read_file(argv[i], expr, print_xml, stdout);
+		state->do_print = snmp_xml_write_stream;
+		snmp_pcap_read_file(argv[i], expr, print, state);
 		break;
 	    }
 	}
@@ -163,7 +167,8 @@ main(int argc, char **argv)
 #endif
 		break;
 	    case INPUT_PCAP:
-		snmp_pcap_read_file(argv[i], expr, print_csv, stdout);
+		state->do_print = snmp_csv_write_stream;
+		snmp_pcap_read_file(argv[i], expr, print, state);
 		break;
 	    }
 	}
@@ -171,12 +176,8 @@ main(int argc, char **argv)
 	break;
     }
 
-    if (clr_filter) {
-	snmp_filter_delete(clr_filter);
-    }
-
-    if (del_filter) {
-	snmp_filter_delete(del_filter);
+    if (filter) {
+	snmp_filter_delete(filter);
     }
 
     return 0;

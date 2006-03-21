@@ -40,13 +40,8 @@ data can be filtered or removed.
 \fBsnmpdump\fP accepts the following options:
 .TP
 \fB-c \fIregex\fB, --clear=\fIregex\fP
-Clear all attributes or elements in the XML document where the name
+Clear all attributes or elements in the XML document whose name
 matches \fIregex\fR. The regular expression \fIregex\fR is a case
-insensitive extended POSIX regular expression.
-.TP
-\fB-d \fIregex\fB, --delete=\fIregex\fP
-Delete all attributes or elements in the XML document where the name
-matches \fIregex\fR.  The regular expression \fIregex\fR is a case
 insensitive extended POSIX regular expression.
 .TP
 \fB-f \fIexpression\fB, --filter=\fIexpression\fP
@@ -84,11 +79,11 @@ line:
 \f(CWsnmpdump -c 'community' trace.pcap\fP
 .RE
 .PP
-To delete all vlen and blen attributes, use the following
-command line:
+To filter out all vlen and blen attributes, use the following command
+line:
 .PP
 .RS
-\f(CWsnmpdump -d 'vlen|blen' trace.pcap\fP
+\f(CWsnmpdump -c 'vlen|blen' trace.pcap\fP
 .RE
 .PP
 To filter out only certain SNMP packets from a given source using a
