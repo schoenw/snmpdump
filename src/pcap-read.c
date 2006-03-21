@@ -31,6 +31,8 @@
  *
  * Support for SNMPv2c/SNMPv3 and the ability to link the module against
  * the libsmi was added by J. Schoenwaelder, Copyright (c) 1999.
+ *
+ * $Id$
  */
 
 #define _GNU_SOURCE

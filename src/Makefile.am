@@ -7,7 +7,8 @@ bin_PROGRAMS		= snmpdump snmpanon
 snmpdump_SOURCES	= snmpdump.c \
 			  pcap-read.c \
 			  xml-read.c xml-write.c \
-			  csv-write.c # xpath-filter.c
+			  csv-write.c \
+			  filter.c
 snmpdump_LDADD		= $(NIDSLIB) -lpcap $(XML_LIBS)
 
 snmpanon_SOURCES	= snmpanon.c xpath-filter.c

@@ -41,8 +41,10 @@ typedef enum {
     OUTPUT_CSV = 2
 } output_t;
 
-static regex_t _clr_regex, _del_regex;
-static regex_t *clr_regex = NULL, *del_regex = NULL;
+
+static snmp_filter_t *del_filter = NULL;
+static snmp_filter_t *clr_filter = NULL;
+
 
 
 static void
@@ -77,35 +79,29 @@ print_csv(snmp_packet_t *pkt, void *user_data)
 int
 main(int argc, char **argv)
 {
-    int i, c, errcode;
+    int i, c;
     char *expr = NULL;
-    char buffer[256];
     output_t output = OUTPUT_XML;
     input_t input = INPUT_PCAP;
+    char *errmsg;
 
     while ((c = getopt(argc, argv, "Vc:d:f:i:o:h")) != -1) {
 	switch (c) {
 	case 'c':
-	    errcode = regcomp(&_clr_regex, optarg,
-			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
-	    if (errcode) {
-		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
-		fprintf(stderr, "%s: ignoring clear regex: %s\n",
-			progname, buffer);
+	    clr_filter = snmp_filter_new(optarg, &errmsg);
+	    if (! clr_filter) {
+		fprintf(stderr, "%s: ignoring clear filter: %s\n",
+			progname, errmsg);
 		continue;
 	    }
-	    clr_regex = &_clr_regex;
 	    break;
 	case 'd':
-	    errcode = regcomp(&_del_regex, optarg,
-			      REG_EXTENDED | REG_ICASE | REG_NOSUB);
-	    if (errcode) {
-		regerror(errcode, &_clr_regex, buffer, sizeof(buffer));
-		fprintf(stderr, "%s: ignoring delete regex: %s\n",
-			progname, buffer);
+	    del_filter = snmp_filter_new(optarg, &errmsg);
+	    if (! del_filter) {
+		fprintf(stderr, "%s: ignoring delete filter: %s\n",
+			progname, errmsg);
 		continue;
 	    }
-	    del_regex = &_del_regex;
 	    break;
 	case 'i':
 	    if (strcmp(optarg, "pcap") == 0) {
@@ -173,6 +169,14 @@ main(int argc, char **argv)
 	}
 	snmp_csv_write_stream_end(stdout);
 	break;
+    }
+
+    if (clr_filter) {
+	snmp_filter_delete(clr_filter);
+    }
+
+    if (del_filter) {
+	snmp_filter_delete(del_filter);
     }
 
     return 0;

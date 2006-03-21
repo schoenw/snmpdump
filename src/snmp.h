@@ -177,7 +177,8 @@ typedef struct {
 } snmp_packet_t;
 
 /*
- *
+ * Prototype of the callback function which is called for each
+ * SNMP message in the input stream.
  */
 
 typedef void (*snmp_callback)(snmp_packet_t *pkt, void *user_data);
@@ -211,3 +212,18 @@ void snmp_pcap_read_life(const char *file,
 void snmp_csv_write_stream_begin(FILE *stream);
 void snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt);
 void snmp_csv_write_stream_end(FILE *stream);
+
+/*
+ * Interface for the filter-out filter which can be used to suppress
+ * sensitive information. Note that filter-out should be applied as
+ * early as possible in a processing chain and that filter-out will
+ * change values so that subsequent modules won't get sensitive
+ * information by ignoring the attribute flags.
+ */
+
+typedef struct _snmp_filter snmp_filter_t;
+
+snmp_filter_t* snmp_filter_new(const char *regex, char **error);
+void snmp_filter_apply(snmp_filter_t *filter, snmp_packet_t *pkt);
+void snmp_filter_delete(snmp_filter_t *filter);
+

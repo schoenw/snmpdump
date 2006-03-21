@@ -1,11 +1,13 @@
 /*
- * deserializer.c --
+ * xml-read.c --
  *
  * A simple C program to deserialize XML representation of SNMP
  * traffic traces.
  *
  * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
  * (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
+ *
+ * $Id$
  */
 
 #include "config.h"
