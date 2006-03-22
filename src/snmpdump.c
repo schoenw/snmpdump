@@ -141,6 +141,7 @@ main(int argc, char **argv)
 
     switch (output) {
     case OUTPUT_XML:
+	state->do_print = snmp_xml_write_stream;
 	snmp_xml_write_stream_begin(stdout);
 	for (i = optind; i < argc; i++) {
 	    switch (input) {
@@ -148,7 +149,6 @@ main(int argc, char **argv)
 		snmp_xml_read_file(argv[i], print, state);
 		break;
 	    case INPUT_PCAP:
-		state->do_print = snmp_xml_write_stream;
 		snmp_pcap_read_file(argv[i], expr, print, state);
 		break;
 	    }
@@ -156,6 +156,7 @@ main(int argc, char **argv)
 	snmp_xml_write_stream_end(stdout);
 	break;
     case OUTPUT_CSV:
+	state->do_print = snmp_csv_write_stream;
 	snmp_csv_write_stream_begin(stdout);
 	for (i = optind; i < argc; i++) {
 	    switch (input) {
@@ -163,7 +164,6 @@ main(int argc, char **argv)
 		snmp_xml_read_file(argv[i], print, state);
 		break;
 	    case INPUT_PCAP:
-		state->do_print = snmp_csv_write_stream;
 		snmp_pcap_read_file(argv[i], expr, print, state);
 		break;
 	    }
