@@ -172,14 +172,14 @@ typedef struct {
 } snmp_snmp_t;
 
 typedef struct {
-    snmp_ipaddr_t	src_addr;
-    snmp_ipaddr_t	dst_addr;
-    snmp_ip6addr_t	src_addr6;
-    snmp_ip6addr_t	dst_addr6;
-    snmp_uint32_t	src_port;
-    snmp_uint32_t	dst_port;
     snmp_uint32_t	time_sec;
     snmp_uint32_t	time_usec;
+    snmp_ipaddr_t	src_addr;
+    snmp_ip6addr_t	src_addr6;
+    snmp_uint32_t	src_port;
+    snmp_ipaddr_t	dst_addr;
+    snmp_ip6addr_t	dst_addr6;
+    snmp_uint32_t	dst_port;
     snmp_snmp_t		snmp;
     snmp_attr_t		attr;
 } snmp_packet_t;
