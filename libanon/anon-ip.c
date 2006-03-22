@@ -345,9 +345,11 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	 *  one-time-pad
 	 */
 	ac[pos/8] |=  (rin_output[0] >> 7) << (7-(pos%8));
+	// fprintf(stderr, "bit %2d: flip bit: %d\n",
+	// 	pos, (rin_output[0] >> 7));
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    for(i=0;i<16;i++) {
+    for(i=0;i<4;i++) {
 	ac[i] = ac[i] ^ c[i];
     }
     return 0;
@@ -411,9 +413,11 @@ anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	 *  one-time-pad
 	 */
 	ac[pos/8] |=  (rin_output[0] >> 7) << (7-(pos%8));
+	// fprintf(stderr, "bit %2d: flip bit: %d\n",
+	// 	pos, (rin_output[0] >> 7));
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
-    for(i=0;i<16;i++) {
+    for(i=0;i<4;i++) {
 	ac[i] = ac[i] ^ c[i];
     }
     return 0;
