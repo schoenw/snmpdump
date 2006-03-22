@@ -145,9 +145,7 @@ main(int argc, char **argv)
 	for (i = optind; i < argc; i++) {
 	    switch (input) {
 	    case INPUT_XML:
-#if 0
 		snmp_xml_read_file(argv[i], print, state);
-#endif
 		break;
 	    case INPUT_PCAP:
 		state->do_print = snmp_xml_write_stream;
@@ -162,9 +160,7 @@ main(int argc, char **argv)
 	for (i = optind; i < argc; i++) {
 	    switch (input) {
 	    case INPUT_XML:
-#if 0
 		snmp_xml_read_file(argv[i], print, state);
-#endif
 		break;
 	    case INPUT_PCAP:
 		state->do_print = snmp_csv_write_stream;

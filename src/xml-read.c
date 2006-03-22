@@ -23,7 +23,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#define debug 1
+//#define debug 1
 #ifdef debug
 #define DEBUG(format, ...) fprintf (stderr, format, ## __VA_ARGS__)
 #else
@@ -36,6 +36,12 @@ static enum {
 	IN_NONE,
 	IN_SNMPTRACE,
 	IN_PACKET,
+	IN_TIME_SEC,
+	IN_TIME_USEC,
+	IN_SRC_IP,
+	IN_SRC_PORT,
+	IN_DST_IP,
+	IN_DST_PORT,
 	IN_SNMP,
 	IN_VERSION,
 	IN_COMMUNITY,
@@ -204,7 +210,8 @@ process_snmp_ipaddr(xmlTextReaderPtr reader, snmp_ipaddr_t* snmpaddr) {
     assert(snmpaddr);
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
-	if (inet_pton(AF_INET, value, &(snmpaddr->value)) > 0) {
+	if (inet_pton(AF_INET, (const char*) value, &(snmpaddr->value)) > 0) {
+	    //((struct sockaddr *)(&(snmpaddr->value)))->sa_family = AF_INET;
 	    snmpaddr->attr.flags |= SNMP_FLAG_VALUE;
 	}
 	/*
@@ -371,7 +378,7 @@ process_snmp_attr(xmlTextReaderPtr reader, snmp_attr_t* attr) {
  */
 static void
 process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
-	     snmp_varbind_t** varbind) {
+	     snmp_varbind_t** varbind, snmp_callback func, void *user_data) {
     const xmlChar *name, *value;
     xmlChar* attr;
     char *end;
@@ -397,108 +404,43 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    assert(*packet);
 	    memset(*packet, 0, sizeof(snmp_packet_t));
 	    *varbind = NULL;
-	    /* attributes */
-	    /* date */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("date"));
-	    if (attr) {
-		strptime(attr, "%FT%H:%M:%S", &((*packet)->time));
-		(*packet)->snmp.attr.flags |= SNMP_FLAG_DATE;
-		xmlFree(attr);
-	    }
-	    /* delta */
-	    /*
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("delta"));
-	    if (attr) {
-		(*packet)->delta =
-		    (unsigned long) strtoll((char*) attr, &end, 10);
-		assert(strtoll((char*) attr, &end, 10) >= 0);
-		if (*end == '\0') {
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_DELTA;
-		}
-		xmlFree(attr);
-	    }
-	    */
-	    //value = xmlTextReaderGetAttribute(reader, BAD_CAST("delta"));
-	/* src */
-	} else if (name && xmlStrcmp(name, BAD_CAST("src")) == 0) {
-	    DEBUG( "in SRC\n");
-	    /* no state */
-	    assert(state == IN_PACKET);
+	    /* no attributes */
+	/* time-sec */
+	} else if (name && xmlStrcmp(name, BAD_CAST("time-sec")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_TIME_SEC);
 	    assert(*packet);
-	    /* attributes */
-	    /* ip */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("ip"));
-	    if (attr) {
-		if (inet_pton(AF_INET, attr, &((*packet)->src)) > 0) {
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_SADDR;
-		} else if (inet_pton(AF_INET6, attr, &((*packet)->src)) > 0) {
-			(*packet)->snmp.attr.flags |= SNMP_FLAG_SADDR;
-		}
-		//DEBUG("ip: %s\n", inet_ntoa((*packet)->src));
-		xmlFree(attr);
-	    }
-	    /* port */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("port"));
-	    if (attr) {
-		/*
-		((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
-		    htons(atoi((char*) attr));
-		(*packet)->snmp.attr.flags |= SNMP_FLAG_SPORT;
-		*/
-		switch((*packet)->src.ss_family) {
-		case AF_INET6:
-		    ((struct sockaddr_in6*)(&((*packet)->src)))->sin6_port =
-			htons(atoi((char*) attr));
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_SPORT;
-		    break;
-		default:
-		    ((struct sockaddr_in*)(&((*packet)->src)))->sin_port =
-			htons(atoi((char*) attr));
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_SPORT;
-		    break;
-		}
-		xmlFree(attr);
-	    }
-	/* dst */
-	} else if (name && xmlStrcmp(name, BAD_CAST("dst")) == 0) {
-	    DEBUG("in DST\n");
-	    /* no state */
-	    assert(state == IN_PACKET);
-	    assert((*packet));
-	    /* attributes */
-	    /* ip */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("ip"));
-	    if (attr) {
-		if (inet_pton(AF_INET, attr, &((*packet)->dst)) > 0) {
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_DADDR;
-		} else if (inet_pton(AF_INET6, attr, &((*packet)->dst)) > 0) {
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_DADDR;
-		}
-		//DEBUG("ip: %s\n", inet_ntoa((*packet)->dst));
-		xmlFree(attr);
-	    }
-	    /* port */
-	    attr = xmlTextReaderGetAttribute(reader, BAD_CAST("port"));
-	    if (attr) {
-		/*
-		((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
-		    htons(atoi((char*) attr));
-		(*packet)->snmp.attr.flags |= SNMP_FLAG_DPORT;
-		*/
-		switch((*packet)->dst.ss_family) {
-		case AF_INET6:
-		    ((struct sockaddr_in6*)(&((*packet)->dst)))->sin6_port =
-			htons(atoi((char*) attr));
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_DPORT;
-		    break;
-		default:
-		    ((struct sockaddr_in*)(&((*packet)->dst)))->sin_port =
-			htons(atoi((char*) attr));
-		    (*packet)->snmp.attr.flags |= SNMP_FLAG_DPORT;
-		    break;
-		}
-		xmlFree(attr);
-	    }
+	    /* no attributes */
+	/* time-usec */
+	} else if (name && xmlStrcmp(name, BAD_CAST("time-usec")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_TIME_USEC);
+	    assert(*packet);
+	    /* no attributes */
+	/* src-ip */
+	} else if (name && xmlStrcmp(name, BAD_CAST("src-ip")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_SRC_IP);
+	    assert(*packet);
+	    /* no attributes */
+	/* src-port */
+	} else if (name && xmlStrcmp(name, BAD_CAST("src-port")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_SRC_PORT);
+	    assert(*packet);
+	    /* no attributes */
+	/* dst-ip */
+	} else if (name && xmlStrcmp(name, BAD_CAST("dst-ip")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_DST_IP);
+	    assert(*packet);
+	    /* no attributes */
+	/* dst-port */
+	} else if (name && xmlStrcmp(name, BAD_CAST("dst-port")) == 0) {
+	    //assert(state == IN_PACKET);
+	    set_state(IN_DST_PORT);
+	    assert(*packet);
+	    /* no attributes */
 	/* snmp */
 	} else if (name && xmlStrcmp(name, BAD_CAST("snmp")) == 0) {
 	    DEBUG("in SNMP\n");
@@ -927,6 +869,30 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	//xmlStrlen(value)
 	//printf(" %s\n", value);
 	switch (state) {
+	case IN_TIME_SEC:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->time_sec));
+	    break;
+	case IN_TIME_USEC:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->time_usec));
+	    break;
+	case IN_SRC_IP:
+	    assert(*packet);
+	    process_snmp_ipaddr(reader, &((*packet)->src_addr));
+	    break;
+	case IN_SRC_PORT:
+	    assert(*packet);
+	    process_snmp_uint32(reader, &((*packet)->src_port));
+	    break;
+	case IN_DST_IP:
+	    assert(*packet);
+	    process_snmp_ipaddr(reader, &((*packet)->dst_addr));
+	    break;
+	case IN_DST_PORT:
+	    assert(*packet);
+	    process_snmp_uint32(reader,  &((*packet)->dst_port));
+	    break;
 	case IN_VERSION:
 	    assert(*packet);
 	    if (value) {
@@ -957,12 +923,12 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	case IN_AGENT_ADDR:
 	    assert(*packet);
 	    if (value) {
-		if (inet_pton(AF_INET, attr,
+		if (inet_pton(AF_INET, (const char*) attr,
 			      &((*packet)->snmp.scoped_pdu.pdu.agent_addr.value)) > 0){
 		    (*packet)->snmp.scoped_pdu.pdu.agent_addr.attr.flags
 			|= SNMP_FLAG_VALUE;
 		} else {
-		    if (inet_pton(AF_INET6, attr,
+		    if (inet_pton(AF_INET6, (const char*) attr,
 			      &((*packet)->snmp.scoped_pdu.pdu.agent_addr.value)) > 0){
 			(*packet)->snmp.scoped_pdu.pdu.agent_addr.attr.flags
 			    |= SNMP_FLAG_VALUE;
@@ -1099,7 +1065,8 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	if (name && xmlStrcmp(name, BAD_CAST("packet")) == 0) {
 	    // call calback function and give it filled-in snmp_packet_t object
 	    DEBUG("out PACKET\n");
-	    snmp_packet_free(*packet);
+	    func(*packet, user_data);
+	    //snmp_packet_free(*packet);
 	}
 	break;
     default:
@@ -1131,6 +1098,56 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
             printf(" %s\n", value);
     }
     #endif
+}
+
+void
+snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
+{
+    snmp_packet_t *packet = NULL;
+    snmp_varbind_t *varbind = NULL;
+    xmlTextReaderPtr reader;
+    int i, ret;
+    
+    if (file) {
+	reader = xmlNewTextReaderFilename(file);
+	if (! reader) {
+	    //return -1;
+	    return;
+	}
+    } else {
+	xmlParserInputBufferPtr input;
+	
+	input = xmlParserInputBufferCreateFile(stdin,
+		       XML_CHAR_ENCODING_NONE);
+	if (! input) {
+	    //return -1;
+	    return;
+	}
+	reader = xmlNewTextReader(input, NULL);
+	if (! reader) {
+	    xmlFreeParserInputBuffer(input);
+	    //return -1;
+	    return;
+	}
+    }
+    
+    ret = xmlTextReaderRead(reader);
+    while (ret == 1) {
+	process_node(reader, &packet, &varbind, func, user_data);
+	ret = xmlTextReaderRead(reader);
+    }
+    xmlFreeTextReader(reader);
+    if (ret != 0) {
+	fprintf(stderr, "xmlTextReaderRead: failed to parse '%s'\n", file);
+	//return -2;
+    }
+
+    //return 0;
+}
+
+void
+snmp_xml_read_stream(const FILE *stream, snmp_callback func, void *user_data)
+{
 }
 
 #if 0

@@ -370,15 +370,15 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
     if (! pkt) return;
     
-    fprintf(stream, "<packet sec=\"%lu\" usec=\"%lu\">",
-	    pkt->time.tv_sec, pkt->time.tv_usec);
+    fprintf(stream, "<packet>");
 
-    xml_write_addr(stream, "src", (struct sockaddr *) &pkt->src,
-		   pkt->attr.flags & SNMP_FLAG_SADDR,
-		   pkt->attr.flags & SNMP_FLAG_SPORT);
-    xml_write_addr(stream, "dst", (struct sockaddr *) &pkt->dst,
-		   pkt->attr.flags & SNMP_FLAG_DADDR,
-		   pkt->attr.flags & SNMP_FLAG_DPORT);
+    xml_write_uint32(stream, "time-sec", &pkt->time_sec);
+    xml_write_uint32(stream, "time-usec", &pkt->time_usec);
+	   
+    xml_write_ipaddr(stream, "src-ip", &pkt->src_addr);
+    xml_write_uint32(stream, "src-port", &pkt->src_port);
+    xml_write_ipaddr(stream, "dst-ip", &pkt->dst_addr);
+    xml_write_uint32(stream, "dst-port", &pkt->dst_port);
 
     if (pkt->attr.flags & SNMP_FLAG_VALUE) {
 	xml_write_snmp(stream, &pkt->snmp);

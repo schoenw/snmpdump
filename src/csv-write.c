@@ -35,35 +35,37 @@
 static const char sep = ',';
 
 static void
-csv_write_addr(FILE *stream, struct sockaddr *addr,
-	       int show_addr, int show_port)
+csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *addr)
 {
-    struct sockaddr_in *sinv4;
-    
-    switch (addr->sa_family) {
-    case AF_INET:
-	sinv4 = (struct sockaddr_in *) addr;
-	if (show_addr) {
-	    fprintf(stream, "%c%s", sep, inet_ntoa(sinv4->sin_addr));
+    char buffer[20];
+
+    if (addr->attr.flags & SNMP_FLAG_VALUE) {
+	if (inet_ntop(AF_INET, &addr->value, buffer, sizeof(buffer))) {
+	    fprintf(stream, "%s", buffer);
 	} else {
 	    fprintf(stream, "%c", sep);
 	}
-	if (show_port) {
-	    fprintf(stream, "%c%d", sep, sinv4->sin_port);
-	} else {
-	    fprintf(stream, "%c", sep);
-	}
-	break;
-    default:
-	break;
+    } else {
+	fprintf(stream, "%c", sep);
     }
 }
+
 
 static void
 csv_write_int32(FILE *stream, snmp_int32_t *val)
 {
     if (val->attr.flags & SNMP_FLAG_VALUE) {
 	fprintf(stream, "%c%"PRId32, sep, val->value);
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
+static void
+csv_write_uint32(FILE *stream, snmp_uint32_t *val)
+{
+    if (val->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%c%"PRIu32, sep, val->value);
     } else {
 	fprintf(stream, "%c", sep);
     }
@@ -143,15 +145,13 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 {
     if (! pkt) return;
 
-    fprintf(stream, "%u.%06u", pkt->time.tv_sec, pkt->time.tv_usec);
+    fprintf(stream, "%u.%06u", pkt->time_sec.value, pkt->time_usec.value);
 
-    csv_write_addr(stream, (struct sockaddr *) &pkt->src,
-		   pkt->attr.flags & SNMP_FLAG_SADDR,
-		   pkt->attr.flags & SNMP_FLAG_SPORT);
-    csv_write_addr(stream, (struct sockaddr *) &pkt->dst,
-		   pkt->attr.flags & SNMP_FLAG_DADDR,
-		   pkt->attr.flags & SNMP_FLAG_DPORT);
-    
+    csv_write_ipaddr(stream, &pkt->src_addr);
+    csv_write_uint32(stream, &pkt->src_port);
+    csv_write_ipaddr(stream, &pkt->dst_addr);
+    csv_write_uint32(stream, &pkt->dst_port);
+
     if (pkt->snmp.attr.flags & SNMP_FLAG_BLEN) {
 	fprintf(stream, "%c%d", sep, pkt->snmp.attr.blen);
     } else {

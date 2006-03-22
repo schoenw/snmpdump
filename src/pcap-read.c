@@ -1620,25 +1620,25 @@ static void
 udp_callback(struct tuple4 * addr, char * buf, int len, void *ignore)
 {
     snmp_packet_t _pkt, *pkt = &_pkt;
-    struct sockaddr_in *sock = NULL;
 
     memset(pkt, 0, sizeof(snmp_packet_t));
     
-    pkt->time.tv_sec = nids_last_pcap_header->ts.tv_sec;
-    pkt->time.tv_usec = nids_last_pcap_header->ts.tv_usec;
+    pkt->time_sec.value = nids_last_pcap_header->ts.tv_sec;
+    pkt->time_sec.attr.flags |= SNMP_FLAG_VALUE;
+    pkt->time_usec.value = nids_last_pcap_header->ts.tv_usec;
+    pkt->time_usec.attr.flags |= SNMP_FLAG_VALUE;
 
-    sock = (struct sockaddr_in *) &pkt->src;
-    sock->sin_family = AF_INET;
-    sock->sin_addr.s_addr = addr->saddr;
-    sock->sin_port = addr->source;
+    pkt->src_addr.value = addr->saddr;
+    pkt->src_addr.attr.flags |= SNMP_FLAG_VALUE;
+    pkt->src_port.value = addr->source;
+    pkt->src_port.attr.flags |= SNMP_FLAG_VALUE;
+ 
+    pkt->dst_addr.value = addr->daddr;
+    pkt->dst_addr.attr.flags |= SNMP_FLAG_VALUE;
+    pkt->dst_port.value = addr->dest;
+    pkt->dst_port.attr.flags |= SNMP_FLAG_VALUE;
 
-    sock = (struct sockaddr_in *) &pkt->dst;
-    sock->sin_family = AF_INET;
-    sock->sin_addr.s_addr = addr->daddr;
-    sock->sin_port = addr->dest;
-
-    pkt->attr.flags = SNMP_FLAG_SADDR | SNMP_FLAG_SPORT
-	    | SNMP_FLAG_DADDR | SNMP_FLAG_DPORT | SNMP_FLAG_VALUE;
+    pkt->attr.flags |= SNMP_FLAG_VALUE;
 
     snmp_parse((unsigned char *) buf, len, pkt);
 

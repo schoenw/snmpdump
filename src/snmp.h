@@ -27,8 +27,6 @@
 #define SNMP_FLAG_DPORT	0x20
 #define SNMP_FLAG_DADDR	0x40
 #define SNMP_FLAG_CLEAR	0x80	/* ??? */
-#define SNMP_FLAG_DATE	0x100	/* what does this flag mean? */
-#define SNMP_FLAG_DELTA	0x200	/* what does this flag mean? */
 
 typedef struct {
     int      blen;	/* length of the BER encided TLV triple */
@@ -76,7 +74,7 @@ typedef struct {
 } snmp_ipaddr_t;
 
 typedef struct {
-    in6_addr_t	    value;	/* ip address value */
+    struct in6_addr value;	/* ip address value */
     snmp_attr_t     attr;	/* attributes */
 } snmp_ip6addr_t;
 
