@@ -406,8 +406,8 @@ anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
 	if (! canflip(a, ip, pos+1)) {
 	    rin_output[0] = 0;
 	}
-	fprintf(stderr, "canflip pos %d: %d\n",
-	pos+1, canflip(a, ip, pos+1));
+	//fprintf(stderr, "canflip pos %d: %d\n",
+	//	  pos+1, canflip(a, ip, pos+1));
 
 	/* Combination: the bits are combined into a pseudorandom
 	 *  one-time-pad

@@ -127,6 +127,10 @@ otherwise.
 A very good source of examples is the libanon/anon.c program.
 
 .SH BUGS
+Please note that this implementation is not compatible with
+Crypto-PAn, i.e. using the same key, anonymized addresses would
+differ. The main reason for this is the difference in byte-order.
+.PP
 Because
 .B lh_insert
 does not have a return code to detect errors, we do not detect
