@@ -28,6 +28,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <regex.h>
+#include <smi.h>
 
 static const char *progname = "snmpdump";
 
@@ -45,9 +46,35 @@ typedef enum {
 typedef struct {
     FILE *stream;
     snmp_filter_t *filter;
+    void (*do_anon)(snmp_packet_t *pkt);
     void (*do_print)(FILE *stream, snmp_packet_t *pkt);
     void (*do_filter)(snmp_filter_t *filter, snmp_packet_t *pkt);
 } callback_state_t;
+
+
+/*
+ * Not yet useful function to call the anonymization library.
+ */
+
+static void
+anon(snmp_packet_t *pkt)
+{
+    snmp_varbind_t *vb;
+    SmiNode *smiNode;
+    SmiType *smiType;
+    
+    for (vb = pkt->snmp.scoped_pdu.pdu.varbindings.varbind;
+	 vb; vb = vb->next) {
+	smiNode = smiGetNodeByOID(vb->name.len, vb->name.value);
+	if (smiNode) {
+	    fprintf(stderr, "** %s\n", smiNode->name);
+	    smiType = smiGetNodeType(smiNode);
+	    if (smiType) {
+		fprintf(stderr, "** %s\n", smiType->name);
+	    }
+	}
+    }
+}
 
 
 /*
@@ -64,8 +91,12 @@ print(snmp_packet_t *pkt, void *user_data)
 	return;
     }
 
-    if (state->filter) {
+    if (state->filter && state->do_filter) {
 	state->do_filter(state->filter, pkt);
+    }
+
+    if (state->do_anon) {
+	state->do_anon(pkt);
     }
 
     if (state->stream && state->do_print) {
@@ -91,9 +122,16 @@ main(int argc, char **argv)
     snmp_filter_t *filter = NULL;
     callback_state_t _state, *state = &_state;
 
-    while ((c = getopt(argc, argv, "Vc:f:i:o:h")) != -1) {
+    smiInit(progname);
+
+    memset(state, 0, sizeof(*state));
+
+    while ((c = getopt(argc, argv, "Vz:f:i:o:c:m:ha")) != -1) {
 	switch (c) {
-	case 'c':
+	case 'a':
+	    state->do_anon = anon;
+	    break;
+	case 'z':
 	    filter = snmp_filter_new(optarg, &errmsg);
 	    if (! filter) {
 		fprintf(stderr, "%s: ignoring clear filter: %s\n",
@@ -124,12 +162,18 @@ main(int argc, char **argv)
 	case 'f':
 	    expr = optarg;
 	    break;
+	case 'c':
+	    smiReadConfig(optarg, progname);
+	    break;
+	case 'm':
+	    smiLoadModule(optarg);
+	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c regex] [-f filter] [-i format] [-o format] [-h] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-h] [-V] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }

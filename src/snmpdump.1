@@ -39,10 +39,10 @@ data can be filtered or removed.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
 .TP
-\fB-c \fIregex\fB, --clear=\fIregex\fP
-Clear all attributes or elements in the XML document whose name
-matches \fIregex\fR. The regular expression \fIregex\fR is a case
-insensitive extended POSIX regular expression.
+.TP
+\fB-c \fIfile\fB, --config=\fIfile\fP
+Read \fIfile\fP instead of any other (global and user)
+libsmi configuration file.
 .TP
 \fB-f \fIexpression\fB, --filter=\fIexpression\fP
 Filter the input by applying the pcap filter \fIexpression\fR to the
@@ -58,6 +58,15 @@ format is PCAP.
 Produce output of the given \fIformat\fR. The current version of
 snmpdump can generate XML output and CSV output. The default output
 format is XML.
+.TP
+\fB-m \fIfile\fB \-\-module \fIfile\fB
+Load SMI MIB module definitions from \fIfile\fR.  This option can be
+used several times to load several MIB modules into snmpanon.
+.TP
+\fB-z \fIregex\fB, --zap=\fIregex\fP
+Clear all attributes or elements in the XML document whose name
+matches \fIregex\fR. The regular expression \fIregex\fR is a case
+insensitive extended POSIX regular expression.
 .TP
 .B \-h, \-\-help
 Show summary of options.
@@ -94,6 +103,6 @@ non-standard port number, you can use the pcap filtering mechanism:
 .RE 
 .PP
 .SH SEE ALSO
-See snmpanon(1) for more advanced content filtering and anonymization.
+tcpdump(1)
 .SH AUTHOR
 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>.
