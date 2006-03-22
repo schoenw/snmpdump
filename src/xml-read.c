@@ -211,7 +211,6 @@ process_snmp_ipaddr(xmlTextReaderPtr reader, snmp_ipaddr_t* snmpaddr) {
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
 	if (inet_pton(AF_INET, (const char*) value, &(snmpaddr->value)) > 0) {
-	    //((struct sockaddr *)(&(snmpaddr->value)))->sa_family = AF_INET;
 	    snmpaddr->attr.flags |= SNMP_FLAG_VALUE;
 	}
 	/*
@@ -634,7 +633,9 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    (*varbind)->type = SNMP_TYPE_NULL;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    //assert((*varbind)->value == NULL);
-	    /* should be empty */
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
 	/* varbind (- value) - integer32 */
 	} else if (name && xmlStrcmp(name, BAD_CAST("integer32")) == 0) {
 	    DEBUG("in INTEGER32\n");
@@ -935,20 +936,9 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t** packet,
 	    break;
 	case IN_AGENT_ADDR:
 	    assert(*packet);
-	    if (value) {
-		if (inet_pton(AF_INET, (const char*) attr,
-			      &((*packet)->snmp.scoped_pdu.pdu.agent_addr.value)) > 0){
-		    (*packet)->snmp.scoped_pdu.pdu.agent_addr.attr.flags
-			|= SNMP_FLAG_VALUE;
-		} else {
-		    if (inet_pton(AF_INET6, (const char*) attr,
-			      &((*packet)->snmp.scoped_pdu.pdu.agent_addr.value)) > 0){
-			(*packet)->snmp.scoped_pdu.pdu.agent_addr.attr.flags
-			    |= SNMP_FLAG_VALUE;
-		    }
-		}
-	    }
-	    break;
+	    process_snmp_ipaddr(reader,
+				&(*packet)->snmp.scoped_pdu.pdu.agent_addr);
+	    	    break;
 	case IN_GENERIC_TRAP:
 	    assert(*packet);
 	    process_snmp_int32(reader, &((*packet)->snmp.scoped_pdu.pdu.generic_trap));
