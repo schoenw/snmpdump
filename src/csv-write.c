@@ -2,22 +2,8 @@
  * csv-write.c --
  *
  * Serialize the most important information about an SNMP packet into
- * as comma separated values (CSV). Every output line contains the
- * following fields:
- *
- *   a) time-stamp in seconds.microseconds format
- *   b) src address
- *   c) src port
- *   d) dst address
- *   e) dst port
- *   f) snmp message size
- *   g) snmp message version
- *   h) protocol operation (get/next/bulk/set/trap/inform/response/report)
- *   i) request ID
- *   j) error status
- *   k) error index
- *   l) number of varbinds
- *   *) list of object names in dotted notation
+ * as comma separated values (CSV). The format is specified in the
+ * measure.txt documentation.
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
  *
@@ -37,14 +23,25 @@ static const char sep = ',';
 static void
 csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *addr)
 {
-    char buffer[20];
+    char buffer[INET_ADDRSTRLEN];
 
-    if (addr->attr.flags & SNMP_FLAG_VALUE) {
-	if (inet_ntop(AF_INET, &addr->value, buffer, sizeof(buffer))) {
-	    fprintf(stream, "%s", buffer);
-	} else {
-	    fprintf(stream, "%c", sep);
-	}
+    if (addr->attr.flags & SNMP_FLAG_VALUE
+	&& inet_ntop(AF_INET, &addr->value, buffer, sizeof(buffer))) {
+	fprintf(stream, "%c%s", sep, buffer);
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
+
+static void
+csv_write_ip6addr(FILE *stream, snmp_ip6addr_t *addr)
+{
+    char buffer[INET6_ADDRSTRLEN];
+
+    if (addr->attr.flags & SNMP_FLAG_VALUE
+	&& inet_ntop(AF_INET6, &addr->value, buffer, sizeof(buffer))) {
+	fprintf(stream, "%c%s", sep, buffer);
     } else {
 	fprintf(stream, "%c", sep);
     }
@@ -147,9 +144,17 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 
     fprintf(stream, "%u.%06u", pkt->time_sec.value, pkt->time_usec.value);
 
-    csv_write_ipaddr(stream, &pkt->src_addr);
+    if (pkt->src_addr.attr.flags & SNMP_FLAG_VALUE) {
+	csv_write_ipaddr(stream, &pkt->src_addr);
+    } else {
+	csv_write_ip6addr(stream, &pkt->src_addr6);
+    }
     csv_write_uint32(stream, &pkt->src_port);
-    csv_write_ipaddr(stream, &pkt->dst_addr);
+    if (pkt->dst_addr.attr.flags & SNMP_FLAG_VALUE) {
+	csv_write_ipaddr(stream, &pkt->dst_addr);
+    } else {
+	csv_write_ip6addr(stream, &pkt->dst_addr6);
+    }
     csv_write_uint32(stream, &pkt->dst_port);
 
     if (pkt->snmp.attr.flags & SNMP_FLAG_BLEN) {

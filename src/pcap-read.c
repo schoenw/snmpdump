@@ -63,10 +63,6 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include <sys/types.h>
 #include <regex.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <pcap.h>
 
 #include <nids.h>
@@ -1610,7 +1606,7 @@ snmp_free(snmp_packet_t *pkt)
 }
 
 /*
- * Callback invoked by libnids for every UPD datagram that we have
+ * Callback invoked by libnids for every UDP datagram that we have
  * received. Note that the datagram might have been reassembled from
  * multiple IP packets. The time information belongs to the last
  * fragment we have received.

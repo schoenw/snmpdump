@@ -18,30 +18,6 @@
 #include <arpa/inet.h>
 
 
-static void
-xml_write_addr(FILE *stream, char *name, struct sockaddr *addr,
-	       int show_addr, int show_port)
-{
-    struct sockaddr_in *sinv4;
-    
-    switch (addr->sa_family) {
-    case AF_INET:
-	sinv4 = (struct sockaddr_in *) addr;
-	fprintf(stream, "<%s", name);
-	if (show_addr) {
-	    fprintf(stream, " ip=\"%s\"", inet_ntoa(sinv4->sin_addr));
-	}
-	if (show_port) {
-	    fprintf(stream, " port=\"%d\"", sinv4->sin_port);
-	}
-	fprintf(stream, "/>");
-	break;
-    default:
-	break;
-    }
-}
-
-
 static inline void
 xml_write_attr(FILE *stream, snmp_attr_t *attr)
 {
@@ -115,11 +91,26 @@ xml_write_uint64(FILE *stream, const char *name, snmp_uint64_t *v)
 static void
 xml_write_ipaddr(FILE *stream, const char *name, snmp_ipaddr_t *v)
 {
-    char buffer[20];
+    char buffer[INET_ADDRSTRLEN];
 
     xml_write_open(stream, name, &v->attr);
     if (v->attr.flags & SNMP_FLAG_VALUE) {
 	if (inet_ntop(AF_INET, &v->value, buffer, sizeof(buffer))) {
+	    fprintf(stream, "%s", buffer);
+	}
+    }
+    xml_write_close(stream, name);
+}
+
+
+static void
+xml_write_ip6addr(FILE *stream, const char *name, snmp_ip6addr_t *v)
+{
+    char buffer[INET6_ADDRSTRLEN];
+
+    xml_write_open(stream, name, &v->attr);
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	if (inet_ntop(AF_INET6, &v->value, buffer, sizeof(buffer))) {
 	    fprintf(stream, "%s", buffer);
 	}
     }
@@ -374,10 +365,18 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 
     xml_write_uint32(stream, "time-sec", &pkt->time_sec);
     xml_write_uint32(stream, "time-usec", &pkt->time_usec);
-	   
-    xml_write_ipaddr(stream, "src-ip", &pkt->src_addr);
+
+    if (pkt->src_addr.attr.flags & SNMP_FLAG_VALUE) {
+	xml_write_ipaddr(stream, "src-ip", &pkt->src_addr);
+    } else {
+	xml_write_ip6addr(stream, "src-ip", &pkt->src_addr6);
+    }
     xml_write_uint32(stream, "src-port", &pkt->src_port);
-    xml_write_ipaddr(stream, "dst-ip", &pkt->dst_addr);
+    if (pkt->dst_addr.attr.flags & SNMP_FLAG_VALUE) {
+	xml_write_ipaddr(stream, "dst-ip", &pkt->dst_addr);
+    } else {
+	xml_write_ip6addr(stream, "dst-ip", &pkt->dst_addr6);
+    }
     xml_write_uint32(stream, "dst-port", &pkt->dst_port);
 
     if (pkt->attr.flags & SNMP_FLAG_VALUE) {
