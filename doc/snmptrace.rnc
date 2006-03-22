@@ -5,10 +5,12 @@ start =
 
 packet.elem = 
   element packet {
-    attribute sec { xsd:unsignedInt },
-    attribute usec { xsd:unsignedInt },
-    element src { addr.attrs },
-    element dst { addr.attrs },
+    element time-sec { xsd:unsignedInt },
+    element time-usec { xsd:unsignedInt },
+    element src-ip { addr.attrs },
+    element src-port { xsd:unsignedInt },
+    element dst-ip { addr.attrs },
+    element dst-port { xsd:unsignedInt },
     snmp.elem
   }
 

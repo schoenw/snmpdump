@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <snmptrace>
-  <packet sec="1086871533" usec="344045">
+  <packet>
+
+    <src-ip>134.169.4.162</src-ip>
+    <src-port></src-port>
+    <time-sec>1086871533</time-sec>
+    <time-usec>344045</time-usec>
+
+    <dst>134.169.34.18:40776</dst>
     <src ip="134.169.4.162" port="161"/>
     <dst ip="134.169.34.18" port="40776"/>
     <snmp blen="73" vlen="71">

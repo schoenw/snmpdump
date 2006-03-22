@@ -75,6 +75,11 @@ typedef struct {
     snmp_attr_t     attr;	/* attributes */
 } snmp_ipaddr_t;
 
+typedef struct {
+    in6_addr_t	    value;	/* ip address value */
+    snmp_attr_t     attr;	/* attributes */
+} snmp_ip6addr_t;
+
 #define SNMP_TYPE_NULL		0x01
 #define SNMP_TYPE_INT32		0x02
 #define SNMP_TYPE_UINT32	0x04
@@ -169,11 +174,16 @@ typedef struct {
 } snmp_snmp_t;
 
 typedef struct {
-    struct sockaddr_storage src;
-    struct sockaddr_storage dst;
-    struct timeval	    time;
-    snmp_snmp_t		    snmp;
-    snmp_attr_t		    attr;
+    snmp_ipaddr_t	src_addr;
+    snmp_ipaddr_t	dst_addr;
+    snmp_ip6addr_t	src_addr6;
+    snmp_ip6addr_t	dst_addr6;
+    snmp_uint32_t	src_port;
+    snmp_uint32_t	dst_port;
+    snmp_uint32_t	time_sec;
+    snmp_uint32_t	time_usec;
+    snmp_snmp_t		snmp;
+    snmp_attr_t		attr;
 } snmp_packet_t;
 
 /*

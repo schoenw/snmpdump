@@ -146,7 +146,7 @@ main(int argc, char **argv)
 	    switch (input) {
 	    case INPUT_XML:
 #if 0
-		snmp_xml_read_file(argv[i], print_xml, stdout);
+		snmp_xml_read_file(argv[i], print, state);
 #endif
 		break;
 	    case INPUT_PCAP:
@@ -163,7 +163,7 @@ main(int argc, char **argv)
 	    switch (input) {
 	    case INPUT_XML:
 #if 0
-		snmp_xml_read_file(argv[i], print_csv, stdout);
+		snmp_xml_read_file(argv[i], print, state);
 #endif
 		break;
 	    case INPUT_PCAP:
