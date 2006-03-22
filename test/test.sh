@@ -1,18 +1,56 @@
 #!/bin/sh
 #
-# script for testing the xml-read.c module
+# Shell script for regression testing snmpdump. More tests are always
+# welcome. :)
 #
-# the idea is that reading xml and then writing xml
-#  should have output the same as input
+# $Id$
 #
 
-for file in `ls *.xml `; do
-	../src/snmpdump -i xml -o xml $file \
-		| xmllint --format - \
-		| diff -u $file -
+SNMPDUMP=../src/snmpdump
+
+test_pcap_reader()
+{
+    for file in *.pcap; do
+	$SNMPDUMP -i pcap -o xml $file \
+	    | xmllint --format - \
+	    | diff -u `basename $file .pcap`.xml -
 	if [ $? == 0 ]; then
-		echo "$file: PASSED"
-	else
-		echo "$file: FAILED"
+	    echo "$FUNCNAME: $file: PASSED"
+	else 
+	    echo "$FUNCNAME: $file: FAILED"
 	fi
-done
+    done
+}
+
+test_xml_reader()
+{
+    for file in *.xml; do
+	$SNMPDUMP -i xml -o xml $file \
+	    | xmllint --format - \
+	    | diff -u $file -
+	if [ $? == 0 ]; then
+	    echo "$FUNCNAME: $file: PASSED"
+	else
+	    echo "$FUNCNAME: $file: FAILED"
+	fi
+    done
+}
+
+test_csv_writer()
+{
+    for file in *pcap; do
+	$SNMPDUMP -i pcap -o csv $file \
+	    | diff -u `basename $file .pcap`.csv -
+	if [ $? == 0 ]; then
+            echo "$FUNCNAME: $file: PASSED"
+        else
+            echo "$FUNCNAME: $file: FAILED"
+        fi
+    done
+}
+
+test_pcap_reader
+echo ""
+test_xml_reader
+echo ""
+test_csv_writer
