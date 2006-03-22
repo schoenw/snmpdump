@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Shell script for regression testing snmpdump. More tests are always
 # welcome. :)
