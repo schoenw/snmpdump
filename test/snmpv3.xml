@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <snmptrace>
-  <packet sec="1137764769" usec="425484">
-    <src ip="192.168.1.67" port="161"/>
-    <dst ip="192.168.1.65" port="33274"/>
+  <packet>
+    <time-sec>1137764769</time-sec>
+    <time-usec>425484</time-usec>
+    <src-ip>192.168.1.67</src-ip>
+    <src-port>161</src-port>
+    <dst-ip>192.168.1.65</dst-ip>
+    <dst-port>33274</dst-port>
     <snmp blen="109" vlen="107">
       <version blen="3" vlen="1">3</version>
       <message blen="19" vlen="17">
@@ -11,7 +15,7 @@
         <flags blen="3" vlen="1">00</flags>
         <security-model blen="3" vlen="1">3</security-model>
       </message>
-      <usm>
+      <usm blen="31" vlen="29">
         <auth-engine-id blen="15" vlen="13">800007e580afc3da2f5f43c742</auth-engine-id>
         <auth-engine-boots blen="3" vlen="1">19</auth-engine-boots>
         <auth-engine-time blen="5" vlen="3">141724</auth-engine-time>
@@ -36,9 +40,13 @@
       </scoped-pdu>
     </snmp>
   </packet>
-  <packet sec="1137764769" usec="425995">
-    <src ip="192.168.1.67" port="161"/>
-    <dst ip="192.168.1.65" port="33274"/>
+  <packet>
+    <time-sec>1137764769</time-sec>
+    <time-usec>425995</time-usec>
+    <src-ip>192.168.1.67</src-ip>
+    <src-port>161</src-port>
+    <dst-ip>192.168.1.65</dst-ip>
+    <dst-port>33274</dst-port>
     <snmp blen="116" vlen="114">
       <version blen="3" vlen="1">3</version>
       <message blen="19" vlen="17">
@@ -47,7 +55,7 @@
         <flags blen="3" vlen="1">00</flags>
         <security-model blen="3" vlen="1">3</security-model>
       </message>
-      <usm>
+      <usm blen="38" vlen="36">
         <auth-engine-id blen="15" vlen="13">800007e580afc3da2f5f43c742</auth-engine-id>
         <auth-engine-boots blen="3" vlen="1">19</auth-engine-boots>
         <auth-engine-time blen="5" vlen="3">141724</auth-engine-time>

@@ -1,8 +1,12 @@
 <?xml version="1.0"?>
 <snmptrace>
-  <packet sec="1100094569" usec="370200">
-    <src ip="127.0.0.1" port="32768"/>
-    <dst ip="127.0.0.1" port="161"/>
+  <packet>
+    <time-sec>1100094569</time-sec>
+    <time-usec>370200</time-usec>
+    <src-ip>127.0.0.1</src-ip>
+    <src-port>32768</src-port>
+    <dst-ip>127.0.0.1</dst-ip>
+    <dst-port>161</dst-port>
     <snmp blen="659" vlen="655">
       <version blen="3" vlen="1">0</version>
       <community blen="8" vlen="6">7075626c6963</community>
@@ -207,9 +211,13 @@
       </get-next-request>
     </snmp>
   </packet>
-  <packet sec="1100094569" usec="371523">
-    <src ip="127.0.0.1" port="161"/>
-    <dst ip="127.0.0.1" port="32768"/>
+  <packet>
+    <time-sec>1100094569</time-sec>
+    <time-usec>371523</time-usec>
+    <src-ip>127.0.0.1</src-ip>
+    <src-port>161</src-port>
+    <dst-ip>127.0.0.1</dst-ip>
+    <dst-port>32768</dst-port>
     <snmp blen="771" vlen="767">
       <version blen="3" vlen="1">0</version>
       <community blen="8" vlen="6">7075626c6963</community>
