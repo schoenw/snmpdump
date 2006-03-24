@@ -155,41 +155,44 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
     
     xml_write_open(stream, name, &varbind->attr);
 
-    xml_write_oid(stream, "name", &varbind->name);
-    switch (varbind->type) {
-    case SNMP_TYPE_NULL:
-	xml_write_null(stream, "null", &varbind->value.null);
-	break;
-    case SNMP_TYPE_INT32:
-	xml_write_int32(stream, "integer32", &varbind->value.i32);
-	break;
-    case SNMP_TYPE_UINT32:
-	xml_write_uint32(stream, "unsigned32", &varbind->value.u32);
-	break;
-    case SNMP_TYPE_UINT64:
-	xml_write_uint64(stream, "unsigned64", &varbind->value.u64);
-	break;
-    case SNMP_TYPE_IPADDR:
-	xml_write_ipaddr(stream, "ipaddress", &varbind->value.ip);
-	break;
-    case SNMP_TYPE_OCTS:
-	xml_write_octs(stream, "octet-string", &varbind->value.octs);
-	break;
-    case SNMP_TYPE_OID:
-	xml_write_oid(stream, "object-identifier", &varbind->value.oid);
-	break;
-    case SNMP_TYPE_NO_SUCH_OBJ:
-	xml_write_null(stream, "no-such-object", &varbind->value.null);
-	break;
-    case SNMP_TYPE_NO_SUCH_INST:
-	xml_write_null(stream, "no-such-instance", &varbind->value.null);
-	break;
-    case SNMP_TYPE_END_MIB_VIEW:
-	xml_write_null(stream, "end-of-mib-view", &varbind->value.null);
-	break;
-    default:
-	/* xxx */
-	break;
+    if (varbind->attr.flags & SNMP_FLAG_VALUE) {
+
+	xml_write_oid(stream, "name", &varbind->name);
+	switch (varbind->type) {
+	case SNMP_TYPE_NULL:
+	    xml_write_null(stream, "null", &varbind->value.null);
+	    break;
+	case SNMP_TYPE_INT32:
+	    xml_write_int32(stream, "integer32", &varbind->value.i32);
+	    break;
+	case SNMP_TYPE_UINT32:
+	    xml_write_uint32(stream, "unsigned32", &varbind->value.u32);
+	    break;
+	case SNMP_TYPE_UINT64:
+	    xml_write_uint64(stream, "unsigned64", &varbind->value.u64);
+	    break;
+	case SNMP_TYPE_IPADDR:
+	    xml_write_ipaddr(stream, "ipaddress", &varbind->value.ip);
+	    break;
+	case SNMP_TYPE_OCTS:
+	    xml_write_octs(stream, "octet-string", &varbind->value.octs);
+	    break;
+	case SNMP_TYPE_OID:
+	    xml_write_oid(stream, "object-identifier", &varbind->value.oid);
+	    break;
+	case SNMP_TYPE_NO_SUCH_OBJ:
+	    xml_write_null(stream, "no-such-object", &varbind->value.null);
+	    break;
+	case SNMP_TYPE_NO_SUCH_INST:
+	    xml_write_null(stream, "no-such-instance", &varbind->value.null);
+	    break;
+	case SNMP_TYPE_END_MIB_VIEW:
+	    xml_write_null(stream, "end-of-mib-view", &varbind->value.null);
+	    break;
+	default:
+	    /* xxx */
+	    break;
+	}
     }
     
     xml_write_close(stream, name);
@@ -203,8 +206,10 @@ xml_write_varbindlist(FILE *stream, snmp_var_bindings_t *varbindlist)
     snmp_varbind_t *vb;
 
     xml_write_open(stream, name, &varbindlist->attr);
-    for (vb = varbindlist->varbind; vb; vb = vb->next) {
-	xml_write_varbind(stream, vb);
+    if (varbindlist->attr.flags & SNMP_FLAG_VALUE) {
+	for (vb = varbindlist->varbind; vb; vb = vb->next) {
+	    xml_write_varbind(stream, vb);
+	}
     }
     xml_write_close(stream, name);
 }

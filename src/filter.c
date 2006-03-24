@@ -60,7 +60,10 @@
 #define FLT_GENERIC_TRAP	41
 #define FLT_SPECIFIC_TRAP	42
 #define FLT_TIME_STAMP		43
-#define FLT_MAX			43
+#define FLT_VARBINDLIST		44
+#define FLT_VARBIND		45
+#define FLT_NAME		46
+#define FLT_MAX			46
 
 struct _snmp_filter {
     char hide[FLT_MAX];
@@ -113,6 +116,9 @@ static struct {
     { "generic-trap",		FLT_GENERIC_TRAP },
     { "specific-trap",		FLT_SPECIFIC_TRAP },
     { "time-stamp",		FLT_TIME_STAMP },
+    { "variable-bindings",	FLT_VARBINDLIST },
+    { "varbind",		FLT_VARBIND },
+    { "name",			FLT_NAME },
     { NULL,			0 }
 };
 
@@ -231,6 +237,8 @@ filter_ip6addr(snmp_filter_t *filter, int flt, snmp_ip6addr_t *v)
 static inline void
 filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
 {
+    snmp_varbind_t *vb;
+
     switch (pdu->type) {
     case SNMP_PDU_GET:
 	filter_attr(filter, FLT_GET_REQUEST, &pdu->attr);
@@ -271,7 +279,13 @@ filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
     filter_int32(filter, FLT_GENERIC_TRAP, &pdu->generic_trap);
     filter_int32(filter, FLT_SPECIFIC_TRAP, &pdu->specific_trap);
     filter_int32(filter, FLT_TIME_STAMP, &pdu->time_stamp);
+    filter_attr(filter, FLT_VARBINDLIST, &pdu->varbindings.attr);
 
+    for (vb = pdu->varbindings.varbind; vb; vb = vb->next) {
+	filter_attr(filter, FLT_VARBIND, &vb->attr);
+	filter_oid(filter, FLT_NAME, &vb->name);
+    }
+    
     /* VARBINDLIST, VARBIND */
 }
 
