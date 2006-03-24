@@ -43,7 +43,24 @@
 #define FLT_SCOPED_PDU		24
 #define FLT_CONTEXT_ENGINE_ID	25
 #define FLT_CONTEXT_NAME	26
-#define FLT_MAX			26
+#define FLT_GET_REQUEST		27
+#define FLT_GET_NEXT_REQUEST	28
+#define FLT_GET_BULK_REQUEST	29
+#define FLT_SET_REQUEST		30
+#define FLT_INFORM		31
+#define FLT_TRAP		32
+#define FLT_TRAP2		33
+#define FLT_RESPONSE		34
+#define FLT_REPORT		35
+#define FLT_REQUEST_ID		36
+#define FLT_ERROR_STATUS	37
+#define FLT_ERROR_INDEX		38
+#define FLT_ENTERPRISE		39
+#define FLT_AGENT_ADDR		40
+#define FLT_GENERIC_TRAP	41
+#define FLT_SPECIFIC_TRAP	42
+#define FLT_TIME_STAMP		43
+#define FLT_MAX			43
 
 struct _snmp_filter {
     char hide[FLT_MAX];
@@ -79,6 +96,23 @@ static struct {
     { "scoped-pdu",		FLT_SCOPED_PDU },
     { "context-engine-id",	FLT_CONTEXT_ENGINE_ID },
     { "context-name",		FLT_CONTEXT_NAME },
+    { "get-request",		FLT_GET_REQUEST },
+    { "get-next-request",	FLT_GET_NEXT_REQUEST },
+    { "get-bulk-request",	FLT_GET_BULK_REQUEST },
+    { "set-request",		FLT_SET_REQUEST },
+    { "inform",			FLT_INFORM },
+    { "trap",			FLT_TRAP },
+    { "trap2",			FLT_TRAP2 },
+    { "response",		FLT_RESPONSE },
+    { "report",			FLT_REPORT },
+    { "request-id",		FLT_REQUEST_ID },
+    { "error-status",		FLT_ERROR_STATUS },
+    { "error-index",		FLT_ERROR_INDEX },
+    { "enterprise",		FLT_ENTERPRISE },
+    { "agent-addr",		FLT_AGENT_ADDR },
+    { "generic-trap",		FLT_GENERIC_TRAP },
+    { "specific-trap",		FLT_SPECIFIC_TRAP },
+    { "time-stamp",		FLT_TIME_STAMP },
     { NULL,			0 }
 };
 
@@ -164,6 +198,19 @@ filter_octs(snmp_filter_t *filter, int flt, snmp_octs_t *v)
 }
 
 static inline void
+filter_oid(snmp_filter_t *filter, int flt, snmp_oid_t *v)
+{
+    int i;
+    
+    if (filter->hide[flt] && v->value) {
+	for (i = 0; i < v->len; i++) {
+	    v->value[i] = 0;
+	}
+    }
+    filter_attr(filter, flt, &v->attr);
+}
+
+static inline void
 filter_ipaddr(snmp_filter_t *filter, int flt, snmp_ipaddr_t *v)
 {
     if (filter->hide[flt]) {
@@ -179,6 +226,90 @@ filter_ip6addr(snmp_filter_t *filter, int flt, snmp_ip6addr_t *v)
 	memset(&v->value, 0, sizeof(v->value));
     }
     filter_attr(filter, flt, &v->attr);
+}
+
+static inline void
+filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
+{
+    switch (pdu->type) {
+    case SNMP_PDU_GET:
+	filter_attr(filter, FLT_GET_REQUEST, &pdu->attr);
+	break;
+    case SNMP_PDU_GETNEXT:
+	filter_attr(filter, FLT_GET_NEXT_REQUEST, &pdu->attr);
+	break;
+    case SNMP_PDU_GETBULK:
+	filter_attr(filter, FLT_GET_BULK_REQUEST, &pdu->attr);
+	break;
+    case SNMP_PDU_SET:
+	filter_attr(filter, FLT_SET_REQUEST, &pdu->attr);
+	break;
+    case SNMP_PDU_RESPONSE:
+	filter_attr(filter, FLT_RESPONSE, &pdu->attr);
+	break;
+    case SNMP_PDU_TRAP1:
+	filter_attr(filter, FLT_TRAP, &pdu->attr);
+	break;
+    case SNMP_PDU_TRAP2:
+	filter_attr(filter, FLT_TRAP2, &pdu->attr);
+	break;
+    case SNMP_PDU_INFORM:
+	filter_attr(filter, FLT_INFORM, &pdu->attr);
+	break;
+    case SNMP_PDU_REPORT:
+	filter_attr(filter, FLT_REPORT, &pdu->attr);
+	break;
+    default:
+	break;
+    }
+    
+    filter_int32(filter, FLT_REQUEST_ID, &pdu->req_id);
+    filter_int32(filter, FLT_ERROR_STATUS, &pdu->err_status);
+    filter_int32(filter, FLT_ERROR_INDEX, &pdu->err_index);
+    filter_oid(filter, FLT_ENTERPRISE, &pdu->enterprise);
+    filter_ipaddr(filter, FLT_AGENT_ADDR, &pdu->agent_addr);
+    filter_int32(filter, FLT_GENERIC_TRAP, &pdu->generic_trap);
+    filter_int32(filter, FLT_SPECIFIC_TRAP, &pdu->specific_trap);
+    filter_int32(filter, FLT_TIME_STAMP, &pdu->time_stamp);
+
+    /* VARBINDLIST, VARBIND */
+}
+
+static inline void
+filter_scoped_pdu(snmp_filter_t *filter, snmp_scoped_pdu_t *spdu)
+{
+    filter_attr(filter, FLT_SCOPED_PDU, &spdu->attr);
+    filter_octs(filter, FLT_CONTEXT_ENGINE_ID, &spdu->context_engine_id);
+    filter_octs(filter, FLT_CONTEXT_NAME, &spdu->context_name);
+}
+
+static inline void
+filter_usm(snmp_filter_t *filter, snmp_usm_t *usm)
+{
+    filter_attr(filter, FLT_USM, &usm->attr);
+    filter_octs(filter, FLT_AUTH_ENGINE_ID, &usm->auth_engine_id);
+    filter_uint32(filter, FLT_AUTH_ENGINE_BOOTS, &usm->auth_engine_boots);
+    filter_uint32(filter, FLT_AUTH_ENGINE_TIME, &usm->auth_engine_time);
+    filter_octs(filter, FLT_USER, &usm->user);
+    filter_octs(filter, FLT_AUTH_PARAMS, &usm->auth_params);
+    filter_octs(filter, FLT_PRIV_PARAMS, &usm->priv_params);
+}
+
+static inline void
+filter_message(snmp_filter_t *filter, snmp_msg_t *msg)
+{
+    filter_uint32(filter, FLT_MSG_ID, &msg->msg_id);
+    filter_uint32(filter, FLT_MAX_SIZE, &msg->msg_max_size);
+    filter_octs(filter, FLT_FLAGS, &msg->msg_flags);
+    filter_uint32(filter, FLT_SECURITY_MODEL, &msg->msg_sec_model);
+}
+
+static inline void
+filter_snmp(snmp_filter_t *filter, snmp_snmp_t *snmp)
+{
+    filter_attr(filter, FLT_SNMP, &snmp->attr);
+    filter_int32(filter, FLT_VERSION, &snmp->version);
+    filter_octs(filter, FLT_COMMUNITY, &snmp->community);
 }
 
 void
@@ -197,31 +328,11 @@ snmp_filter_apply(snmp_filter_t *filter, snmp_packet_t *pkt)
     filter_ip6addr(filter, FLT_DST_IP, &pkt->dst_addr6);
     filter_uint32(filter, FLT_DST_PORT, &pkt->dst_port);
 
-    filter_attr(filter, FLT_SNMP, &pkt->snmp.attr);
-    filter_int32(filter, FLT_VERSION, &pkt->snmp.version);
-    filter_octs(filter, FLT_COMMUNITY, &pkt->snmp.community);
-
-    filter_attr(filter, FLT_MESSAGE, &pkt->snmp.message.attr);
-    filter_uint32(filter, FLT_MSG_ID, &pkt->snmp.message.msg_id);
-    filter_uint32(filter, FLT_MAX_SIZE, &pkt->snmp.message.msg_max_size);
-    filter_octs(filter, FLT_FLAGS, &pkt->snmp.message.msg_flags);
-    filter_uint32(filter, FLT_SECURITY_MODEL, &pkt->snmp.message.msg_sec_model);
-
-    filter_attr(filter, FLT_USM, &pkt->snmp.usm.attr);
-    filter_octs(filter, FLT_AUTH_ENGINE_ID, &pkt->snmp.usm.auth_engine_id);
-    filter_uint32(filter, FLT_AUTH_ENGINE_BOOTS, &pkt->snmp.usm.auth_engine_boots);
-    filter_uint32(filter, FLT_AUTH_ENGINE_TIME, &pkt->snmp.usm.auth_engine_time);
-    filter_octs(filter, FLT_USER, &pkt->snmp.usm.user);
-    filter_octs(filter, FLT_AUTH_PARAMS, &pkt->snmp.usm.auth_params);
-    filter_octs(filter, FLT_PRIV_PARAMS, &pkt->snmp.usm.priv_params);
-
-    filter_attr(filter, FLT_SCOPED_PDU, &pkt->snmp.scoped_pdu.attr);
-    filter_octs(filter, FLT_CONTEXT_ENGINE_ID, &pkt->snmp.scoped_pdu.context_engine_id);
-    filter_octs(filter, FLT_CONTEXT_NAME, &pkt->snmp.scoped_pdu.context_name);
-
-    /* PDU */
-    /* VARBIND */
-    /* TRAP */
+    filter_snmp(filter, &pkt->snmp);
+    filter_message(filter, &pkt->snmp.message);
+    filter_usm(filter, &pkt->snmp.usm);
+    filter_scoped_pdu(filter, &pkt->snmp.scoped_pdu);
+    filter_pdu(filter, &pkt->snmp.scoped_pdu.pdu);
 }
 
 void
