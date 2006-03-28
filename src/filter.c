@@ -63,7 +63,17 @@
 #define FLT_VARBINDLIST		44
 #define FLT_VARBIND		45
 #define FLT_NAME		46
-#define FLT_MAX			46
+#define FLT_NULL		47
+#define FLT_INTEGER32		48
+#define FLT_UNSIGNED32		49
+#define FLT_UNSIGNED64		50
+#define FLT_IPADDRESS		51
+#define FLT_OCTET_STRING	52
+#define FLT_OBJECT_IDENTIFIER	53
+#define FLT_NO_SUCH_OBJECT	54
+#define FLT_NO_SUCH_INSTANCE	55
+#define FLT_END_OF_MIB_VIEW	56
+#define FLT_MAX			56
 
 struct _snmp_filter {
     char hide[FLT_MAX];
@@ -119,6 +129,16 @@ static struct {
     { "variable-bindings",	FLT_VARBINDLIST },
     { "varbind",		FLT_VARBIND },
     { "name",			FLT_NAME },
+    { "null",			FLT_NULL },
+    { "integer32",		FLT_INTEGER32 },
+    { "unsigned32",		FLT_UNSIGNED32 },
+    { "unsigned64",		FLT_UNSIGNED64 },
+    { "ipaddress",		FLT_IPADDRESS },
+    { "octet-string",		FLT_OCTET_STRING },
+    { "object-identifier",	FLT_OBJECT_IDENTIFIER },
+    { "no-such-object",		FLT_NO_SUCH_OBJECT },
+    { "no-such-instance",	FLT_NO_SUCH_INSTANCE },
+    { "end-of-mib-view",	FLT_END_OF_MIB_VIEW },
     { NULL,			0 }
 };
 
@@ -173,6 +193,12 @@ filter_attr(snmp_filter_t *filter, int flt, snmp_attr_t *a)
 }
 
 static inline void
+filter_null(snmp_filter_t *filter, int flt, snmp_null_t *v)
+{
+    filter_attr(filter, flt, &v->attr);
+}
+
+static inline void
 filter_int32(snmp_filter_t *filter, int flt, snmp_int32_t *v)
 {
     if (filter->hide[flt]) {
@@ -183,6 +209,15 @@ filter_int32(snmp_filter_t *filter, int flt, snmp_int32_t *v)
 
 static inline void
 filter_uint32(snmp_filter_t *filter, int flt, snmp_uint32_t *v)
+{
+    if (filter->hide[flt]) {
+	v->value = 0;
+    }
+    filter_attr(filter, flt, &v->attr);
+}
+
+static inline void
+filter_uint64(snmp_filter_t *filter, int flt, snmp_uint64_t *v)
 {
     if (filter->hide[flt]) {
 	v->value = 0;
@@ -284,9 +319,39 @@ filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
     for (vb = pdu->varbindings.varbind; vb; vb = vb->next) {
 	filter_attr(filter, FLT_VARBIND, &vb->attr);
 	filter_oid(filter, FLT_NAME, &vb->name);
+	switch (vb->type) {
+	case SNMP_TYPE_NULL:
+	    filter_null(filter, FLT_NULL, &vb->value.null);
+	    break;
+	case SNMP_TYPE_INT32:
+	    filter_int32(filter, FLT_INTEGER32, &vb->value.i32);
+	    break;
+	case SNMP_TYPE_UINT32:
+	    filter_uint32(filter, FLT_UNSIGNED32, &vb->value.u32);
+	    break;
+	case SNMP_TYPE_UINT64:
+	    filter_uint64(filter, FLT_UNSIGNED64, &vb->value.u64);
+	    break;
+	case SNMP_TYPE_IPADDR:
+	    filter_ipaddr(filter, FLT_IPADDRESS, &vb->value.ip);
+	    break;
+	case SNMP_TYPE_OCTS:
+	    filter_octs(filter, FLT_OCTET_STRING, &vb->value.octs);
+	    break;
+	case SNMP_TYPE_OID:
+	    filter_oid(filter, FLT_OBJECT_IDENTIFIER, &vb->value.oid);
+	    break;
+	case SNMP_TYPE_NO_SUCH_OBJ:
+	    filter_null(filter, FLT_NO_SUCH_OBJECT, &vb->value.null);
+	    break;
+	case SNMP_TYPE_NO_SUCH_INST:
+	    filter_null(filter, FLT_NO_SUCH_INSTANCE, &vb->value.null);
+	    break;
+	case SNMP_TYPE_END_MIB_VIEW:
+	    filter_null(filter, FLT_END_OF_MIB_VIEW, &vb->value.null);
+	    break;
+	}
     }
-    
-    /* VARBINDLIST, VARBIND */
 }
 
 static inline void

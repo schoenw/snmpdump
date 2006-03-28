@@ -88,7 +88,7 @@ typedef struct {
 #define SNMP_TYPE_NO_SUCH_OBJ	0x80
 #define SNMP_TYPE_NO_SUCH_INST	0x100
 #define SNMP_TYPE_END_MIB_VIEW	0x200
-#define SNMP_TYPE_VALUE		0x400
+#define SNMP_TYPE_VALUE		0x400		/* what is this good for? */
 
 typedef struct _snmp_varbind {
     uint32_t	          type;	/* type of value */
