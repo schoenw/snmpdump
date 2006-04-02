@@ -37,7 +37,7 @@ rule {
 rule {
     name	rule-ieee-mac-by-type;
     apply	tr-ieee-mac;
-    targets	"MacAddress"	// what about PhysAddress?
+    targets	"MacAddress";	// what about PhysAddress?
 };
 */
 
@@ -45,17 +45,54 @@ rule {
 #ifndef _ANON_H
 #define _ANON_H
 
+#include "smi.h"
+#include "snmp.h"
 #include "libanon.h"
 
-typedef struct _anon_transform anon_transform_t;
+/*
+ * Anonymization transformations...
+ */
 
-extern anon_transform_t* anon_tform_new(char *name, char *type,
-					char *range, char *option);
-extern anon_transform_delete(anon_transform_t *transform);
+#define ANON_TYPE_NONE		0x00
+#define ANON_TYPE_IPV4		0x01
+#define ANON_TYPE_IPV6		0x02
+#define ANON_TYPE_MAC		0x03
+#define ANON_TYPE_INT64		0x04
+#define ANON_TYPE_UINT64	0x05
+#define ANON_TYPE_OCTS		0x06
+
+typedef struct _anon_tf anon_tf_t;
+
+extern anon_tf_t* anon_tf_new(const char *name,
+			      const char *type,
+			      const char *range,
+			      const char *option);
+extern anon_tf_t* anon_tf_find_by_name(const char *name);
+extern void anon_tf_delete(anon_tf_t *tfp);
+
+/*
+ * Anonymization rules...
+ */
 
 typedef struct _anon_rule anon_rule_t;
 
-extern anon_rule_t* anon_rule_new(char *name, char *transform, char *targets);
+extern anon_rule_t* anon_rule_new(const char *name,
+				  const char *transform,
+				  const char *targets);
+extern anon_rule_t* anon_rule_find_by_name(const char *name);
 extern void anon_rule_delete(anon_rule_t *rule);
+
+/*
+ * Main entrance function...
+ */
+
+extern void anon_apply(snmp_varbind_t *vb,
+		       SmiNode *smiNode,
+		       SmiType *smiType);
+/*
+ * Utility functions...
+ */
+
+extern void anon_init(void);
 
 #endif _ANON_H

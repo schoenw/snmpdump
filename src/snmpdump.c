@@ -22,6 +22,7 @@
 
 #include "config.h"
 #include "snmp.h"
+#include "anon.h"
 
 #include <assert.h>
 #include <stdlib.h>
@@ -67,11 +68,11 @@ anon(snmp_packet_t *pkt)
 	 vb; vb = vb->next) {
 	smiNode = smiGetNodeByOID(vb->name.len, vb->name.value);
 	if (smiNode) {
-	    fprintf(stderr, "** %s\n", smiNode->name);
 	    smiType = smiGetNodeType(smiNode);
 	    if (smiType) {
 		fprintf(stderr, "** %s\n", smiType->name);
 	    }
+	    anon_apply(vb, smiNode, smiType);
 	}
     }
 }
@@ -182,6 +183,10 @@ main(int argc, char **argv)
     state->filter = filter;
     state->do_filter = snmp_filter_apply;
     state->do_print = NULL;
+
+    if (state->do_anon) {
+	anon_init();
+    }
 
     switch (output) {
     case OUTPUT_XML:
