@@ -238,4 +238,4 @@ snmp_filter_t* snmp_filter_new(const char *regex, char **error);
 void snmp_filter_apply(snmp_filter_t *filter, snmp_packet_t *pkt);
 void snmp_filter_delete(snmp_filter_t *filter);
 
-#endif
+#endif /* _SNMP_H */

@@ -60,7 +60,7 @@ anon_tf_new(const char *name, const char *type,
     assert(name && type);
 
     for (i = 0; type_table[i].name; i++) {
-	if (strcmp(type_table[i].name, name) == 0) {
+	if (strcmp(type_table[i].name, type) == 0) {
 	    break;
 	}
     }
@@ -71,6 +71,7 @@ anon_tf_new(const char *name, const char *type,
     /* create a new transformation object */
 
     tfp = (anon_tf_t *) malloc(sizeof(anon_tf_t));
+    memset(tfp, 0, sizeof(anon_tf_t));
     if (! tfp) {
 	return NULL;
     }
@@ -145,19 +146,21 @@ anon_rule_new(const char *name, const char *transform, const char *targets)
     /* create a new rule object */
 
     rp = (anon_rule_t *) malloc(sizeof(anon_rule_t));
+    memset(rp, 0, sizeof(anon_rule_t));
     if (! rp) {
-	return NULL;
-    }
-
-    if (0 != regcomp(&rp->reg, targets,
-		     REG_EXTENDED | REG_ICASE | REG_NOSUB)) {
-	free(rp);
 	return NULL;
     }
 
     rp->tfp = tfp;
     rp->name = strdup(name);
     if (! rp->name) {
+	free(rp);
+	return NULL;
+    }
+
+    if (0 != regcomp(&rp->reg, targets,
+		     REG_EXTENDED | REG_ICASE | REG_NOSUB)) {
+	free(rp->name);
 	free(rp);
 	return NULL;
     }
@@ -223,12 +226,16 @@ anon_init()
     for (i = 0; tftab[2*i]; i++) {
 	if (0 == anon_tf_new(tftab[2*i], tftab[2*i+1], NULL, NULL)) {
 	    fprintf(stderr, "*** adding transform %s failed\n", tftab[2*i]);
+	} else {
+	    fprintf(stderr, "transform: %s\n", tftab[2*i]);
 	}
     }
 
     for (i = 0; rtab[3*i]; i++) {
 	if (0 == anon_rule_new(rtab[3*i], rtab[3*i+1], rtab[3*i+2])) {
 	    fprintf(stderr, "*** adding rule %s failed\n", rtab[3*i]);
+	} else {
+	    fprintf(stderr, "rule: %s\n", tftab[2*i]);
 	}
     }
 }
@@ -239,24 +246,25 @@ anon_apply(snmp_varbind_t *vb, SmiNode *smiNode, SmiType *smiType)
     anon_rule_t *rp;
 
     for (rp = rule_list; rp; rp = rp->next) {
-	fprintf(stderr, "***** %s: checking\n", rp->name);
-	if (smiType) {
+	fprintf(stderr, "%s: %s (%s)\n", rp->name,
+		smiNode->name, smiType ? smiType->name : "?");
+	if (smiType && smiType->name) {
 	    if (0 == regexec(&rp->reg, smiType->name, 0, NULL, 0)) {
 		/* got a transform to apply */
-		fprintf(stderr, "***** %s: match type\n", rp->name);
+		fprintf(stderr, "%s: match: %s\n", rp->name, smiType->name);
 		break;
 	    }
 	}
-	if (smiNode) {
+	if (smiNode && smiNode->name) {
 	    if (0 == regexec(&rp->reg, smiNode->name, 0, NULL, 0)) {
 		/* got a transform to apply */
-		fprintf(stderr, "***** %s: match name\n", rp->name);
+		fprintf(stderr, "%s: match: %s\n", rp->name, smiNode->name);
 		break;
 	    }
 	}
     }
 
     if (rp) {
-	getc(stdin);
+	/* xxx getc(stdin); */
     }
 }

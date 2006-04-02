@@ -95,4 +95,4 @@ extern void anon_apply(snmp_varbind_t *vb,
 
 extern void anon_init(void);
 
-#endif _ANON_H
+#endif /* _ANON_H */

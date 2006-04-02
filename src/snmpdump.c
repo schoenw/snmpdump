@@ -69,9 +69,6 @@ anon(snmp_packet_t *pkt)
 	smiNode = smiGetNodeByOID(vb->name.len, vb->name.value);
 	if (smiNode) {
 	    smiType = smiGetNodeType(smiNode);
-	    if (smiType) {
-		fprintf(stderr, "** %s\n", smiType->name);
-	    }
 	    anon_apply(vb, smiNode, smiType);
 	}
     }
