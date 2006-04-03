@@ -51,6 +51,15 @@ static struct {
     { NULL,	ANON_TYPE_NONE }
 };
 
+/*
+ * The default key (which probably should not be here) which ideally
+ * would be set by passing a pass phrase to snmpdump and doing some
+ * SHA1 hashing on the concatenated pass phrase.
+ */
+ 
+static unsigned char my_key[32] = 
+  {21,34,23,141,51,164,207,128,19,10,91,22,73,144,125,16,
+   216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
 
 anon_tf_t*
 anon_tf_new(const char *name, const char *type,
@@ -88,6 +97,9 @@ anon_tf_new(const char *name, const char *type,
     switch (tfp->type) {
     case ANON_TYPE_IPV4:
 	tfp->u.an_ipv4 = anon_ipv4_new();
+	if (tfp->u.an_ipv4) {
+	    anon_ipv4_set_key(tfp->u.an_ipv4, my_key);
+	}
 	break;
     case ANON_TYPE_MAC:
 	break;
@@ -286,7 +298,7 @@ anon_ipaddr(anon_tf_t *tfp, snmp_ipaddr_t *v)
 	return;
     }
 
-    if (! tfp) {
+    if (! tfp || tfp->type != ANON_TYPE_IPV4) {
 	memset(&v->value, 0, sizeof(v->value));
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
 	return;
@@ -305,7 +317,7 @@ anon_ip6addr(anon_tf_t *tfp, snmp_ip6addr_t *v)
 	return;
     }
 
-    if (! tfp) {
+    if (! tfp || tfp->type != ANON_TYPE_IPV6) {
 	memset(&v->value, 0, sizeof(v->value));
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
 	return;
@@ -364,5 +376,4 @@ snmp_anon_apply(snmp_packet_t *pkt)
     /* src_port, dst_port, time_sec, time_usec */
 
     anon_pdu(&pkt->snmp.scoped_pdu.pdu);
-	
 }
