@@ -238,4 +238,12 @@ snmp_filter_t* snmp_filter_new(const char *regex, char **error);
 void snmp_filter_apply(snmp_filter_t *filter, snmp_packet_t *pkt);
 void snmp_filter_delete(snmp_filter_t *filter);
 
+/*
+ * Interface for anonymization. This is likely to change since we
+ * still code this part of the tool.
+ */
+
+void snmp_anon_learn(snmp_packet_t *pkt);
+void snmp_anon_apply(snmp_packet_t *pkt);
+
 #endif /* _SNMP_H */

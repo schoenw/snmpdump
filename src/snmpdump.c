@@ -47,32 +47,11 @@ typedef enum {
 typedef struct {
     FILE *stream;
     snmp_filter_t *filter;
+    void (*do_learn)(snmp_packet_t *pkt);
     void (*do_anon)(snmp_packet_t *pkt);
     void (*do_print)(FILE *stream, snmp_packet_t *pkt);
     void (*do_filter)(snmp_filter_t *filter, snmp_packet_t *pkt);
 } callback_state_t;
-
-
-/*
- * Not yet useful function to call the anonymization library.
- */
-
-static void
-anon(snmp_packet_t *pkt)
-{
-    snmp_varbind_t *vb;
-    SmiNode *smiNode;
-    SmiType *smiType;
-    
-    for (vb = pkt->snmp.scoped_pdu.pdu.varbindings.varbind;
-	 vb; vb = vb->next) {
-	smiNode = smiGetNodeByOID(vb->name.len, vb->name.value);
-	if (smiNode) {
-	    smiType = smiGetNodeType(smiNode);
-	    anon_apply(vb, smiNode, smiType);
-	}
-    }
-}
 
 
 /*
@@ -91,6 +70,10 @@ print(snmp_packet_t *pkt, void *user_data)
 
     if (state->filter && state->do_filter) {
 	state->do_filter(state->filter, pkt);
+    }
+
+    if (state->do_learn) {
+	state->do_learn(pkt);
     }
 
     if (state->do_anon) {
@@ -127,7 +110,7 @@ main(int argc, char **argv)
     while ((c = getopt(argc, argv, "Vz:f:i:o:c:m:ha")) != -1) {
 	switch (c) {
 	case 'a':
-	    state->do_anon = anon;
+	    state->do_anon = snmp_anon_apply;
 	    break;
 	case 'z':
 	    filter = snmp_filter_new(optarg, &errmsg);

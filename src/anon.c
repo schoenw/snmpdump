@@ -4,6 +4,8 @@
  * Anonymization filtering utility functions for snmpdump.
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
+ *
+ * $Id$
  */
 
 #include "config.h"
@@ -240,31 +242,127 @@ anon_init()
     }
 }
 
-void
-anon_apply(snmp_varbind_t *vb, SmiNode *smiNode, SmiType *smiType)
+
+static anon_tf_t*
+anon_find_transform(SmiNode *smiNode, SmiType *smiType)
 {
     anon_rule_t *rp;
 
+    /*
+     * We apply the first rule that matches and ignore any other rules
+     * that might match as well. This allows to have an object
+     * specific rule overwrite a more general type specific rule.
+     */
+
     for (rp = rule_list; rp; rp = rp->next) {
+#if 0
 	fprintf(stderr, "%s: %s (%s)\n", rp->name,
-		smiNode->name, smiType ? smiType->name : "?");
+		smiNode ? smiNode->name : "?",
+		smiType ? smiType->name : "?");
+#endif
 	if (smiType && smiType->name) {
 	    if (0 == regexec(&rp->reg, smiType->name, 0, NULL, 0)) {
-		/* got a transform to apply */
-		fprintf(stderr, "%s: match: %s\n", rp->name, smiType->name);
 		break;
 	    }
 	}
 	if (smiNode && smiNode->name) {
 	    if (0 == regexec(&rp->reg, smiNode->name, 0, NULL, 0)) {
-		/* got a transform to apply */
-		fprintf(stderr, "%s: match: %s\n", rp->name, smiNode->name);
 		break;
 	    }
 	}
     }
 
-    if (rp) {
-	/* xxx getc(stdin); */
+    return (rp ? rp->tfp : NULL);
+}
+
+
+
+static inline void
+anon_ipaddr(anon_tf_t *tfp, snmp_ipaddr_t *v)
+{
+    in_addr_t new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
     }
+
+    if (! tfp) {
+	memset(&v->value, 0, sizeof(v->value));
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;
+    }
+
+    anon_ipv4_map_pref(tfp->u.an_ipv4, v->value, &new_value);
+    memcpy(&v->value, &new_value, sizeof(v->value));
+}
+
+static inline void
+anon_ip6addr(anon_tf_t *tfp, snmp_ip6addr_t *v)
+{
+    struct in6_addr new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (! tfp) {
+	memset(&v->value, 0, sizeof(v->value));
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;
+    }
+
+    anon_ipv6_map_pref(tfp->u.an_ipv6, v->value, &new_value);
+    memcpy(&v->value, &new_value, sizeof(v->value));
+}
+
+static void
+anon_pdu(snmp_pdu_t *pdu)
+{
+    snmp_varbind_t *vb;
+    anon_tf_t *tfp = NULL;
+    
+    for (vb = pdu->varbindings.varbind; vb; vb = vb->next) {
+	SmiNode *smiNode = NULL;
+	SmiType *smiType = NULL;
+	smiNode = smiGetNodeByOID(vb->name.len, vb->name.value);
+	if (smiNode) {
+	    smiType = smiGetNodeType(smiNode);
+	}
+	tfp = anon_find_transform(smiNode, smiType);
+	
+	switch (vb->type) {
+	case SNMP_TYPE_NULL:
+	    break;
+	case SNMP_TYPE_IPADDR:
+	    anon_ipaddr(tfp, &vb->value.ip);
+	    break;
+	}
+    }
+}
+
+/*
+ * Not yet useful function to call the anonymization library.
+ */
+
+void
+snmp_anon_apply(snmp_packet_t *pkt)
+{
+    anon_tf_t *tfp = NULL;
+    SmiType *smiType;
+
+    if (! pkt) {
+	return;
+    }
+    
+    smiType = smiGetType(NULL, "IpAddress");
+    if (smiType) {
+	tfp = anon_find_transform(NULL, smiType);
+    }
+    anon_ipaddr(tfp, &pkt->src_addr);
+    anon_ipaddr(tfp, &pkt->dst_addr);
+
+    /* src_port, dst_port, time_sec, time_usec */
+
+    anon_pdu(&pkt->snmp.scoped_pdu.pdu);
+	
 }
