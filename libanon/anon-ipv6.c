@@ -89,6 +89,13 @@ anon_ipv6_new()
     a->tree->right = NULL;
     a->tree->complete = 0;
     a->nodes = 1;
+
+    /*
+     * initialize the AES (Rijndael) cipher
+     * (in case user forgets to call ..._set_key)
+     */
+    AES_set_encrypt_key(NULL, 0, &(a->aes_key));
+
     return a;
 }
 
