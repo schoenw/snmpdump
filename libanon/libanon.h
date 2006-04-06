@@ -24,6 +24,7 @@
 typedef struct _anon_ipv4 anon_ipv4_t;
 
 anon_ipv4_t*	anon_ipv4_new();
+void		anon_ipv4_set_passphrase(anon_ipv4_t *a, const char *pass);
 void		anon_ipv4_set_key(anon_ipv4_t *a, const uint8_t *key);
 int		anon_ipv4_set_used(anon_ipv4_t *a, const in_addr_t ip,
 				   const int prefixlen);
@@ -42,6 +43,7 @@ typedef struct _anon_ipv6 anon_ipv6_t;
 typedef struct in6_addr in6_addr_t;
 
 anon_ipv6_t*	anon_ipv6_new();
+void		anon_ipv6_set_passphrase(anon_ipv6_t *a, const char *pass);
 void		anon_ipv6_set_key(anon_ipv6_t *a, const uint8_t *key);
 int		anon_ipv6_set_used(anon_ipv6_t *a, const in6_addr_t ip,
 				   const int prefixlen);

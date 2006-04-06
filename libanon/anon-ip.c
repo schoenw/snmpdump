@@ -15,6 +15,7 @@
 #include <string.h>
 #include <assert.h>
 #include <openssl/aes.h>
+#include <openssl/sha.h>
 
 #include "libanon.h"
 
@@ -113,6 +114,25 @@ anon_ipv4_delete(anon_ipv4_t *a)
 	delete_node(a->tree);
     }
     free(a);
+}
+
+/*
+ * Set the cryptographic key using a human memorizable passphrase
+ * passphrase has to be null-terminated
+ */
+
+void
+anon_ipv4_set_passphrase(anon_ipv4_t *a, const char *pass)
+{
+    /* we need a 32 byte key and SHA-1 produces 20 byte output */
+    uint8_t key[2*SHA_DIGEST_LENGTH];
+    
+    /* do the SHA-1 hashing */
+    SHA1((unsigned char *) pass, strlen(pass)/2, key);
+    pass += strlen(pass)/2;
+    SHA1((unsigned char *) pass, strlen(pass), key+SHA_DIGEST_LENGTH);
+
+    anon_ipv4_set_key(a, key);
 }
 
 /*
