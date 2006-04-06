@@ -48,6 +48,11 @@ static struct {
     { "ipv4",	ANON_TYPE_IPV4 },
     { "ipv6",	ANON_TYPE_IPV6 },
     { "mac",	ANON_TYPE_MAC },
+    { "int32",	ANON_TYPE_INT32 },
+    { "uint32", ANON_TYPE_UINT32 },
+    { "int64",	ANON_TYPE_INT64 },
+    { "uint64", ANON_TYPE_UINT64 },
+    { "octs",	ANON_TYPE_OCTS },
     { NULL,	ANON_TYPE_NONE }
 };
 
@@ -102,6 +107,37 @@ anon_tf_new(const char *name, const char *type,
 	}
 	break;
     case ANON_TYPE_MAC:
+	/* xxx */
+	break;
+    case ANON_TYPE_INT32:
+	tfp->u.an_int64 = anon_int64_new(0, INT32_MAX);
+	if (tfp->u.an_int64) {
+	    anon_int64_set_key(tfp->u.an_int64, my_key);
+	}
+	break;
+    case ANON_TYPE_UINT32:
+	tfp->u.an_uint64 = anon_uint64_new(0, UINT32_MAX);
+	if (tfp->u.an_uint64) {
+	    anon_uint64_set_key(tfp->u.an_uint64, my_key);
+	}
+	break;
+    case ANON_TYPE_INT64:
+	tfp->u.an_int64 = anon_int64_new(0, INT64_MAX);
+	if (tfp->u.an_int64) {
+	    anon_int64_set_key(tfp->u.an_int64, my_key);
+	}
+	break;
+    case ANON_TYPE_UINT64:
+	tfp->u.an_uint64 = anon_uint64_new(0, UINT64_MAX);
+	if (tfp->u.an_uint64) {
+	    anon_uint64_set_key(tfp->u.an_uint64, my_key);
+	}
+	break;
+    case ANON_TYPE_OCTS:
+	tfp->u.an_octs = anon_octet_string_new();
+	if (tfp->u.an_octs) {
+	    anon_octet_string_set_key(tfp->u.an_octs, my_key);
+	}
 	break;
     }
 
@@ -229,11 +265,13 @@ anon_init()
     const char *tftab[] = {
 	"tr-inet-address-ipv4", "ipv4",
 	"tr-ieee-mac",		"mac",
+	"tr-inet-port-number",	"uint32",
 	NULL, NULL
     };
 
     const char *rtab[] = {
 	"ipv4-by-type", "tr-inet-address-ipv4", "IpAddress|InetAddressIPv4",
+	"port-by-type", "tr-inet-port-number", "InetPortNumber",
 	NULL, NULL, NULL
     };
 
@@ -290,6 +328,108 @@ anon_find_transform(SmiNode *smiNode, SmiType *smiType)
 
 
 static inline void
+anon_int32(anon_tf_t *tfp, snmp_int32_t *v)
+{
+    int64_t new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (! tfp || tfp->type != ANON_TYPE_INT32
+	|| 0 != anon_int64_map(tfp->u.an_int64, v->value, &new_value)) {
+	v->value = 0;
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;	
+    }
+
+    v->value = (uint32_t) new_value;
+}
+
+static inline void
+anon_uint32(anon_tf_t *tfp, snmp_uint32_t *v)
+{
+    uint64_t new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (! tfp || tfp->type != ANON_TYPE_UINT32
+	|| 0 != anon_uint64_map(tfp->u.an_uint64, v->value, &new_value)) {
+	v->value = 0;
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;	
+    }
+
+    v->value = (uint32_t) new_value;
+}
+
+static inline void
+anon_int64(anon_tf_t *tfp, snmp_uint32_t *v)
+{
+    int64_t new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (! tfp || tfp->type != ANON_TYPE_INT32
+	|| 0 != anon_int64_map(tfp->u.an_int64, v->value, &new_value)) {
+	v->value = 0;
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;	
+    }
+
+    v->value = new_value;
+}
+
+static inline void
+anon_uint64(anon_tf_t *tfp, snmp_uint64_t *v)
+{
+    uint64_t new_value;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (! tfp || tfp->type != ANON_TYPE_UINT32
+	|| 0 != anon_uint64_map(tfp->u.an_uint64, v->value, &new_value)) {
+	v->value = 0;
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;	
+    }
+
+    v->value = new_value;
+}
+
+static inline void
+anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
+{
+    char *new_value = NULL;
+
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (v->len) {
+	new_value = malloc(v->len);
+    }
+
+    if (! tfp || tfp->type != ANON_TYPE_OCTS
+	|| ! new_value
+	|| 0 != anon_octet_string_map(tfp->u.an_octs,
+				      (char *) v->value, new_value)) {
+	memset(v->value, 0, v->len);
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	return;	
+    }
+
+    memcpy(v->value, new_value, v->len);
+    free(new_value);
+}
+
+static inline void
 anon_ipaddr(anon_tf_t *tfp, snmp_ipaddr_t *v)
 {
     in_addr_t new_value;
@@ -298,13 +438,13 @@ anon_ipaddr(anon_tf_t *tfp, snmp_ipaddr_t *v)
 	return;
     }
 
-    if (! tfp || tfp->type != ANON_TYPE_IPV4) {
+    if (! tfp || tfp->type != ANON_TYPE_IPV4
+	|| 0 != anon_ipv4_map_pref(tfp->u.an_ipv4, v->value, &new_value)) {
 	memset(&v->value, 0, sizeof(v->value));
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
 	return;
     }
 
-    anon_ipv4_map_pref(tfp->u.an_ipv4, v->value, &new_value);
     memcpy(&v->value, &new_value, sizeof(v->value));
 }
 
@@ -317,14 +457,25 @@ anon_ip6addr(anon_tf_t *tfp, snmp_ip6addr_t *v)
 	return;
     }
 
-    if (! tfp || tfp->type != ANON_TYPE_IPV6) {
+    if (! tfp || tfp->type != ANON_TYPE_IPV6
+	|| 0 != anon_ipv6_map_pref(tfp->u.an_ipv6, v->value, &new_value)) {
 	memset(&v->value, 0, sizeof(v->value));
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
 	return;
     }
 
-    anon_ipv6_map_pref(tfp->u.an_ipv6, v->value, &new_value);
     memcpy(&v->value, &new_value, sizeof(v->value));
+}
+
+static inline void
+anon_oid(anon_tf_t *tfp, snmp_oid_t *v)
+{
+    if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    /* xxx how do we deal with OIDs? */
+    memset(v->value, 0, v->len * sizeof(uint32_t));
 }
 
 static void
@@ -345,8 +496,23 @@ anon_pdu(snmp_pdu_t *pdu)
 	switch (vb->type) {
 	case SNMP_TYPE_NULL:
 	    break;
+	case SNMP_TYPE_INT32:
+	    anon_int32(tfp, &vb->value.i32);
+	    break;
+	case SNMP_TYPE_UINT32:
+ 	    anon_uint32(tfp, &vb->value.u32);
+	    break;
+	case SNMP_TYPE_UINT64:
+ 	    anon_uint64(tfp, &vb->value.u64);
+	    break;
 	case SNMP_TYPE_IPADDR:
 	    anon_ipaddr(tfp, &vb->value.ip);
+	    break;
+	case SNMP_TYPE_OCTS:
+	    anon_octs(tfp, &vb->value.octs);
+	    break;
+	case SNMP_TYPE_OID:
+	    anon_oid(tfp, &vb->value.oid);
 	    break;
 	}
     }
@@ -367,13 +533,16 @@ snmp_anon_apply(snmp_packet_t *pkt)
     }
     
     smiType = smiGetType(NULL, "IpAddress");
-    if (smiType) {
-	tfp = anon_find_transform(NULL, smiType);
-    }
+    tfp = smiType ? anon_find_transform(NULL, smiType) : NULL;
     anon_ipaddr(tfp, &pkt->src_addr);
     anon_ipaddr(tfp, &pkt->dst_addr);
 
-    /* src_port, dst_port, time_sec, time_usec */
+    smiType = smiGetType(NULL, "InetPortNumber");
+    tfp = smiType ? anon_find_transform(NULL, smiType) : NULL;
+    anon_uint32(tfp, &pkt->src_port);
+    anon_uint32(tfp, &pkt->dst_port);
+
+    /* time_sec, time_usec */
 
     anon_pdu(&pkt->snmp.scoped_pdu.pdu);
 }

@@ -57,9 +57,11 @@ rule {
 #define ANON_TYPE_IPV4		0x01
 #define ANON_TYPE_IPV6		0x02
 #define ANON_TYPE_MAC		0x03
-#define ANON_TYPE_INT64		0x04
-#define ANON_TYPE_UINT64	0x05
-#define ANON_TYPE_OCTS		0x06
+#define ANON_TYPE_INT32		0x04
+#define ANON_TYPE_UINT32	0x05
+#define ANON_TYPE_INT64		0x06
+#define ANON_TYPE_UINT64	0x07
+#define ANON_TYPE_OCTS		0x08
 
 typedef struct _anon_tf anon_tf_t;
 

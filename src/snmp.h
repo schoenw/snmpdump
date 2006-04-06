@@ -81,17 +81,17 @@ typedef struct {
     snmp_attr_t     attr;	/* attributes */
 } snmp_ip6addr_t;
 
-#define SNMP_TYPE_NULL		0x01
-#define SNMP_TYPE_INT32		0x02
-#define SNMP_TYPE_UINT32	0x04
-#define SNMP_TYPE_UINT64	0x08
-#define SNMP_TYPE_IPADDR	0x10
-#define SNMP_TYPE_OCTS		0x20
-#define SNMP_TYPE_OID		0x40
-#define SNMP_TYPE_NO_SUCH_OBJ	0x80
-#define SNMP_TYPE_NO_SUCH_INST	0x100
-#define SNMP_TYPE_END_MIB_VIEW	0x200
-#define SNMP_TYPE_VALUE		0x400		/* what is this good for? */
+#define SNMP_TYPE_NULL		0x0001
+#define SNMP_TYPE_INT32		0x0002
+#define SNMP_TYPE_UINT32	0x0004
+#define SNMP_TYPE_UINT64	0x0008
+#define SNMP_TYPE_IPADDR	0x0010
+#define SNMP_TYPE_OCTS		0x0020
+#define SNMP_TYPE_OID		0x0040
+#define SNMP_TYPE_NO_SUCH_OBJ	0x0080
+#define SNMP_TYPE_NO_SUCH_INST	0x0100
+#define SNMP_TYPE_END_MIB_VIEW	0x0200
+#define SNMP_TYPE_VALUE		0x0400		/* what is this good for? */
 
 typedef struct _snmp_varbind {
     uint32_t	          type;	/* type of value */

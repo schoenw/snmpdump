@@ -228,12 +228,8 @@ filter_uint64(snmp_filter_t *filter, int flt, snmp_uint64_t *v)
 static inline void
 filter_octs(snmp_filter_t *filter, int flt, snmp_octs_t *v)
 {
-    int i;
-    
     if (filter->hide[flt] && v->value) {
-	for (i = 0; i < v->len; i++) {
-	    v->value[i] = 0;
-	}
+	memset(v->value, 0, v->len);
     }
     filter_attr(filter, flt, &v->attr);
 }
@@ -241,12 +237,8 @@ filter_octs(snmp_filter_t *filter, int flt, snmp_octs_t *v)
 static inline void
 filter_oid(snmp_filter_t *filter, int flt, snmp_oid_t *v)
 {
-    int i;
-    
     if (filter->hide[flt] && v->value) {
-	for (i = 0; i < v->len; i++) {
-	    v->value[i] = 0;
-	}
+	memset(v->value, 0, v->len * sizeof(uint32_t));
     }
     filter_attr(filter, flt, &v->attr);
 }
