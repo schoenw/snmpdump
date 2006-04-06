@@ -90,7 +90,7 @@ xfopen(const char *filename, const char *mode)
 }
 
 /*
- * Trim a string be removing leading or trailing white space
+ * Trim a string by removing leading or trailing white space
  * characters.
  */
 
@@ -734,15 +734,19 @@ octet_string_lex(anon_octet_string_t *a, FILE *f)
      * first pass: read string (one per input line) and mark
      * them as used
      */
-    while (fscanf(f, "%s", str) == 1) {
+    while (fgets(str, sizeof(str), f) != NULL) {
+	size_t len = strlen(str);
+	if (str[len-1] == '\n') str[len-1] = 0;
 	anon_octet_string_set_used(a, str);
     }
 
     /*
      * second pass: read strings and print the anonymized strings
      */
-    fseek(f,0,SEEK_SET);
-    while (fscanf(f, "%s", str) == 1) {
+    rewind(f);
+    while (fgets(str, sizeof(str), f) != NULL) {
+	size_t len = strlen(str);
+	if (str[len-1] == '\n') str[len-1] = 0;
 	(void) anon_octet_string_map_lex(a, str, astr);
 	printf("%s\n", astr);
     }
@@ -761,8 +765,9 @@ octet_string_nolex(anon_octet_string_t *a, FILE *f)
     /*
      *  read strings and print the anonymized strings
      */
-    while (fscanf(f, "%s", str) == 1) {
-	fprintf(stderr, "converting %s...\n", str);
+    while (fgets(str, sizeof(str), f) != NULL) {
+	size_t len = strlen(str);
+	if (str[len-1] == '\n') str[len-1] = 0;
 	(void) anon_octet_string_map(a, str, astr);
 	printf("%s\n", astr);
     }
