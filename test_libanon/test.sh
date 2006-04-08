@@ -6,11 +6,12 @@
 #
 
 ANON=../libanon/anon
+PASSPHRASE=testing
 
 test_ipv4_pref()
 {
     for file in ipv4.*.in; do
-	$ANON ipv4 $file \
+	$ANON ipv4 -p $PASSPHRASE $file \
 	    | diff -u `basename $file .in`.out -
 	if [ $? == 0 ]; then
 	    echo "$FUNCNAME: $file: PASSED"
@@ -23,7 +24,7 @@ test_ipv4_pref()
 test_ipv4_pref_lex()
 {
     for file in ipv4.*.in; do
-	$ANON ipv4 -l $file \
+	$ANON ipv4 -p $PASSPHRASE -l $file \
 	    | diff -u `basename $file .in`.out.lex -
 	if [ $? == 0 ]; then
 	    echo "$FUNCNAME: $file: PASSED"
@@ -36,7 +37,7 @@ test_ipv4_pref_lex()
 test_ipv6_pref()
 {
     for file in ipv6.*.in; do
-	$ANON ipv6 $file \
+	$ANON ipv6 -p $PASSPHRASE $file \
 	    | diff -u `basename $file .in`.out -
 	if [ $? == 0 ]; then
 	    echo "$FUNCNAME: $file: PASSED"
@@ -49,7 +50,7 @@ test_ipv6_pref()
 test_ipv6_pref_lex()
 {
     for file in ipv6.*.in; do
-	$ANON ipv6 -l $file \
+	$ANON ipv6 -p $PASSPHRASE -l $file \
 	    | diff -u `basename $file .in`.out.lex -
 	if [ $? == 0 ]; then
 	    echo "$FUNCNAME: $file: PASSED"
