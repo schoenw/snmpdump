@@ -46,13 +46,13 @@ static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
 static void cmd_octet_string(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
-    { "help",		cmd_help,	"anon help" },
-    { "ipv4",		cmd_ipv4,	"anon ipv4 [-hlc] file" },
-    { "ipv6",		cmd_ipv6,	"anon ipv6 [-hlc] file" },
-    { "mac",		cmd_mac,	"anon mac [-hl] file" },
-    { "int64",		cmd_int64,	"anon int64 lower upper [-hl] file" },
-    { "uint64",		cmd_uint64,	"anon uint64 lower upper [-hl] file" },
-    { "octet_string",	cmd_octet_string,"anon octet_string [-hl] file" },
+    { "help",	      cmd_help,	"anon help" },
+    { "ipv4",	      cmd_ipv4,	"anon ipv4 [-hlc] -p passphrase file" },
+    { "ipv6",	      cmd_ipv6,	"anon ipv6 [-hlc] -p passphrase file" },
+    { "mac",	      cmd_mac,	       "anon mac [-hl] file" },
+    { "int64",	      cmd_int64,       "anon int64 lower upper [-hl] file" },
+    { "uint64",	      cmd_uint64,      "anon uint64 lower upper [-hl] file" },
+    { "octet_string", cmd_octet_string,"anon octet_string [-hl] file" },
     { NULL, NULL }
 };
 
@@ -208,17 +208,25 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ipv4_t *a;
-    int c, lflag = 0, cflag = 0;
+    anon_key_t *key = NULL;
+    int c, lflag = 0, cflag = 0, pflag = 0;
     unsigned cnt;
 
+    key = anon_key_new();
+    anon_key_set_key(key, my_key, 32);
+
     optind = 2;
-    while ((c = getopt(argc, argv, "clh")) != -1) {
+    while ((c = getopt(argc, argv, "clhp:")) != -1) {
 	switch (c) {
 	case 'c':
 	    cflag = 1;
 	    break;
 	case 'l':
 	    lflag = 1;
+	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
+	    pflag = 1;
 	    break;
 	case 'h':
 	case '?':
@@ -232,17 +240,30 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 
     if (argc != 1) {
 	fprintf(stderr, "usage: %s\n", cmd->usage);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
-    in = xfopen(argv[0], "r");
+    /*
+    if (!pflag) {
+	anon_key_random_key(key);
+    }
+    */
+
+    in = fopen(argv[0], "r");
+    if (! in) {
+	fprintf(stderr, "%s: %s: %s\n", progname, argv[0], strerror(errno));
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
 
     a = anon_ipv4_new();
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize IP mapping\n", progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
-    anon_ipv4_set_key(a, my_key);
+    anon_ipv4_set_key(a, key);
     if (lflag) {
 	cnt = ipv4_lex(a, in);
     } else {
@@ -261,7 +282,7 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 #endif
     
     anon_ipv4_delete(a);
-
+    anon_key_delete(key);
     fclose(in);
 }
 
@@ -348,17 +369,24 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_ipv6_t *a;
-    int c, lflag = 0, cflag = 0;
+    anon_key_t *key = NULL;
+    int c, lflag = 0, cflag = 0, pflag = 0;
     unsigned cnt = 0;
 
+    key = anon_key_new();
+    anon_key_set_key(key, my_key, 32);
+
     optind = 2;
-    while ((c = getopt(argc, argv, "clh")) != -1) {
+    while ((c = getopt(argc, argv, "clhp:")) != -1) {
 	switch (c) {
 	case 'c':
 	    cflag = 1;
 	    break;
 	case 'l':
 	    lflag = 1;
+	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
 	    break;
 	case 'h':
 	case '?':
@@ -375,14 +403,25 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 	exit(EXIT_FAILURE);
     }
 
-    in = xfopen(argv[0], "r");
+    /*
+    if (!pflag) {
+	anon_key_random_key(key);
+    }
+    */
+
+    in = fopen(argv[0], "r");
+    if (! in) {
+	fprintf(stderr, "%s: %s: %s\n", progname, argv[0], strerror(errno));
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
 
     a = anon_ipv6_new();
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize IPv6 mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_ipv6_set_key(a, my_key);
+    anon_ipv6_set_key(a, key);
     if (lflag) {
 	cnt = ipv6_lex(a, in);
     } else {
@@ -401,7 +440,7 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 #endif
 
     anon_ipv6_delete(a);
-
+    anon_key_delete(key);
     fclose(in);
 }
 

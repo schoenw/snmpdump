@@ -18,14 +18,30 @@
 #include <netinet/in.h>
 
 /*
+ * anonymization key API.
+ */
+
+typedef struct	_anon_key {
+    uint8_t*  key;
+    size_t length;
+} anon_key_t;
+
+anon_key_t*	anon_key_new();
+void		anon_key_set_key(anon_key_t *key, const uint8_t *new_key,
+				 const size_t key_len);
+void		anon_key_random_key(anon_key_t *key);
+void		anon_key_set_passphase(anon_key_t *key,
+				       const char *passphrase);
+void		anon_key_delete(anon_key_t *key);
+
+/*
  * IPv4 address anonymization API.
  */
 
 typedef struct _anon_ipv4 anon_ipv4_t;
 
 anon_ipv4_t*	anon_ipv4_new();
-void		anon_ipv4_set_passphrase(anon_ipv4_t *a, const char *pass);
-void		anon_ipv4_set_key(anon_ipv4_t *a, const uint8_t *key);
+void		anon_ipv4_set_key(anon_ipv4_t *a, const anon_key_t *key);
 int		anon_ipv4_set_used(anon_ipv4_t *a, const in_addr_t ip,
 				   const int prefixlen);
 int		anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip,
@@ -43,8 +59,7 @@ typedef struct _anon_ipv6 anon_ipv6_t;
 typedef struct in6_addr in6_addr_t;
 
 anon_ipv6_t*	anon_ipv6_new();
-void		anon_ipv6_set_passphrase(anon_ipv6_t *a, const char *pass);
-void		anon_ipv6_set_key(anon_ipv6_t *a, const uint8_t *key);
+void		anon_ipv6_set_key(anon_ipv6_t *a, const anon_key_t *key);
 int		anon_ipv6_set_used(anon_ipv6_t *a, const in6_addr_t ip,
 				   const int prefixlen);
 int		anon_ipv6_map_pref(anon_ipv6_t *a, const in6_addr_t ip,

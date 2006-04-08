@@ -118,43 +118,28 @@ anon_ipv6_delete(anon_ipv6_t *a)
 }
 
 /*
- * Set the cryptographic key using a human memorizable passphrase
- * passphrase has to be null-terminated
- */
-
-void
-anon_ipv6_set_passphrase(anon_ipv6_t *a, const char *pass)
-{
-    /* we need a 32 byte key and SHA-1 produces 20 byte output */
-    uint8_t key[2*SHA_DIGEST_LENGTH];
-    
-    /* do the SHA-1 hashing */
-    SHA1((unsigned char *) pass, strlen(pass)/2, key);
-    pass += strlen(pass)/2;
-    SHA1((unsigned char *) pass, strlen(pass), key+SHA_DIGEST_LENGTH);
-
-    anon_ipv6_set_key(a, key);
-}
-
-/*
  * Set the cryptographic key used for anonymization and initialize it.
  *
  * Key length should be fixed!
  */
 
 void
-anon_ipv6_set_key(anon_ipv6_t *a, const uint8_t *key)
+anon_ipv6_set_key(anon_ipv6_t *a, const anon_key_t *key)
 {
     assert(a);
+    assert(key);
+    assert(key->key);
+    assert(key->length >= 32);
+
 
     /* initialize the 128-bit secret key */
-    memcpy(a->m_key, key, 16);
+    memcpy(a->m_key, key->key, 16);
     /* initialize the AES (Rijndael) cipher */
-    AES_set_encrypt_key(key, 128, &(a->aes_key));
+    AES_set_encrypt_key(key->key, 128, &(a->aes_key));
     /* initialize the 128-bit secret pad. The pad is encrypted before
      * being used for padding. 
      */
-    AES_ecb_encrypt(key + 16, a->m_pad, &(a->aes_key), AES_ENCRYPT);
+    AES_ecb_encrypt(key->key + 16, a->m_pad, &(a->aes_key), AES_ENCRYPT);
 }
 
 /*
