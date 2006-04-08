@@ -344,7 +344,7 @@ anon_ipv6_map_pref(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
 		(pos/8 > 0) ? pos/8-1 : 0, rin_input[(pos/8 > 0) ? pos/8-1:0],
 		(pos/8 > 0) ? pos/8-1:0, ip.s6_addr[(pos/8 > 0) ? pos/8-1:0]);
 	*/
-	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	rin_input[pos/8] |= ((a->m_pad[pos/8] << (pos%8)) & 0xff) >> (pos%8);
 	for(i=(pos/8)+1;i<16;i++) {
 	    rin_input[i] = a->m_pad[i];
 	}
@@ -403,7 +403,7 @@ anon_ipv6_map_pref_lex(anon_ipv6_t *a, const in6_addr_t ip, in6_addr_t *aip)
 		(pos/8 > 0) ? pos/8-1 : 0, rin_input[(pos/8 > 0) ? pos/8-1:0],
 		(pos/8 > 0) ? pos/8-1:0, ip.s6_addr[(pos/8 > 0) ? pos/8-1:0]);
 	*/
-	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	rin_input[pos/8] |= ((a->m_pad[pos/8] << (pos%8)) & 0xff) >> (pos%8);
 	for(i=(pos/8)+1;i<16;i++) {
 	    rin_input[i] = a->m_pad[i];
 	}

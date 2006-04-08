@@ -326,7 +326,7 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 
     memset(aip, 0, sizeof(in_addr_t));
     memcpy(rin_input, a->m_pad, 16);
-
+    
     /* For each prefix with length from 0 to 31, generate a bit
      * using the Rijndael cipher, which is used as a pseudorandom
      * function here. The bits generated in every round are combined
@@ -340,8 +340,13 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	    rin_input[i] = c[i];
 	}
 	rin_input[pos/8] = (c[pos/8] >> (8-pos%8)) << (8-pos%8);
+	//fprintf(stderr, "rin_input[%d]: %02x\n", pos/8, rin_input[pos/8]);
 	
-	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	rin_input[pos/8] |= ((a->m_pad[pos/8] << (pos%8)) & 0xff) >> (pos%8);
+	//fprintf(stderr, "rin_input[%d]: %02x pad: %02x\n",
+	//	pos/8, rin_input[pos/8],
+	//	((a->m_pad[pos/8] << (pos%8)) & 0xff) >> (pos%8));
+
 	for(i=(pos/8)+1;i<16;i++) {
 	    rin_input[i] = a->m_pad[i];
 	}
@@ -356,8 +361,14 @@ anon_ipv4_map_pref(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	 *  one-time-pad
 	 */
 	ac[pos/8] |=  (rin_output[0] >> 7) << (7-(pos%8));
-	// fprintf(stderr, "bit %2d: flip bit: %d\n",
-	// 	pos, (rin_output[0] >> 7));
+	/*
+	 fprintf(stderr, "bit %2d: rin_input: %02x:%02x:%02x:%02x "
+		 "rin_output: %02x:%02x:%02x:%02x flip bit: %d\n",
+		 pos,
+		 rin_input[0], rin_input[1], rin_input[2], rin_input[3],
+		 rin_output[0], rin_output[1], rin_output[2], rin_output[3],
+		 (rin_output[0] >> 7));
+	*/
     }
     /* XOR the orginal address with the pseudorandom one-time-pad */
     for(i=0;i<4;i++) {
@@ -400,7 +411,7 @@ anon_ipv4_map_pref_lex(anon_ipv4_t *a, const in_addr_t ip, in_addr_t *aip)
 	}
 	rin_input[pos/8] = (c[pos/8] >> (8-pos%8)) << (8-pos%8);
 	
-	rin_input[pos/8] |= (a->m_pad[pos/8] << (pos%8)) >> (pos%8);
+	rin_input[pos/8] |= ((a->m_pad[pos/8] << (pos%8)) & 0xff) >> (pos%8);
 	for(i=(pos/8)+1;i<16;i++) {
 	    rin_input[i] = a->m_pad[i];
 	}
