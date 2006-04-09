@@ -67,7 +67,7 @@ static unsigned char my_key[32] =
    216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
 
 anon_tf_t*
-anon_tf_new(const char *name, const char *type,
+anon_tf_new(anon_key_t *key, const char *name, const char *type,
 	    const char *range, const char *option)
 {
     anon_tf_t *tfp = NULL;
@@ -103,7 +103,7 @@ anon_tf_new(const char *name, const char *type,
     case ANON_TYPE_IPV4:
 	tfp->u.an_ipv4 = anon_ipv4_new();
 	if (tfp->u.an_ipv4) {
-	    anon_ipv4_set_key(tfp->u.an_ipv4, my_key);
+	    anon_ipv4_set_key(tfp->u.an_ipv4, key);
 	}
 	break;
     case ANON_TYPE_MAC:
@@ -258,7 +258,7 @@ anon_rule_delete(anon_rule_t *rp)
 
 
 void
-anon_init()
+anon_init(anon_key_t *key)
 {
     int i;
 
@@ -276,7 +276,7 @@ anon_init()
     };
 
     for (i = 0; tftab[2*i]; i++) {
-	if (0 == anon_tf_new(tftab[2*i], tftab[2*i+1], NULL, NULL)) {
+	if (0 == anon_tf_new(key, tftab[2*i], tftab[2*i+1], NULL, NULL)) {
 	    fprintf(stderr, "*** adding transform %s failed\n", tftab[2*i]);
 	} else {
 	    fprintf(stderr, "transform: %s\n", tftab[2*i]);

@@ -46,7 +46,7 @@ anon_key_set_key(anon_key_t *key, const uint8_t *new_key, const size_t key_len)
  */
 
 void
-anon_key_random_key(anon_key_t *key)
+anon_key_set_random(anon_key_t *key)
 {
     assert(key);
     if (key->key) {

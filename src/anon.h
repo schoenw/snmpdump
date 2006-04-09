@@ -65,7 +65,8 @@ rule {
 
 typedef struct _anon_tf anon_tf_t;
 
-extern anon_tf_t* anon_tf_new(const char *name,
+extern anon_tf_t* anon_tf_new(anon_key_t *key,
+			      const char *name,
 			      const char *type,
 			      const char *range,
 			      const char *option);
@@ -95,6 +96,6 @@ extern void anon_apply(snmp_varbind_t *vb,
  * Utility functions...
  */
 
-extern void anon_init(void);
+extern void anon_init(anon_key_t *key);
 
 #endif /* _ANON_H */

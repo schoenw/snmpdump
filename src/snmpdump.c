@@ -100,6 +100,7 @@ main(int argc, char **argv)
     output_t output = OUTPUT_XML;
     input_t input = INPUT_PCAP;
     char *errmsg;
+    anon_key_t *key = NULL;
     snmp_filter_t *filter = NULL;
     callback_state_t _state, *state = &_state;
 
@@ -107,7 +108,10 @@ main(int argc, char **argv)
 
     memset(state, 0, sizeof(*state));
 
-    while ((c = getopt(argc, argv, "Vz:f:i:o:c:m:ha")) != -1) {
+    key = anon_key_new();
+    anon_key_set_random(key);
+
+    while ((c = getopt(argc, argv, "Vz:f:i:o:c:m:hap:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -140,6 +144,9 @@ main(int argc, char **argv)
 			progname, optarg);
 	    }
 	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
+	    break;
 	case 'f':
 	    expr = optarg;
 	    break;
@@ -154,7 +161,7 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-h] [-V] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }
@@ -165,7 +172,7 @@ main(int argc, char **argv)
     state->do_print = NULL;
 
     if (state->do_anon) {
-	anon_init();
+	anon_init(key);
     }
 
     switch (output) {
@@ -203,6 +210,10 @@ main(int argc, char **argv)
 
     if (filter) {
 	snmp_filter_delete(filter);
+    }
+
+    if (key) {
+	anon_key_delete(key);
     }
 
     return 0;
