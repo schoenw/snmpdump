@@ -43,16 +43,16 @@ static void cmd_ipv6(int argc, char **argv, struct cmd *cmd);
 static void cmd_mac(int argc, char **argv, struct cmd *cmd);
 static void cmd_int64(int argc, char **argv, struct cmd *cmd);
 static void cmd_uint64(int argc, char **argv, struct cmd *cmd);
-static void cmd_octet_string(int argc, char **argv, struct cmd *cmd);
+static void cmd_octs(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
-    { "help",	      cmd_help,	"anon help" },
-    { "ipv4",	      cmd_ipv4,	"anon ipv4 [-hlc] -p passphrase file" },
-    { "ipv6",	      cmd_ipv6,	"anon ipv6 [-hlc] -p passphrase file" },
-    { "mac",	      cmd_mac,	       "anon mac [-hl] file" },
-    { "int64",	      cmd_int64,       "anon int64 lower upper [-hl] file" },
-    { "uint64",	      cmd_uint64,      "anon uint64 lower upper [-hl] file" },
-    { "octet_string", cmd_octet_string,"anon octet_string [-hl] file" },
+    { "help",	cmd_help,   "anon help" },
+    { "ipv4",	cmd_ipv4,   "anon ipv4 [-hlc] -p passphrase file" },
+    { "ipv6",	cmd_ipv6,   "anon ipv6 [-hlc] -p passphrase file" },
+    { "mac",	cmd_mac,    "anon mac [-hl] file" },
+    { "int64",	cmd_int64,  "anon int64 lower upper [-hl] file" },
+    { "uint64",	cmd_uint64, "anon uint64 lower upper [-hl] file" },
+    { "octs",	cmd_octs,   "anon octs [-hl] file" },
     { NULL, NULL }
 };
 
@@ -765,7 +765,7 @@ cmd_uint64(int argc, char **argv, struct cmd *cmd)
  */
 
 static void
-octet_string_lex(anon_octet_string_t *a, FILE *f)
+octet_string_lex(anon_octs_t *a, FILE *f)
 {
     char str[STRLEN];
     char astr[STRLEN];
@@ -777,7 +777,7 @@ octet_string_lex(anon_octet_string_t *a, FILE *f)
     while (fgets(str, sizeof(str), f) != NULL) {
 	size_t len = strlen(str);
 	if (str[len-1] == '\n') str[len-1] = 0;
-	anon_octet_string_set_used(a, str);
+	anon_octs_set_used(a, str);
     }
 
     /*
@@ -787,7 +787,7 @@ octet_string_lex(anon_octet_string_t *a, FILE *f)
     while (fgets(str, sizeof(str), f) != NULL) {
 	size_t len = strlen(str);
 	if (str[len-1] == '\n') str[len-1] = 0;
-	(void) anon_octet_string_map_lex(a, str, astr);
+	(void) anon_octs_map_lex(a, str, astr);
 	printf("%s\n", astr);
     }
 }
@@ -797,7 +797,7 @@ octet_string_lex(anon_octet_string_t *a, FILE *f)
  */
 
 static void
-octet_string_nolex(anon_octet_string_t *a, FILE *f)
+octet_string_nolex(anon_octs_t *a, FILE *f)
 {
     char str[STRLEN];
     char astr[STRLEN];
@@ -808,7 +808,7 @@ octet_string_nolex(anon_octet_string_t *a, FILE *f)
     while (fgets(str, sizeof(str), f) != NULL) {
 	size_t len = strlen(str);
 	if (str[len-1] == '\n') str[len-1] = 0;
-	(void) anon_octet_string_map(a, str, astr);
+	(void) anon_octs_map(a, str, astr);
 	printf("%s\n", astr);
     }
 }
@@ -819,10 +819,10 @@ octet_string_nolex(anon_octet_string_t *a, FILE *f)
  */
 
 static void
-cmd_octet_string(int argc, char **argv, struct cmd *cmd)
+cmd_octs(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
-    anon_octet_string_t *a;
+    anon_octs_t *a;
     int c, lflag = 0;
 
     optind = 2;
@@ -848,18 +848,18 @@ cmd_octet_string(int argc, char **argv, struct cmd *cmd)
 
     in = xfopen(argv[0], "r");
 
-    a = anon_octet_string_new();
+    a = anon_octs_new();
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_octet_string_set_key(a, my_key);
+    anon_octs_set_key(a, my_key);
     if (lflag) {
 	octet_string_lex(a, in);
     } else {
 	octet_string_nolex(a, in);
     }
-    anon_octet_string_delete(a);
+    anon_octs_delete(a);
 
     fclose(in);
 }

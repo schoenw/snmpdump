@@ -29,7 +29,7 @@ struct _anon_tf {
 	anon_mac_t	*an_mac;
 	anon_int64_t	*an_int64;
 	anon_uint64_t	*an_uint64;
-	anon_octet_string_t *an_octs;
+	anon_octs_t	*an_octs;
     } u;
     struct _anon_tf *next;
 };
@@ -134,9 +134,9 @@ anon_tf_new(anon_key_t *key, const char *name, const char *type,
 	}
 	break;
     case ANON_TYPE_OCTS:
-	tfp->u.an_octs = anon_octet_string_new();
+	tfp->u.an_octs = anon_octs_new();
 	if (tfp->u.an_octs) {
-	    anon_octet_string_set_key(tfp->u.an_octs, my_key);
+	    anon_octs_set_key(tfp->u.an_octs, my_key);
 	}
 	break;
     }
@@ -418,7 +418,7 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
 
     if (! tfp || tfp->type != ANON_TYPE_OCTS
 	|| ! new_value
-	|| 0 != anon_octet_string_map(tfp->u.an_octs,
+	|| 0 != anon_octs_map(tfp->u.an_octs,
 				      (char *) v->value, new_value)) {
 	memset(v->value, 0, v->len);
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
