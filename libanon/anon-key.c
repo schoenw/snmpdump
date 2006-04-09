@@ -3,8 +3,8 @@
  *
  * Cryptographic anonymization key support funtions.
  *
- * Copyright (c) 2005 Matus Harvan
- * Copyright (c) 2005 Juergen Schoenwaelder
+ * Copyright (c) 2006 Matus Harvan
+ * Copyright (c) 2006 Juergen Schoenwaelder
  */
 
 #include <stdlib.h>
@@ -12,6 +12,7 @@
 #include <string.h>
 #include <assert.h>
 #include <openssl/sha.h>
+#include <openssl/rand.h>
 
 #include "libanon.h"
 
@@ -20,7 +21,7 @@ anon_key_new()
 {
     anon_key_t* key;
     key = (anon_key_t*) malloc(sizeof(anon_key_t));
-    memset(key,0,sizeof(anon_key_t));
+    memset(key, 0, sizeof(anon_key_t));
     return key;
 }
 
@@ -31,7 +32,7 @@ anon_key_new()
 void
 anon_key_set_key(anon_key_t *key, const uint8_t *new_key, const size_t key_len)
 {
-    assert(key);
+    assert(key && new_key);
     if (key->key) {
 	free(key->key);
     }
@@ -64,12 +65,11 @@ anon_key_random_key(anon_key_t *key)
     }
 
     RAND_bytes(key->key, key->length);
-
 }
 
 /*
- * Set the cryptographic key using a human memorizable passphrase
- * passphrase has to be null-terminated
+ * Set the cryptographic key using a human memorizable passphrase.
+ * The passphrase has to be null-terminated string.
  */
 
 void
@@ -94,7 +94,8 @@ anon_key_set_passphase(anon_key_t *key, const char *passphrase)
 }
 
 void
-anon_key_delete(anon_key_t *key) {
+anon_key_delete(anon_key_t *key)
+{
     if (key) {
 	if (key->key) {
 	    free(key->key);

@@ -213,7 +213,7 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
     unsigned cnt;
 
     key = anon_key_new();
-    anon_key_set_key(key, my_key, 32);
+    anon_key_set_key(key, my_key, sizeof(my_key));
 
     optind = 2;
     while ((c = getopt(argc, argv, "clhp:")) != -1) {
@@ -374,7 +374,7 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     unsigned cnt = 0;
 
     key = anon_key_new();
-    anon_key_set_key(key, my_key, 32);
+    anon_key_set_key(key, my_key, sizeof(my_key));
 
     optind = 2;
     while ((c = getopt(argc, argv, "clhp:")) != -1) {
@@ -419,6 +419,7 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     a = anon_ipv6_new();
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize IPv6 mapping\n", progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
     anon_ipv6_set_key(a, key);

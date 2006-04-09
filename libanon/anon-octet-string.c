@@ -97,11 +97,11 @@ static unsigned long
 anon_octet_string_hash(const struct hash_node *tohash)
 {
     unsigned long hash = 0;
-    int c;
-    char* str = tohash->data;
+    char *p;
 
-    while (c = *str++)
-	hash = c + (hash << 6) + (hash << 16) - hash;
+    for (p = tohash->data; p; p++) {
+	hash = *p + (hash << 6) + (hash << 16) - hash;
+    }
     
     return hash;
 }
@@ -204,8 +204,9 @@ list_insert(struct node **list, const char *str)
  * returns non-zero on success, 0 if str not found in list
  */
 static int
-list_remove(struct node **list, const char *str) {
-    struct node *p, *q, *n;
+list_remove(struct node **list, const char *str)
+{
+    struct node *p, *q;
     int c;
     
     assert(str);
@@ -279,11 +280,11 @@ generate_lex_anonymizations(anon_octet_string_t *a, size_t prev_length,
     //char* middle; /* part of string between prev_length and min_length */
     char* amiddle; /* anonymized (hash of) middle */
     struct node *p, *q; /* nodes in list */
-    struct node *start2, *end2; /* recursively process this part of the list */
+    struct node *start2; /* recursively process this part of the list */
     size_t min_length; /* minimum string length in our part of list */
     int count; /* number of unique prefixes (of min_length) */
     struct node* hashlist = NULL; /* stores generated amiddle's */
-    struct node *hp, *hq; /* nodes in hash list */
+    struct node *hp; /* nodes in hash list */
     struct hash_node* node = NULL; /* lhash table node */
     int i;
     
@@ -436,10 +437,6 @@ generate_lex_anonymizations(anon_octet_string_t *a, size_t prev_length,
 static int
 anon_octet_string_set_state(anon_octet_string_t *a, int state)
 {
-    char* str;
-    char* astr;
-    struct node *p, *q;
-
     assert(a);
     
     switch (state) {
@@ -507,8 +504,6 @@ anon_octet_string_new()
 void
 anon_octet_string_delete(anon_octet_string_t *a)
 {
-    struct node *p;
-
     if (! a) {
 	return;
     }
@@ -606,8 +601,6 @@ anon_octet_string_map(anon_octet_string_t *a, const char *str, char *astr)
 int
 anon_octet_string_map_lex(anon_octet_string_t *a, const char *str, char *astr)
 {
-    struct hash_node node;
-    struct hash_node *p;
     (void) anon_octet_string_set_state(a, LEX);
     
     /* lookup the anonymized string in the lhash table */
