@@ -1,4 +1,10 @@
 #!/usr/bin/perl
+#
+# Copyright (c) 2006 Juergen Schoenwaelder
+#		2006 Matus Harvan
+#
+# $Id$
+# 
 
 use strict;
 
@@ -19,6 +25,13 @@ use strict;
 # before the request. We decided to solve this problem only once we
 # know it happens in real traces. So watch the amount of unresolved
 # responses you get by running this script.
+
+# TODO:
+#  - regular garbage collection of too old deads and reqs
+#  - dump leftovers into a special file at the very end
+#  - if we have to split XML files, we recode this in C
+#  - regression testing (split, merge, sort, cmp)
+#  - ...
 
 sub process {
     my $file = shift;
