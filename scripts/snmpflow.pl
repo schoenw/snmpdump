@@ -40,6 +40,7 @@ sub process {
     my %dead;	# requests which might be purged
     open(F, "<$file") or die "$0: unable to open $file: $!\n";
     while (<F>) {
+	my $line  = $_;
 	my @a = split(/,/, $_);
 	my $srcip = $a[1];
 	my $srcpo = $a[2];
@@ -53,33 +54,33 @@ sub process {
 	    # dst is command responder
 	    my $flow = "cg-$srcip-cr-$dstip";
 	    if ($reqs{$key}) { printf("ouch - overwriting request $key\n"); }
-	    $reqs{$key} = $_;
-	    record($flow, $_);
+	    $reqs{$key} = $line;
+	    record($flow, $line);
 	} elsif ($pdu =~ /trap|trap2|inform/) {
 	    # dst is notification receiver
 	    my $flow = "no-$srcip-nr-$dstip";
 	    if ($pdu =~ /inform/) {
 		if ($reqs{$key}) { printf("ouch - overwriting request $key\n"); }
-		$reqs{$key} = $_;
+		$reqs{$key} = $line;
 	    } else {
 		printf("got a trap\n");
 	    }
-	    record($flow, $_);
+	    record($flow, $line);
 	} elsif ($pdu =~ /response|report/) {
 	    my $rkey  = "$dstip-$dstpo-$srcip-$srcpo-$reqid";
 	    if ($reqs{$rkey}) {
 		my @value = split(/,/, $reqs{$rkey});
 		if ($value[7] =~ /get-request|get-next-request|get-bulk-request|set-request/) {
 		    my $flow = "cg-$dstip-cr-$srcip";
-		    record($flow, $_);
+		    record($flow, $line);
 		} elsif ($value[7] =~ /inform/) {
 		    my $flow = "no-$dstip-nr-$srcip";
-		    record($flow, $_);
+		    record($flow, $line);
 		} else {
 		    die "got a $pdu to a $value[7] request\n";
 		}
 		if ($dead{$rkey}) { printf("ouch - overwriting dead $rkey\n"); }
-		$dead{$rkey} = $_[0];
+		$dead{$rkey} = $a[0];
 	    } else {
 		$resp{$key} = $_;
 	    }
@@ -88,9 +89,9 @@ sub process {
 	}
     }
     close(F);
-    printf("dead requests: %d\n", scalar(%dead));
-    printf("open requests: %d\n", scalar(%reqs));
-    printf("open responses: %d\n", scalar(%resp));
+    print "dead requests: ".keys(%dead)."\n";
+    print "open requests: ".keys(%reqs)."\n";
+    print "open responses: ".keys(%resp)."\n";
 }
 
 sub record {
