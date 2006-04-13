@@ -21,12 +21,42 @@
 static const char sep = ',';
 
 static void
-csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *addr)
+csv_write_int32(FILE *stream, snmp_int32_t *v)
+{
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%c%"PRId32, sep, v->value);
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
+static void
+csv_write_uint32(FILE *stream, snmp_uint32_t *v)
+{
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%c%"PRIu32, sep, v->value);
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
+static void
+csv_write_uint64(FILE *stream, snmp_uint64_t *v)
+{
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	fprintf(stream, "%c%"PRIu64, sep, v->value);
+    } else {
+	fprintf(stream, "%c", sep);
+    }
+}
+
+static void
+csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *v)
 {
     char buffer[INET_ADDRSTRLEN];
 
-    if (addr->attr.flags & SNMP_FLAG_VALUE
-	&& inet_ntop(AF_INET, &addr->value, buffer, sizeof(buffer))) {
+    if (v->attr.flags & SNMP_FLAG_VALUE
+	&& inet_ntop(AF_INET, &v->value, buffer, sizeof(buffer))) {
 	fprintf(stream, "%c%s", sep, buffer);
     } else {
 	fprintf(stream, "%c", sep);
@@ -35,34 +65,32 @@ csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *addr)
 
 
 static void
-csv_write_ip6addr(FILE *stream, snmp_ip6addr_t *addr)
+csv_write_ip6addr(FILE *stream, snmp_ip6addr_t *v)
 {
     char buffer[INET6_ADDRSTRLEN];
 
-    if (addr->attr.flags & SNMP_FLAG_VALUE
-	&& inet_ntop(AF_INET6, &addr->value, buffer, sizeof(buffer))) {
+    if (v->attr.flags & SNMP_FLAG_VALUE
+	&& inet_ntop(AF_INET6, &v->value, buffer, sizeof(buffer))) {
 	fprintf(stream, "%c%s", sep, buffer);
     } else {
 	fprintf(stream, "%c", sep);
     }
 }
 
-
 static void
-csv_write_int32(FILE *stream, snmp_int32_t *val)
+csv_write_octs()
 {
-    if (val->attr.flags & SNMP_FLAG_VALUE) {
-	fprintf(stream, "%c%"PRId32, sep, val->value);
-    } else {
-	fprintf(stream, "%c", sep);
-    }
 }
 
 static void
-csv_write_uint32(FILE *stream, snmp_uint32_t *val)
+csv_write_oid(FILE *stream, snmp_oid_t *v)
 {
-    if (val->attr.flags & SNMP_FLAG_VALUE) {
-	fprintf(stream, "%c%"PRIu32, sep, val->value);
+    int i;
+    
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	for (i = 0; i < v->len; i++) {
+	    fprintf(stream, "%c%"PRIu32, (i == 0) ? sep : '.', v->value[i]);
+	}
     } else {
 	fprintf(stream, "%c", sep);
     }
@@ -110,30 +138,43 @@ csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
 }
 
 static void
-csv_write_varbind_count(FILE *stream, snmp_varbind_t *varbind)
+csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 {
-    int c;
-
-    for (c = 0; varbind; varbind = varbind->next, c++) ;
-
-    fprintf(stream, "%c%d", sep, c);
+    if (varbind->attr.flags & SNMP_FLAG_VALUE) {
+	csv_write_oid(stream, &varbind->name);
+	switch(varbind->type) {
+	default:
+	    /* xxx */
+	    break;
+	}
+    } else {
+	fprintf(stream, "%c%c", sep, sep);
+    }
 }
 
 static void
-csv_write_varbind_names(FILE *stream, snmp_varbind_t *varbind)
+csv_write_varbind_list(FILE *stream, snmp_var_bindings_t *varbindlist)
 {
-    int i;
-    snmp_oid_t *name;
+    snmp_varbind_t *vb;
 
-    for (; varbind; varbind = varbind->next) {
-	name = &varbind->name;
-	if (name->attr.flags & SNMP_FLAG_VALUE) {
-	    for (i = 0; i < name->len; i++) {
-		fprintf(stream, "%c%"PRIu32, (i == 0) ? sep : '.', name->value[i]);
-	    }
-	} else {
-	    fprintf(stream, "%c", sep);
+    if (varbindlist->attr.flags & SNMP_FLAG_VALUE) {
+	for (vb = varbindlist->varbind; vb; vb = vb->next) {
+	    csv_write_varbind(stream, vb);
 	}
+    }
+}
+
+static void
+csv_write_varbind_list_count(FILE *stream, snmp_var_bindings_t *varbindlist)
+{
+    snmp_varbind_t *vb;
+    int c = 0;
+
+    if (varbindlist->attr.flags & SNMP_FLAG_VALUE) {
+	for (vb = varbindlist->varbind; vb; vb = vb->next, c++) ;
+	fprintf(stream, "%c%d", sep, c);
+    } else {
+	fprintf(stream, "%c", sep);
     }
 }
 
@@ -175,11 +216,10 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 	
 	csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.err_index);
 	
-	csv_write_varbind_count(stream,
-				pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
+	csv_write_varbind_list_count(stream,
+				     &pkt->snmp.scoped_pdu.pdu.varbindings);
 	
-	csv_write_varbind_names(stream,
-				pkt->snmp.scoped_pdu.pdu.varbindings.varbind);
+	csv_write_varbind_list(stream, &pkt->snmp.scoped_pdu.pdu.varbindings);
     }
 
     fprintf(stream, "\n");
