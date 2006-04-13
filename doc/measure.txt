@@ -3,7 +3,7 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                           International University Bremen
-Expires: September 22, 2006                               March 21, 2006
+Expires: September 2, 2006                                    March 2006
 
 
                        SNMP Traffic Measurements
@@ -32,7 +32,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on September 22, 2006.
+   This Internet-Draft will expire on September 2, 2006.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Abstract
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 1]
+Schoenwaelder           Expires September 2, 2006               [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -86,7 +86,7 @@ Table of Contents
      6.2.  Informative References . . . . . . . . . . . . . . . . . . 13
    Appendix A.  RELAX NG Schema Definition  . . . . . . . . . . . . . 16
    Appendix B.  CSV Format Definition . . . . . . . . . . . . . . . . 19
-   Appendix C.  Sample Perl Analysis Script . . . . . . . . . . . . . 20
+   Appendix C.  Sample Perl Analysis Script . . . . . . . . . . . . . 21
    Appendix D.  Trace Description Form  . . . . . . . . . . . . . . . 24
    Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 25
    Intellectual Property and Copyright Statements . . . . . . . . . . 26
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 2]
+Schoenwaelder           Expires September 2, 2006               [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -164,7 +164,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 3]
+Schoenwaelder           Expires September 2, 2006               [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -220,7 +220,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 4]
+Schoenwaelder           Expires September 2, 2006               [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -276,7 +276,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 5]
+Schoenwaelder           Expires September 2, 2006               [Page 5]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -332,7 +332,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 6]
+Schoenwaelder           Expires September 2, 2006               [Page 6]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -388,7 +388,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 7]
+Schoenwaelder           Expires September 2, 2006               [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -444,7 +444,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 8]
+Schoenwaelder           Expires September 2, 2006               [Page 8]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -500,7 +500,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006               [Page 9]
+Schoenwaelder           Expires September 2, 2006               [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -556,7 +556,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 10]
+Schoenwaelder           Expires September 2, 2006              [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -612,7 +612,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 11]
+Schoenwaelder           Expires September 2, 2006              [Page 11]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -668,7 +668,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 12]
+Schoenwaelder           Expires September 2, 2006              [Page 12]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -724,7 +724,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 13]
+Schoenwaelder           Expires September 2, 2006              [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -780,7 +780,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 14]
+Schoenwaelder           Expires September 2, 2006              [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -836,7 +836,7 @@ URIs
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 15]
+Schoenwaelder           Expires September 2, 2006              [Page 15]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -857,10 +857,12 @@ Appendix A.  RELAX NG Schema Definition
 
    packet.elem =
      element packet {
-       attribute sec { xsd:unsignedInt },
-       attribute usec { xsd:unsignedInt },
-       element src { addr.attrs },
-       element dst { addr.attrs },
+       element time-sec { xsd:unsignedInt },
+       element time-usec { xsd:unsignedInt },
+       element src-ip { addr.attrs },
+       element src-port { xsd:unsignedInt },
+       element dst-ip { addr.attrs },
+       element dst-port { xsd:unsignedInt },
        snmp.elem
      }
 
@@ -887,16 +889,16 @@ Appendix A.  RELAX NG Schema Definition
      usm.elem?,
      element scoped-pdu {
        length.attrs,
-       element context-engine-id { length.attrs, xsd:hexBinary },
-       element context-name { length.attrs, xsd:string },
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 16]
+Schoenwaelder           Expires September 2, 2006              [Page 16]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
+       element context-engine-id { length.attrs, xsd:hexBinary },
+       element context-name { length.attrs, xsd:string },
        pdu.elem
      }
 
@@ -943,16 +945,16 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
      element integer32 { length.attrs, xsd:int } |
      element unsigned32 { length.attrs, xsd:unsignedInt } |
      element unsigned64 { length.attrs, xsd:unsignedLong } |
-     element ipaddress { length.attrs, ipaddress.type } |
-     element octet-string { length.attrs, xsd:hexBinary } |
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 17]
+Schoenwaelder           Expires September 2, 2006              [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
+     element ipaddress { length.attrs, ipaddress.type } |
+     element octet-string { length.attrs, xsd:hexBinary } |
      element object-identifier { length.attrs, oid.type } |
      element (no-such-object | no-such-instance | end-of-mib-view) { empty }
 
@@ -1002,9 +1004,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-
-
-Schoenwaelder          Expires September 22, 2006              [Page 18]
+Schoenwaelder           Expires September 2, 2006              [Page 18]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -1053,14 +1053,70 @@ Appendix B.  CSV Format Definition
    12.  Number of variable-bindings contained in the varbind-list in
         decimal notation, for example "5".
 
-   13.  Object names given as object identifiers in dotted decimal
-        notation, for example "1.3.6.1.2.1.1.3.0".  Object names are
-        separated by commas.
+   13.  For every varbind in the varbind list, two output elements are
+        generated
 
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 19]
+
+Schoenwaelder           Expires September 2, 2006              [Page 19]
+
+Internet-Draft          SNMP Traffic Measurements             March 2006
+
+
+        1.  Object names given as object identifiers in dotted decimal
+            notation, for example "1.3.6.1.2.1.1.3.0".  Object names are
+            separated by commas.
+
+        2.  Object values are printed as numbers if the underlying base
+            type is numeric.  IPv4 addresses are printed in the usual
+            decimal notation and IPv6 addresses in the usual hexadecimal
+            notation.  Octet string values are printed in hexadecimal
+            format while object identifiers are printed in dotted
+            decimal notation.  Exceptions are encoded by their name,
+            that is no-such-object, no-such-instance, and end-of-mib-
+            view.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder           Expires September 2, 2006              [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -1079,8 +1135,8 @@ Appendix C.  Sample Perl Analysis Script
    # To run this script:
    #    snmpstat.pl [<filename>]
    #
-   # (c) 2002 Remco van de Meent    <remco@vandemeent.net>
-   # (c) 2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
+   # (x) 2002 Remco van de Meent    <remco@vandemeent.net>
+   # (x) 2005 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 
    use strict;
    use XML::LibXML;
@@ -1090,8 +1146,8 @@ Appendix C.  Sample Perl Analysis Script
        my $doc = shift;
        my @cntr;
        my $total = 0;
-       foreach my $node ($doc->findnodes('//snmp/version')) {
-           my $version = $node->textContent();
+       foreach my $camelid ($doc->findnodes('//version')) {
+           my $version = $camelid->textContent();
            $cntr[$version]++;
            $total++;
        }
@@ -1101,7 +1157,8 @@ Appendix C.  Sample Perl Analysis Script
                $cntr[$version], $cntr[$version]/$total*100;
        }
        printf "    ---------------------------\n";
-       printf "%18s: %5d  %3d\%\n\n", "total", $total, 100;
+       printf "%18s: %5d  %3d\%\n", "total", $total, 100;
+       printf "\n";
    }
 
 
@@ -1110,22 +1167,25 @@ Appendix C.  Sample Perl Analysis Script
        my @total = $doc->findnodes('//packet/snmp');
        printf "SNMP PDU type statistics:\n\n";
        foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-                       "set-request", "trap", "trap-v2", "inform",
-                       "response", "report") {
-           my @nodes = $doc->findnodes("//packet/snmp/$op");
+                       "set-request",
+                       "trap", "trap-v2", "inform",
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 20]
+Schoenwaelder           Expires September 2, 2006              [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
+                       "response",
+                       "report") {
+           my @nodes = $doc->findnodes("//packet/snmp/$op");
            printf "%18s: %5d  %3d\%\n", $op, $#nodes + 1,
                ($#nodes+1)/($#total+1)*100;
        }
        printf "    ---------------------------\n";
-       printf "%18s: %5d  %3d\%\n\n", "total", $#total + 1, 100;
+       printf "%18s: %5d  %3d\%\n", "total", $#total + 1, 100;
+       printf "\n";
    }
 
 
@@ -1136,8 +1196,8 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
        my $mib2_ctr;         # 1.3.6.1.2.1
        my $experiment_ctr;   # 1.3.6.1.3
        my $enterprise_ctr;   # 1.3.6.1.4.1
-       foreach my $node ($doc->findnodes('//varbind/name')) {
-           my $name = $node->textContent();
+       foreach my $camelid ($doc->findnodes('//varbind/name')) {
+           my $name = $camelid->textContent();
            for ($name) {
                if    (/1\.3\.6\.1\.2\.1\.10/) { $transmission_ctr++; }
                elsif (/1\.3\.6\.1\.2\.1/)     { $mib2_ctr++; }
@@ -1156,87 +1216,29 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
        printf "%18s: %5d  %3d\%\n", "enterprises",
            $enterprise_ctr, ($enterprise_ctr/$oid_ctr*100);
        printf "    ---------------------------\n";
-       printf "%18s: %5d  %3d\%\n\n", "total", $oid_ctr, 100;
-   }
-
-
-   sub size_stats {
-       my $doc = shift;
-       my @total = $doc->findnodes('//packet/snmp');
-       printf "SNMP message size statistics:\n\n";
-       foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-                       "set-request", "trap", "trap-v2", "inform",
-                       "response", "report") {
-           my $total_ops = 0;
-           my $total_len = 0;
-
-
-
-Schoenwaelder          Expires September 22, 2006              [Page 21]
-
-Internet-Draft          SNMP Traffic Measurements             March 2006
-
-
-           foreach my $node ($doc->findnodes("//packet/snmp/$op")) {
-               my @msg_len = $node->find('../@blen');
-               $total_ops++;
-               # $total_len += $msg_len[0];
-               # printf "\t%d\t%d\n", @msg_len, $total_len;
-           }
-           printf "%18s: %5d %5d %f\n", $op, $total_ops, $total_len, $total_ops ? $total_len/$total_ops : 0;
-       }
+       printf "%18s: %5d  %3d\%\n", "total", $oid_ctr, 100;
        printf "\n";
    }
 
-
-   sub min {
-       if ($_[0]>$_[1]) {return $_[1]} else {return $_[0]};
-   }
-
-   sub max {
-       if ($_[0]<$_[1]) {return $_[1]} else {return $_[0]};
-   }
-
-   sub varbind_stats {
-       my $doc = shift;
-       my @total = $doc->findnodes('//packet/snmp');
-       printf "SNMP varbind number statistics:\n\n";
-       foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-                       "set-request", "trap", "trap-v2", "inform",
-                       "response", "report") {
-           my ($total_ops, $total_vbs, $total_vbs_min, $total_vbs_max);
-           foreach my $node ($doc->findnodes("//packet/snmp/$op")) {
-               my @varbinds = $node->findnodes("variable-bindings/varbind");
-               $total_ops++;
-               $total_vbs += $#varbinds + 1;
-               $total_vbs_min = min($total_vbs_min, $#varbinds + 1);
-               $total_vbs_max = max($total_vbs_max, $#varbinds + 1);
-           }
-           printf "%18s: %5d %5d %5.2f %5d %5d\n", $op, $total_ops, $total_vbs, $total_ops ? $total_vbs/$total_ops : 0, $total_vbs_min, $total_vbs_max;
-       }
-       printf "\n";
-   }
 
 
    @ARGV = ('-') unless @ARGV;
    while ($ARGV = shift) {
        my $parser = XML::LibXML->new();
-       my $tree = $parser->parse_file($ARGV);
-       my $doc = $tree->getDocumentElement;
-
-       version_stats($doc);
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 22]
+Schoenwaelder           Expires September 2, 2006              [Page 22]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
+       my $tree = $parser->parse_file($ARGV);
+       my $doc = $tree->getDocumentElement;
+
+       version_stats($doc);
        operation_stats($doc);
        oid_stats($doc);
-       size_stats($doc);
-       varbind_stats($doc);
    }
    exit(0);
 
@@ -1282,9 +1284,7 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
 
 
 
-
-
-Schoenwaelder          Expires September 22, 2006              [Page 23]
+Schoenwaelder           Expires September 2, 2006              [Page 23]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -1340,7 +1340,7 @@ Appendix D.  Trace Description Form
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 24]
+Schoenwaelder           Expires September 2, 2006              [Page 24]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -1396,7 +1396,7 @@ Author's Address
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 25]
+Schoenwaelder           Expires September 2, 2006              [Page 25]
 
 Internet-Draft          SNMP Traffic Measurements             March 2006
 
@@ -1452,5 +1452,5 @@ Acknowledgment
 
 
 
-Schoenwaelder          Expires September 22, 2006              [Page 26]
+Schoenwaelder           Expires September 2, 2006              [Page 26]
 
