@@ -45,18 +45,22 @@ typedef enum {
 
 
 typedef struct {
-    FILE *stream;
+    uint64_t cnt;
     snmp_filter_t *filter;
+    void (*do_filter)(snmp_filter_t *filter, snmp_packet_t *pkt);
     void (*do_learn)(snmp_packet_t *pkt);
     void (*do_anon)(snmp_packet_t *pkt);
-    void (*do_print)(FILE *stream, snmp_packet_t *pkt);
-    void (*do_filter)(snmp_filter_t *filter, snmp_packet_t *pkt);
+    void (*do_flow_init)(snmp_write_t *out);
+    void (*do_flow_write)(snmp_write_t *out, snmp_packet_t *pkt);
+    void (*do_flow_done)(snmp_write_t *out);
+    snmp_write_t out;
 } callback_state_t;
 
 
 /*
  * The per message callback which does all the processing and
- * printing, controlled by the state argument.
+ * printing, controlled by the state argument. This function is called
+ * with a NULL packet pointer once we are done processing all packets.
  */
 
 static void
@@ -68,6 +72,25 @@ print(snmp_packet_t *pkt, void *user_data)
 	return;
     }
 
+    /* Cleanup by printing the proper closing text in case we have
+     * dealt with all packets.
+     */
+
+    if (! pkt) {
+	if (state->do_flow_done) {
+	    state->do_flow_done(&state->out);
+	    return;
+	}
+	if (state->cnt && state->out.write_end && state->out.stream) {
+	    state->out.write_end(state->out.stream);
+	}
+	return;
+    }
+
+    /* First apply the filters. Then call the anonymization module. We
+     * might have to call it twice for learning purposes.
+     */
+    
     if (state->filter && state->do_filter) {
 	state->do_filter(state->filter, pkt);
     }
@@ -80,9 +103,27 @@ print(snmp_packet_t *pkt, void *user_data)
 	state->do_anon(pkt);
     }
 
-    if (state->stream && state->do_print) {
-	state->do_print(state->stream, pkt);
+    /*
+     * Call the flow handler if it is set and we are done.
+     */
+
+    if (state->do_flow_write) {
+	state->do_flow_write(&state->out, pkt);
+	return;
     }
+
+    /* Otherwise, check whether we have to generate a header and then
+     * print the packet.
+     */
+
+    if (state->cnt == 0 && state->out.stream && state->out.write_new) {
+	state->out.write_new(state->out.stream);
+    }
+
+    if (state->out.stream && state->out.write_pkt) {
+	state->out.write_pkt(state->out.stream, pkt);
+    }
+    state->cnt++;
 }
 
 
@@ -101,7 +142,6 @@ main(int argc, char **argv)
     input_t input = INPUT_PCAP;
     char *errmsg;
     anon_key_t *key = NULL;
-    snmp_filter_t *filter = NULL;
     callback_state_t _state, *state = &_state;
 
     smiInit(progname);
@@ -111,18 +151,19 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "Vz:f:i:o:c:m:hap:")) != -1) {
+    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
 	    break;
 	case 'z':
-	    filter = snmp_filter_new(optarg, &errmsg);
-	    if (! filter) {
+	    state->filter = snmp_filter_new(optarg, &errmsg);
+	    if (! state->filter) {
 		fprintf(stderr, "%s: ignoring clear filter: %s\n",
 			progname, errmsg);
 		continue;
 	    }
+	    state->do_filter = snmp_filter_apply;
 	    break;
 	case 'i':
 	    if (strcmp(optarg, "pcap") == 0) {
@@ -156,20 +197,24 @@ main(int argc, char **argv)
 	case 'm':
 	    smiLoadModule(optarg);
 	    break;
+	case 'F':
+	    state->do_flow_write = snmp_flow_write;
+	    state->do_flow_done = snmp_flow_done;
+	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-F] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }
 
-    state->stream = stdout;
-    state->filter = filter;
-    state->do_filter = snmp_filter_apply;
-    state->do_print = NULL;
+    state->out.stream = stdout;
+    state->out.write_new = NULL;
+    state->out.write_pkt = NULL;
+    state->out.write_end = NULL;
 
     if (state->do_anon) {
 	anon_init(key);
@@ -177,39 +222,34 @@ main(int argc, char **argv)
 
     switch (output) {
     case OUTPUT_XML:
-	state->do_print = snmp_xml_write_stream;
-	snmp_xml_write_stream_begin(stdout);
-	for (i = optind; i < argc; i++) {
-	    switch (input) {
-	    case INPUT_XML:
-		snmp_xml_read_file(argv[i], print, state);
-		break;
-	    case INPUT_PCAP:
-		snmp_pcap_read_file(argv[i], expr, print, state);
-		break;
-	    }
-	}
-	snmp_xml_write_stream_end(stdout);
+	state->out.write_new = snmp_xml_write_stream_new;
+	state->out.write_pkt = snmp_xml_write_stream_pkt;
+	state->out.write_end = snmp_xml_write_stream_end;
 	break;
     case OUTPUT_CSV:
-	state->do_print = snmp_csv_write_stream;
-	snmp_csv_write_stream_begin(stdout);
-	for (i = optind; i < argc; i++) {
-	    switch (input) {
-	    case INPUT_XML:
-		snmp_xml_read_file(argv[i], print, state);
-		break;
-	    case INPUT_PCAP:
-		snmp_pcap_read_file(argv[i], expr, print, state);
-		break;
-	    }
-	}
-	snmp_csv_write_stream_end(stdout);
+	state->out.write_new = snmp_csv_write_stream_new;
+	state->out.write_pkt = snmp_csv_write_stream_pkt;
+	state->out.write_end = snmp_csv_write_stream_end;
 	break;
+    default:
+	fprintf(stderr, "%s: unknown output format - aborting...\n", progname);
+	abort();
     }
 
-    if (filter) {
-	snmp_filter_delete(filter);
+    for (i = optind; i < argc; i++) {
+	switch (input) {
+	case INPUT_XML:
+	    snmp_xml_read_file(argv[i], print, state);
+	    break;
+	case INPUT_PCAP:
+	    snmp_pcap_read_file(argv[i], expr, print, state);
+	    break;
+	}
+    }
+    print(NULL, state);
+
+    if (state->filter) {
+	snmp_filter_delete(state->filter);
     }
 
     if (key) {

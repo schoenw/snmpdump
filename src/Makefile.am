@@ -9,7 +9,9 @@ snmpdump_SOURCES	= snmpdump.c \
 			  xml-read.c xml-write.c \
 			  csv-write.c \
 			  filter.c \
-			  anon.c
+			  anon.c \
+			  snmp.c \
+			  flow.c
 snmpdump_LDADD		= ../libanon/libanon.la $(OPENSSL_LIBS) \
 			  $(NIDSLIB) -lpcap $(XML_LIBS)
 

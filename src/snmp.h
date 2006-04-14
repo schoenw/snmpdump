@@ -22,14 +22,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#define SNMP_FLAG_VALUE	0x01
-#define SNMP_FLAG_BLEN	0x02
-#define SNMP_FLAG_VLEN	0x04
-#define SNMP_FLAG_SPORT	0x08
-#define SNMP_FLAG_SADDR	0x10
-#define SNMP_FLAG_DPORT	0x20
-#define SNMP_FLAG_DADDR	0x40
-#define SNMP_FLAG_CLEAR	0x80	/* ??? */
+#define SNMP_FLAG_VALUE		0x0001
+#define SNMP_FLAG_BLEN		0x0002
+#define SNMP_FLAG_VLEN		0x0004
+#define SNMP_FLAG_SPORT		0x0008
+#define SNMP_FLAG_SADDR		0x0010
+#define SNMP_FLAG_DPORT		0x0020
+#define SNMP_FLAG_DADDR		0x0040
+#define SNMP_FLAG_DYNAMIC	0x8000
 
 typedef struct {
     int      blen;	/* length of the BER encided TLV triple */
@@ -188,6 +188,18 @@ typedef struct {
 } snmp_packet_t;
 
 /*
+ * Functions to deal with dynamically allocated packets. Note that
+ * packets allocated by the XML/pcap parsers are managed by the
+ * parsers and thus not something applications have to take care of.
+ * Packets which are dynamically allocated have the SNMP_FLAG_DYNAMIC
+ * set to distinguish them from packets allocated by the parsers.
+ */
+
+snmp_packet_t* snmp_pkt_new(void);
+snmp_packet_t* snmp_pkt_copy(snmp_packet_t *pkt);
+void           snmp_pkt_delete(snmp_packet_t *pkt);
+
+/*
  * Prototype of the callback function which is called for each
  * SNMP message in the input stream.
  */
@@ -203,8 +215,8 @@ void snmp_xml_read_file(const char *file,
 void snmp_xml_read_stream(const FILE *stream,
 			  snmp_callback func, void *user_data);
 
-void snmp_xml_write_stream_begin(FILE *stream);
-void snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt);
+void snmp_xml_write_stream_new(FILE *stream);
+void snmp_xml_write_stream_pkt(FILE *stream, snmp_packet_t *pkt);
 void snmp_xml_write_stream_end(FILE *stream);
 
 /*
@@ -220,9 +232,26 @@ void snmp_pcap_read_life(const char *file,
  * CSV output functions (we do not read CVS files)
  */
 
-void snmp_csv_write_stream_begin(FILE *stream);
-void snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt);
+void snmp_csv_write_stream_new(FILE *stream);
+void snmp_csv_write_stream_pkt(FILE *stream, snmp_packet_t *pkt);
 void snmp_csv_write_stream_end(FILE *stream);
+
+/*
+ * Interface for SNMP flows. We encapsulate the write functions into a
+ * common interface so that we can pass the set of related output
+ * functions around easily.
+ */
+
+typedef struct _snmp_write {
+    FILE *stream;
+    void (*write_new) (FILE *stream);
+    void (*write_pkt) (FILE *stream, snmp_packet_t *pkt);
+    void (*write_end) (FILE *stream);
+} snmp_write_t;
+
+void snmp_flow_init(snmp_write_t *out);
+void snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt);
+void snmp_flow_done(snmp_write_t *out);
 
 /*
  * Interface for the filter-out filter which can be used to suppress

@@ -362,7 +362,7 @@ xml_write_snmp(FILE *stream, snmp_snmp_t *snmp)
 
 
 void
-snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
+snmp_xml_write_stream_pkt(FILE *stream, snmp_packet_t *pkt)
 {
     if (! pkt) return;
     
@@ -393,7 +393,7 @@ snmp_xml_write_stream(FILE *stream, snmp_packet_t *pkt)
 
 
 void
-snmp_xml_write_stream_begin(FILE *stream)
+snmp_xml_write_stream_new(FILE *stream)
 {
     fprintf(stream, "<?xml version=\"1.0\"?>\n<snmptrace>\n");
 }

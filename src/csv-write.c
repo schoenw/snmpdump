@@ -229,7 +229,7 @@ csv_write_varbind_list_count(FILE *stream, snmp_var_bindings_t *varbindlist)
 }
 
 void
-snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
+snmp_csv_write_stream_pkt(FILE *stream, snmp_packet_t *pkt)
 {
     if (! pkt) return;
 
@@ -276,7 +276,7 @@ snmp_csv_write_stream(FILE *stream, snmp_packet_t *pkt)
 }
 
 void
-snmp_csv_write_stream_begin(FILE *stream)
+snmp_csv_write_stream_new(FILE *stream)
 {
     /* this is at the moment an empty entry point */
 }

@@ -384,8 +384,6 @@ static void
 process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	     snmp_varbind_t** varbind, snmp_callback func, void *user_data) {
     const xmlChar *name, *value;
-    xmlChar* attr;
-    char *end;
 
     assert(packet);
     /* 1, 3, 8, 14, 15 */
@@ -1028,7 +1026,7 @@ snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
     snmp_packet_t packet;
     snmp_varbind_t *varbind = NULL;
     xmlTextReaderPtr reader;
-    int i, ret;
+    int ret;
     
     if (file) {
 	reader = xmlNewTextReaderFilename(file);
