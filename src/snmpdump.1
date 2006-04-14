@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH SNMPDUMP 1 "March 20, 2006"
+.TH SNMPDUMP 1 "April 14, 2006"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -39,6 +39,10 @@ data can be filtered or removed.
 .SH OPTIONS
 \fBsnmpdump\fP accepts the following options:
 .TP
+\fB-a, --anon\fP
+Anonymize the trace. The anonymization rules are currently hardwired
+and very restrictive and cannot be changed without recompiling the
+program.
 .TP
 \fB-c \fIfile\fB, --config=\fIfile\fP
 Read \fIfile\fP instead of any other (global and user)
@@ -50,17 +54,23 @@ packets before they are processed by snmpdump. This option can only
 be used once.
 .TP
 \fB-i \fIformat\fB, --input=\fIformat\fP
-Process input of the given \fIformat\fR. The current version of
+Process input of the given \fIformat\fP. The current version of
 snmpdump can process XML input and PCAP input. The default input
 format is PCAP.
 .TP
 \fB-o \fIformat\fB, --output=\fIformat\fP
-Produce output of the given \fIformat\fR. The current version of
+Produce output of the given \fIformat\fP. The current version of
 snmpdump can generate XML output and CSV output. The default output
 format is XML.
 .TP
+\fB-p \fItext\fB, --passphrase=\fItext\fP
+Provide a passphrase \fItext\fP as a parameter to the anonymization
+transformations. This option has only effect if anonymization is
+enabled. Note that specifying a passphrase on the comand line is a
+security risk since it might be visible in process lists.
+.TP
 \fB-m \fIfile\fB \-\-module \fIfile\fB
-Load SMI MIB module definitions from \fIfile\fR.  This option can be
+Load SMI MIB module definitions from \fIfile\fP.  This option can be
 used several times to load several MIB modules into snmpanon.
 .TP
 \fB-z \fIregex\fB, --zap=\fIregex\fP
@@ -70,6 +80,11 @@ insensitive extended POSIX regular expression.
 .TP
 .B \-h, \-\-help
 Show summary of options.
+.TP
+.B \-F, \-\-flows
+Extract flows and write the output to several files which are named
+after the flows. Any existing files will be overwritten. Messages that
+cannot be assigned to flows will be written to standard output.
 .TP
 .B \-V, \-\-version
 Show version of program.
@@ -99,7 +114,7 @@ To filter out only certain SNMP packets from a given source using a
 non-standard port number, you can use the pcap filtering mechanism:
 .PP 
 .RS 
-\f(CWsnmpdump -F 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
+\f(CWsnmpdump -f 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
 .RE 
 .PP
 .SH SEE ALSO
