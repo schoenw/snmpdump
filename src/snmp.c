@@ -76,22 +76,51 @@ snmp_packet_t*
 snmp_pkt_copy(snmp_packet_t *pkt)
 {
     snmp_packet_t *n;
+    snmp_varbind_t *vb, **nvb = NULL;
 
     n = snmp_pkt_new();
-
-    /* xxx more copying to be done here for SNMPv3 messages */
-
     memcpy(n, pkt, sizeof(snmp_packet_t));
+    n->attr.flags |= SNMP_FLAG_DYNAMIC;
 
     n->snmp.community.value
-	= xmemdup(pkt->snmp.community.value, pkt->snmp.community.len);
+	= (unsigned char *) xmemdup(pkt->snmp.community.value, pkt->snmp.community.len);
+    n->snmp.community.attr.flags |= SNMP_FLAG_DYNAMIC;
     
+    /* xxx more copying to be done here for SNMPv3 messages */
+
+    /*
+     * Duplicate the varbind list.
+     */
+
+    for (vb = pkt->snmp.scoped_pdu.pdu.varbindings.varbind,
+	     nvb = &n->snmp.scoped_pdu.pdu.varbindings.varbind;
+	 vb; vb = vb->next) {
+	*nvb = (snmp_varbind_t *) xmemdup(vb, sizeof(snmp_varbind_t));
+	(*nvb)->attr.flags |= SNMP_FLAG_DYNAMIC;
+	(*nvb)->name.attr.flags |= SNMP_FLAG_DYNAMIC;
+	(*nvb)->name.value = xmemdup(vb->name.value,
+				     vb->name.len * sizeof(uint32_t));
+	if (vb->type == SNMP_TYPE_OCTS) {
+	    (*nvb)->value.octs.value = xmemdup(vb->value.octs.value,
+					       vb->value.octs.len);
+	    (*nvb)->value.octs.attr.flags |= SNMP_FLAG_DYNAMIC;
+	}
+	if (vb->type == SNMP_TYPE_OID) {
+	    (*nvb)->value.octs.value = xmemdup(vb->value.oid.value,
+					       vb->value.oid.len * sizeof(uint32_t));
+	    (*nvb)->value.oid.attr.flags |= SNMP_FLAG_DYNAMIC;
+	}
+	nvb = &((*nvb)->next);
+    }
+
     return n;
 }
 
 void
 snmp_pkt_delete(snmp_packet_t *pkt)
 {
+    snmp_varbind_t *vb, *q;
+    
     if (! pkt || ! (pkt->attr.flags & SNMP_FLAG_DYNAMIC)) {
 	return;
     }
@@ -102,6 +131,29 @@ snmp_pkt_delete(snmp_packet_t *pkt)
     }
     
     /* xxx more cleanup to be done here for SNMPv3 messages */
+
+    /*
+     * Delete the varbind list.
+     */
+
+    for (vb = pkt->snmp.scoped_pdu.pdu.varbindings.varbind; vb;) {
+	if (vb->name.attr.flags & SNMP_FLAG_DYNAMIC) {
+	    free(vb->name.value);
+	}
+	if (vb->type == SNMP_TYPE_OCTS
+	    && vb->value.octs.attr.flags & SNMP_FLAG_DYNAMIC) {
+	    free(vb->value.octs.value);
+	}
+	if (vb->type == SNMP_TYPE_OID
+	    && vb->value.oid.attr.flags & SNMP_FLAG_DYNAMIC) {
+	    free(vb->value.oid.value);
+	}
+	q = vb->next;
+	if (vb->attr.flags & SNMP_FLAG_DYNAMIC) {
+	    free(vb);
+	}
+	vb = q;
+    }
     
     free(pkt);
 }
