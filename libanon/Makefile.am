@@ -2,13 +2,13 @@ INCLUDES		= $(XML_CFLAGS) $(XML_CPPFLAGS) $(OPENSSL_CFLAGS)
 
 EXTRA_DIST		= $(man_MANS)
 
-bin_PROGRAMS		= anon # pcap_anon
+bin_PROGRAMS		= anon pcap_anon
 
 anon_SOURCES		= anon.c
 anon_LDADD		= libanon.la $(OPENSSL_LIBS)
 
-# pcap_anon_SOURCES	= pcap_anon.c
-# pcap_anon_LDADD		= libanon.la $(OPENSSL_LIBS) -lpcap
+pcap_anon_SOURCES	= pcap_anon.c
+pcap_anon_LDADD		= libanon.la $(OPENSSL_LIBS) -lpcap
 
 man_MANS		= anon.1 anon-ip.3 anon-mac.3
 
