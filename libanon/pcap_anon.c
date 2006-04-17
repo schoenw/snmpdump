@@ -1,4 +1,6 @@
 /*
+ * THIS PROGRAM IS FAR FROM FINISHED !!!
+ *
  * pcap_anon.c --
  *
  * Anonymization of pcap traces using the anonymization library.
@@ -11,8 +13,12 @@
 
 /*
  * TODO:
+ * o figure out how to get to the ethernet, ip tcp headers,
+ *   worst case just copy what tcpdump is doing
  * o checksums
  * o ip-in-ip
+ * o passphrase support via cmd line option
+ * o remove default passphrase or make it random
  */
 
 #include <stdlib.h>
@@ -109,12 +115,16 @@ int main(int argc, char * argv[]) {
     char *finname, *foutname;
     pcap_t *pcap;
     uint64_t lower, upper;
-    
+    anon_key_t *key = NULL;
+
     if (argc < 2) {
 	fprintf(stderr, "Type '%s help' for usage information\n", progname);
 	return EXIT_FAILURE;
     }
 
+    key = anon_key_new();
+    anon_key_set_key(key, my_key, sizeof(my_key));
+    
     /*
     //optind = 2;
     while ((c = getopt(argc, argv, "h")) != -1) {
@@ -137,11 +147,13 @@ int main(int argc, char * argv[]) {
 
     if ((pcap = pcap_open_offline(finname, errbuf)) == NULL) {
 	fprintf(stderr, "failded to open input file: %s\n", errbuf);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
     if ((cb_data.pcap_dumper = pcap_dump_open(pcap, foutname)) == NULL){
 	fprintf(stderr, "failded to open output file\n");
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -151,11 +163,12 @@ int main(int argc, char * argv[]) {
     if ( (!cb_data.a4) || (!cb_data.a6) || (!cb_data.ap)) {
 	fprintf(stderr, "%s: Failed to initialize IP or port mappings\n",
 		progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
-    anon_ipv4_set_key(cb_data.a4, my_key);
-    anon_ipv6_set_key(cb_data.a6, my_key);
-    anon_uint64_set_key(cb_data.ap, my_key);
+    anon_ipv4_set_key(cb_data.a4, key);
+    anon_ipv6_set_key(cb_data.a6, key);
+    anon_uint64_set_key(cb_data.ap, key); /* not doing anything */
 
     pcap_loop(pcap, -1, &callback, (u_char*) &cb_data);
 	
@@ -166,6 +179,7 @@ int main(int argc, char * argv[]) {
     anon_ipv4_delete(cb_data.a4);
     anon_ipv6_delete(cb_data.a6);
     anon_uint64_delete(cb_data.ap);
+    anon_key_delete(key);
 
     return EXIT_SUCCESS;
 }

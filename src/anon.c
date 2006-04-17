@@ -112,31 +112,31 @@ anon_tf_new(anon_key_t *key, const char *name, const char *type,
     case ANON_TYPE_INT32:
 	tfp->u.an_int64 = anon_int64_new(0, INT32_MAX);
 	if (tfp->u.an_int64) {
-	    anon_int64_set_key(tfp->u.an_int64, my_key);
+	    anon_int64_set_key(tfp->u.an_int64, key);
 	}
 	break;
     case ANON_TYPE_UINT32:
 	tfp->u.an_uint64 = anon_uint64_new(0, UINT32_MAX);
 	if (tfp->u.an_uint64) {
-	    anon_uint64_set_key(tfp->u.an_uint64, my_key);
+	    anon_uint64_set_key(tfp->u.an_uint64, key);
 	}
 	break;
     case ANON_TYPE_INT64:
 	tfp->u.an_int64 = anon_int64_new(0, INT64_MAX);
 	if (tfp->u.an_int64) {
-	    anon_int64_set_key(tfp->u.an_int64, my_key);
+	    anon_int64_set_key(tfp->u.an_int64, key);
 	}
 	break;
     case ANON_TYPE_UINT64:
 	tfp->u.an_uint64 = anon_uint64_new(0, UINT64_MAX);
 	if (tfp->u.an_uint64) {
-	    anon_uint64_set_key(tfp->u.an_uint64, my_key);
+	    anon_uint64_set_key(tfp->u.an_uint64, key);
 	}
 	break;
     case ANON_TYPE_OCTS:
 	tfp->u.an_octs = anon_octs_new();
 	if (tfp->u.an_octs) {
-	    anon_octs_set_key(tfp->u.an_octs, my_key);
+	    anon_octs_set_key(tfp->u.an_octs, key);
 	}
 	break;
     }

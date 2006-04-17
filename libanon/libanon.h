@@ -76,7 +76,7 @@ unsigned	anon_ipv6_nodes_count(anon_ipv6_t *a);
 typedef struct _anon_mac anon_mac_t;
 
 anon_mac_t*	anon_mac_new();
-void		anon_mac_set_key(anon_mac_t *a, const uint8_t *key);
+void		anon_mac_set_key(anon_mac_t *a, const anon_key_t *key);
 int		anon_mac_set_used(anon_mac_t *a, const uint8_t *mac);
 int		anon_mac_map(anon_mac_t *a, const uint8_t *mac,
 			     uint8_t *amac);
@@ -91,7 +91,7 @@ void		anon_mac_delete(anon_mac_t *a);
 typedef struct _anon_int64 anon_int64_t;
 
 anon_int64_t*	anon_int64_new(const int64_t lower, const int64_t upper);
-void		anon_int64_set_key(anon_int64_t *a, const uint8_t *key);
+void		anon_int64_set_key(anon_int64_t *a, const anon_key_t *key);
 int		anon_int64_set_used(anon_int64_t *a, const int64_t num);
 int		anon_int64_map(anon_int64_t *a, const int64_t num,
 			       int64_t *anum);
@@ -106,7 +106,7 @@ void		anon_int64_delete(anon_int64_t *a);
 typedef struct _anon_uint64 anon_uint64_t;
 
 anon_uint64_t*	anon_uint64_new(const uint64_t lower, const uint64_t upper);
-void		anon_uint64_set_key(anon_uint64_t *a, const uint8_t *key);
+void		anon_uint64_set_key(anon_uint64_t *a, const anon_key_t *key);
 int		anon_uint64_set_used(anon_uint64_t *a, const uint64_t num);
 int		anon_uint64_map(anon_uint64_t *a, const uint64_t num,
 			       uint64_t *anum);
@@ -122,7 +122,7 @@ typedef struct _anon_octs anon_octs_t;
 
 anon_octs_t*	anon_octs_new();
 void		anon_octs_set_key(anon_octs_t *a,
-					  const uint8_t *key);
+					  const anon_key_t *key);
 int		anon_octs_set_used(anon_octs_t *a,
 					   const char *str);
 int		anon_octs_map(anon_octs_t *a,

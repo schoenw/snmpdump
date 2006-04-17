@@ -520,7 +520,7 @@ anon_octs_delete(anon_octs_t *a)
  */
 
 void
-anon_octs_set_key(anon_octs_t *a, const uint8_t *key)
+anon_octs_set_key(anon_octs_t *a, const anon_key_t *key)
 {
     assert(a);
     /* we might want to use the key to seed the RAND_* stuff */

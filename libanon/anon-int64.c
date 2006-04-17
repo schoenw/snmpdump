@@ -298,7 +298,7 @@ anon_int64_delete(anon_int64_t *a)
  */
 
 void
-anon_int64_set_key(anon_int64_t *a, const uint8_t *key)
+anon_int64_set_key(anon_int64_t *a, const anon_key_t *key)
 {
     assert(a);
     /* we might want to use the key to seed the RAND_* stuff */

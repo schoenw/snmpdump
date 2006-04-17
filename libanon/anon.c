@@ -539,7 +539,7 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
 	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_mac_set_key(a, my_key);
+
     if (lflag) {
 	mac_lex(a, in);
     } else {
@@ -644,7 +644,7 @@ cmd_int64(int argc, char **argv, struct cmd *cmd)
 	fprintf(stderr, "%s: Failed to initialize int64 mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_int64_set_key(a, my_key);
+
     if (lflag) {
 	int64_lex(a, in);
     } else {
@@ -749,7 +749,7 @@ cmd_uint64(int argc, char **argv, struct cmd *cmd)
 	fprintf(stderr, "%s: Failed to initialize uint64 mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_uint64_set_key(a, my_key);
+
     if (lflag) {
 	uint64_lex(a, in);
     } else {
@@ -853,7 +853,7 @@ cmd_octs(int argc, char **argv, struct cmd *cmd)
 	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
 	exit(EXIT_FAILURE);
     }
-    anon_octs_set_key(a, my_key);
+
     if (lflag) {
 	octet_string_lex(a, in);
     } else {
