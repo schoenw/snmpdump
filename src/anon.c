@@ -421,6 +421,7 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
 	|| 0 != anon_octs_map(tfp->u.an_octs,
 				      (char *) v->value, new_value)) {
 	memset(v->value, 0, v->len);
+	v->len = 0;
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
 	return;	
     }
@@ -476,6 +477,8 @@ anon_oid(anon_tf_t *tfp, snmp_oid_t *v)
 
     /* xxx how do we deal with OIDs? */
     memset(v->value, 0, v->len * sizeof(uint32_t));
+    v->len = 0;
+    v->attr.flags &= ~SNMP_FLAG_VALUE;
 }
 
 static void

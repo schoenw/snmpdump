@@ -198,6 +198,7 @@ typedef struct {
 snmp_packet_t* snmp_pkt_new(void);
 snmp_packet_t* snmp_pkt_copy(snmp_packet_t *pkt);
 void           snmp_pkt_delete(snmp_packet_t *pkt);
+void	       snmp_pkt_v1tov2(snmp_packet_t *pkt);
 
 /*
  * Prototype of the callback function which is called for each

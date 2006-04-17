@@ -69,6 +69,11 @@ transformations. This option has only effect if anonymization is
 enabled. Note that specifying a passphrase on the comand line is a
 security risk since it might be visible in process lists.
 .TP
+.B \-t, \-\-translate
+Translate version one traps into the format used by the second version
+of the SNMP protocol operations. See RFC 3584 section 3.1. for
+additional details.
+.TP
 \fB-m \fIfile\fB \-\-module \fIfile\fB
 Load SMI MIB module definitions from \fIfile\fP.  This option can be
 used several times to load several MIB modules into snmpanon.

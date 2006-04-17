@@ -230,6 +230,7 @@ filter_octs(snmp_filter_t *filter, int flt, snmp_octs_t *v)
 {
     if (filter->hide[flt] && v->value) {
 	memset(v->value, 0, v->len);
+	v->len = 0;
     }
     filter_attr(filter, flt, &v->attr);
 }
@@ -239,6 +240,7 @@ filter_oid(snmp_filter_t *filter, int flt, snmp_oid_t *v)
 {
     if (filter->hide[flt] && v->value) {
 	memset(v->value, 0, v->len * sizeof(uint32_t));
+	v->len = 0;
     }
     filter_attr(filter, flt, &v->attr);
 }

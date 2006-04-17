@@ -43,6 +43,7 @@ typedef enum {
     OUTPUT_CSV = 2
 } output_t;
 
+#define STATE_FLAG_V1V2	0x01
 
 typedef struct {
     uint64_t cnt;
@@ -54,6 +55,7 @@ typedef struct {
     void (*do_flow_write)(snmp_write_t *out, snmp_packet_t *pkt);
     void (*do_flow_done)(snmp_write_t *out);
     snmp_write_t out;
+    int flags;
 } callback_state_t;
 
 
@@ -95,6 +97,19 @@ print(snmp_packet_t *pkt, void *user_data)
 	state->do_filter(state->filter, pkt);
     }
 
+    /*
+     * Check whether we have to first apply any conversion. If yes, we
+     * filter a second time since we might now have to apply
+     * additional filter rules.
+     */
+
+    if (state->flags & STATE_FLAG_V1V2) {
+	snmp_pkt_v1tov2(pkt);
+	if (state->filter && state->do_filter) {
+	    state->do_filter(state->filter, pkt);
+	}
+    }
+
     if (state->do_learn) {
 	state->do_learn(pkt);
     }
@@ -109,6 +124,9 @@ print(snmp_packet_t *pkt, void *user_data)
 
     if (state->do_flow_write) {
 	state->do_flow_write(&state->out, pkt);
+	if (state->flags & STATE_FLAG_V1V2) {
+	    snmp_pkt_delete(pkt);
+	}
 	return;
     }
 
@@ -124,6 +142,10 @@ print(snmp_packet_t *pkt, void *user_data)
 	state->out.write_pkt(state->out.stream, pkt);
     }
     state->cnt++;
+
+    if (state->flags & STATE_FLAG_V1V2) {
+	snmp_pkt_delete(pkt);
+    }
 }
 
 
@@ -151,7 +173,7 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:")) != -1) {
+    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:t")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -184,6 +206,9 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: ignoring output format: %s unknown\n",
 			progname, optarg);
 	    }
+	    break;
+	case 't':
+	    state->flags |= STATE_FLAG_V1V2;
 	    break;
 	case 'p':
 	    anon_key_set_passphase(key, optarg);

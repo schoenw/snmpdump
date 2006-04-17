@@ -42,23 +42,124 @@ xmemdup(const void *src, size_t len)
     return dst;
 }
 
-static void
-v1tov2(snmp_packet_t *pkt)
+void
+snmp_pkt_v1tov2(snmp_packet_t *pkt)
 {
-    if (pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1) {
+    snmp_pdu_t *pdu;
+    snmp_varbind_t *nvb;
+
+    static uint32_t sysUpTime0[]   = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
+    static uint32_t snmpTrapOid0[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+
+    static uint32_t coldStart[]    = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 1 };
+    static uint32_t warmStart[]    = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 2 };
+    static uint32_t linkDown[]     = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 3 };
+    static uint32_t linkUp[]       = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 4 };
+    static uint32_t authFailure[]  = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 5 };
+    static uint32_t egpNeighLoss[] = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 6 };
+
+    assert(pkt);
+
+    pdu = &pkt->snmp.scoped_pdu.pdu;
+
+    if (pdu->type != SNMP_PDU_TRAP1) {
 	return;
     }
 
-    /* RFC 3584 */
+    /* set 2nd varbind to { snmpTrapOid.0 == ... } (RFC 3584) */
 
-    /* 1st varbind is sysUpTime.0 == time_stamp */
-    /* 2nd varbind is snmpTrapOid.0 == ... */
+    nvb = (snmp_varbind_t *) xmalloc(sizeof(snmp_varbind_t));
+    nvb->attr.flags |= SNMP_FLAG_DYNAMIC;
+    nvb->attr.flags |= SNMP_FLAG_VALUE;
+    nvb->type = SNMP_TYPE_OID;
+    nvb->name.len = sizeof(snmpTrapOid0) / sizeof(snmpTrapOid0[0]);
+    nvb->name.value = xmemdup(snmpTrapOid0, nvb->name.len * sizeof(uint32_t));
+    nvb->name.attr.flags |= SNMP_FLAG_VALUE;
+    if (! pdu->generic_trap.attr.flags & SNMP_FLAG_VALUE) {
+	nvb->value.oid.len = 0;
+	nvb->value.oid.value = NULL;
+    } else {
+	switch (pdu->generic_trap.value) {
+	case 0: /* coldStart */
+	    nvb->value.oid.len = sizeof(coldStart) / sizeof(coldStart[0]);
+	    nvb->value.oid.value = xmemdup(coldStart,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 1: /* warmStart */
+	    nvb->value.oid.len = sizeof(warmStart) / sizeof(warmStart[0]);
+	    nvb->value.oid.value = xmemdup(warmStart,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 2: /* linkDown */
+	    nvb->value.oid.len = sizeof(linkDown) / sizeof(linkDown[0]);
+	    nvb->value.oid.value = xmemdup(linkDown,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 3: /* linkUp */
+	    nvb->value.oid.len = sizeof(linkUp) / sizeof(linkUp[0]);
+	    nvb->value.oid.value = xmemdup(linkUp,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 4: /* authenticationFailure */
+	    nvb->value.oid.len = sizeof(authFailure) / sizeof(authFailure[0]);
+	    nvb->value.oid.value = xmemdup(authFailure,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 5: /* egpNeighborLoss */
+	    nvb->value.oid.len = sizeof(egpNeighLoss) / sizeof(egpNeighLoss[0]);
+	    nvb->value.oid.value = xmemdup(egpNeighLoss,
+				   nvb->value.oid.len * sizeof(uint32_t));
+	    nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    break;
+	case 6: /* enterprise specific */
+	    if ((! pdu->specific_trap.attr.flags & SNMP_FLAG_VALUE)
+		|| (! pdu->enterprise.attr.flags & SNMP_FLAG_VALUE)) {
+		nvb->value.oid.len = 0;
+		nvb->value.oid.value = NULL;
+	    } else {
+		int len = pdu->enterprise.len;
+		nvb->value.oid.len = pdu->enterprise.len + 2;
+		nvb->value.oid.value = xmalloc(nvb->value.oid.len
+					       * sizeof(uint32_t));
+		memcpy(nvb->value.oid.value, pdu->enterprise.value,
+		       pdu->enterprise.len * sizeof(uint32_t));
+		nvb->value.oid.value[len] = 0;
+		nvb->value.oid.value[++len] = pdu->specific_trap.value;
+		nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	    }
+	    break;
+	default:
+	    abort();
+	}
+    }
+    nvb->next = pdu->varbindings.varbind;
+    pdu->varbindings.varbind = nvb;
 
-    /* if not yet present, append snmpTrapAddress.0,
-       snmpTrapCommunity.0, snmpTrapEnterprise.0 */
+    /* set 1st varbind to { sysUpTime.0, time_stamp } (RFC 3584) */
 
-    /* How do we manage memory? Keep it around in static variables
-       until the next call is made? */
+    nvb = (snmp_varbind_t *) xmalloc(sizeof(snmp_varbind_t));
+    nvb->attr.flags |= SNMP_FLAG_DYNAMIC;
+    nvb->attr.flags |= SNMP_FLAG_VALUE;
+    nvb->type = SNMP_TYPE_UINT32;
+    nvb->name.len = sizeof(sysUpTime0) / sizeof(sysUpTime0[0]);
+    nvb->name.value = xmemdup(sysUpTime0, nvb->name.len * sizeof(uint32_t));
+    nvb->name.attr.flags |= SNMP_FLAG_VALUE;
+    if (! pdu->time_stamp.attr.flags & SNMP_FLAG_VALUE) {
+	nvb->value.u32.value = 0;
+    } else {
+	nvb->value.u32.value = pdu->time_stamp.value;
+	nvb->value.u32.attr.flags |= SNMP_FLAG_VALUE;
+    }
+    nvb->next = pdu->varbindings.varbind;
+    pdu->varbindings.varbind = nvb;
+
+    /* xxx if not yet present, append snmpTrapAddress.0,
+       snmpTrapCommunity.0, snmpTrapEnterprise.0 xxx */
 }
 
 
