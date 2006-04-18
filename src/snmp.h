@@ -125,19 +125,19 @@ typedef struct {
 #define SNMP_PDU_REPORT		0x09
 
 typedef struct {
-    int		 type;		 /* pdu type */
-    snmp_int32_t req_id;	 /* request ID */
-    snmp_int32_t err_status;	 /* error status */
-    snmp_int32_t err_index;	 /* error index */
+    int		 type;		/* pdu type */
+    snmp_int32_t req_id;	/* request ID */
+    snmp_int32_t err_status;	/* error status */
+    snmp_int32_t err_index;	/* error index */
     /* more stuff here */
-    snmp_oid_t   enterprise;
-    snmp_ipaddr_t agent_addr;
-    snmp_int32_t generic_trap;
-    snmp_int32_t specific_trap;
-    snmp_int32_t time_stamp;
+    snmp_oid_t   enterprise;	/* SNMPv1 traps only */
+    snmp_ipaddr_t agent_addr;	/* SNMPv1 traps only */
+    snmp_int32_t generic_trap;	/* SNMPv1 traps only */
+    snmp_int32_t specific_trap;	/* SNMPv1 traps only */
+    snmp_int32_t time_stamp;	/* SNMPv1 traps only */
     snmp_var_bindings_t
-		 varbindings;     /* variable-bindings */
-    snmp_attr_t  attr;		 /* attributes */
+		 varbindings;   /* variable-bindings */
+    snmp_attr_t  attr;		/* attributes */
 } snmp_pdu_t;
 
 typedef struct {

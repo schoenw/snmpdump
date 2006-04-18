@@ -46,10 +46,13 @@ void
 snmp_pkt_v1tov2(snmp_packet_t *pkt)
 {
     snmp_pdu_t *pdu;
-    snmp_varbind_t *nvb;
+    snmp_varbind_t *nvb, *vb;
 
     static uint32_t sysUpTime0[]   = { 1, 3, 6, 1, 2, 1, 1, 3, 0 };
     static uint32_t snmpTrapOid0[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 1, 0 };
+    static uint32_t snmpTrapAddress0[] = { 1, 3, 6, 1, 6, 3, 18, 1, 3, 0 };
+    static uint32_t snmpTrapCommunity0[] = { 1, 3, 6, 1, 6, 3, 18, 1, 4, 0 };
+    static uint32_t snmpTrapEnterprise0[] = { 1, 3, 6, 1, 6, 3, 1, 1, 4, 3, 0 };
 
     static uint32_t coldStart[]    = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 1 };
     static uint32_t warmStart[]    = { 1, 3, 6, 1, 6, 3, 1, 1, 5, 2 };
@@ -158,8 +161,85 @@ snmp_pkt_v1tov2(snmp_packet_t *pkt)
     nvb->next = pdu->varbindings.varbind;
     pdu->varbindings.varbind = nvb;
 
-    /* xxx if not yet present, append snmpTrapAddress.0,
-       snmpTrapCommunity.0, snmpTrapEnterprise.0 xxx */
+    /* get a pointer to the last varbind */
+
+    for (vb = pdu->varbindings.varbind; vb->next; vb = vb->next) ;
+
+    /* set n-2nd varbind to { snmpTrapAddress.0, agent_addr } (RFC 3584) */
+
+    nvb = (snmp_varbind_t *) xmalloc(sizeof(snmp_varbind_t));
+    nvb->attr.flags |= SNMP_FLAG_DYNAMIC;
+    nvb->attr.flags |= SNMP_FLAG_VALUE;
+    nvb->type = SNMP_TYPE_IPADDR;
+    nvb->name.len = sizeof(snmpTrapAddress0) / sizeof(snmpTrapAddress0[0]);
+    nvb->name.value = xmemdup(snmpTrapAddress0, nvb->name.len * sizeof(uint32_t));
+    nvb->name.attr.flags |= SNMP_FLAG_VALUE;
+    if (! pdu->agent_addr.attr.flags & SNMP_FLAG_VALUE) {
+	nvb->value.ip.value = 0;
+    } else {
+	nvb->value.ip.value = pdu->agent_addr.value;
+	nvb->value.ip.attr.flags |= SNMP_FLAG_VALUE;
+    }
+    nvb->next = NULL;
+    vb->next = nvb;
+    vb = nvb;
+
+    /* set n-1st varbind to { snmpTrapCommunity.0, community } (RFC 3584) */
+
+    nvb = (snmp_varbind_t *) xmalloc(sizeof(snmp_varbind_t));
+    nvb->attr.flags |= SNMP_FLAG_DYNAMIC;
+    nvb->attr.flags |= SNMP_FLAG_VALUE;
+    nvb->type = SNMP_TYPE_OCTS;
+    nvb->name.len = sizeof(snmpTrapCommunity0) / sizeof(snmpTrapCommunity0[0]);
+    nvb->name.value = xmemdup(snmpTrapCommunity0, nvb->name.len * sizeof(uint32_t));
+    nvb->name.attr.flags |= SNMP_FLAG_VALUE;
+    if (! pkt->snmp.community.attr.flags & SNMP_FLAG_VALUE) {
+	nvb->value.octs.len = 0;
+	nvb->value.octs.value = NULL;
+    } else {
+	nvb->value.octs.len = pkt->snmp.community.len;
+	nvb->value.octs.value = xmemdup(pkt->snmp.community.value,
+					pkt->snmp.community.len);
+	nvb->value.octs.attr.flags |= SNMP_FLAG_VALUE;
+	nvb->value.octs.attr.flags |= SNMP_FLAG_DYNAMIC;
+    }
+    nvb->next = NULL;
+    vb->next = nvb;
+    vb = nvb;
+
+    /* set n-th varbind to { snmpTrapEnterprise.0, community } (RFC 3584) */
+
+    nvb = (snmp_varbind_t *) xmalloc(sizeof(snmp_varbind_t));
+    nvb->attr.flags |= SNMP_FLAG_DYNAMIC;
+    nvb->attr.flags |= SNMP_FLAG_VALUE;
+    nvb->type = SNMP_TYPE_OID;
+    nvb->name.len = sizeof(snmpTrapEnterprise0) / sizeof(snmpTrapEnterprise0[0]);
+    nvb->name.value = xmemdup(snmpTrapEnterprise0, nvb->name.len * sizeof(uint32_t));
+    nvb->name.attr.flags |= SNMP_FLAG_VALUE;
+    if (! pdu->enterprise.attr.flags & SNMP_FLAG_VALUE) {
+	nvb->value.oid.len = 0;
+	nvb->value.oid.value = NULL;
+    } else {
+	nvb->value.oid.len = pdu->enterprise.len;
+	nvb->value.oid.value = xmemdup(pdu->enterprise.value,
+					pdu->enterprise.len * sizeof(uint32_t));
+	nvb->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	nvb->value.oid.attr.flags |= SNMP_FLAG_DYNAMIC;
+    }
+    nvb->next = NULL;
+    vb->next = nvb;
+    vb = nvb;
+
+    /* Finally, change the pdu type and mark all trap fields as unused
+     * by clearing the value flags. */
+
+    pdu->type = SNMP_PDU_TRAP2;
+
+    pdu->enterprise.attr.flags &= ~SNMP_FLAG_VALUE;
+    pdu->agent_addr.attr.flags &= ~SNMP_FLAG_VALUE;
+    pdu->generic_trap.attr.flags &= ~SNMP_FLAG_VALUE;
+    pdu->specific_trap.attr.flags &= ~SNMP_FLAG_VALUE;
+    pdu->time_stamp.attr.flags &= ~SNMP_FLAG_VALUE;
 }
 
 
