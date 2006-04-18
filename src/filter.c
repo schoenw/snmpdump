@@ -73,7 +73,8 @@
 #define FLT_NO_SUCH_OBJECT	54
 #define FLT_NO_SUCH_INSTANCE	55
 #define FLT_END_OF_MIB_VIEW	56
-#define FLT_MAX			56
+#define FLT_VALUE		57
+#define FLT_MAX			57
 
 struct _snmp_filter {
     char hide[FLT_MAX];
@@ -139,6 +140,7 @@ static struct {
     { "no-such-object",		FLT_NO_SUCH_OBJECT },
     { "no-such-instance",	FLT_NO_SUCH_INSTANCE },
     { "end-of-mib-view",	FLT_END_OF_MIB_VIEW },
+    { "value",			FLT_VALUE },
     { NULL,			0 }
 };
 
@@ -316,33 +318,43 @@ filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
 	switch (vb->type) {
 	case SNMP_TYPE_NULL:
 	    filter_null(filter, FLT_NULL, &vb->value.null);
+	    filter_null(filter, FLT_VALUE, &vb->value.null);
 	    break;
 	case SNMP_TYPE_INT32:
 	    filter_int32(filter, FLT_INTEGER32, &vb->value.i32);
+	    filter_int32(filter, FLT_VALUE, &vb->value.i32);
 	    break;
 	case SNMP_TYPE_UINT32:
 	    filter_uint32(filter, FLT_UNSIGNED32, &vb->value.u32);
+	    filter_uint32(filter, FLT_VALUE, &vb->value.u32);
 	    break;
 	case SNMP_TYPE_UINT64:
 	    filter_uint64(filter, FLT_UNSIGNED64, &vb->value.u64);
+	    filter_uint64(filter, FLT_VALUE, &vb->value.u64);
 	    break;
 	case SNMP_TYPE_IPADDR:
 	    filter_ipaddr(filter, FLT_IPADDRESS, &vb->value.ip);
+	    filter_ipaddr(filter, FLT_VALUE, &vb->value.ip);
 	    break;
 	case SNMP_TYPE_OCTS:
 	    filter_octs(filter, FLT_OCTET_STRING, &vb->value.octs);
+	    filter_octs(filter, FLT_VALUE, &vb->value.octs);
 	    break;
 	case SNMP_TYPE_OID:
 	    filter_oid(filter, FLT_OBJECT_IDENTIFIER, &vb->value.oid);
+	    filter_oid(filter, FLT_VALUE, &vb->value.oid);
 	    break;
 	case SNMP_TYPE_NO_SUCH_OBJ:
 	    filter_null(filter, FLT_NO_SUCH_OBJECT, &vb->value.null);
+	    filter_null(filter, FLT_VALUE, &vb->value.null);
 	    break;
 	case SNMP_TYPE_NO_SUCH_INST:
 	    filter_null(filter, FLT_NO_SUCH_INSTANCE, &vb->value.null);
+	    filter_null(filter, FLT_VALUE, &vb->value.null);
 	    break;
 	case SNMP_TYPE_END_MIB_VIEW:
 	    filter_null(filter, FLT_END_OF_MIB_VIEW, &vb->value.null);
+	    filter_null(filter, FLT_VALUE, &vb->value.null);
 	    break;
 	}
     }
