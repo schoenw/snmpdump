@@ -250,11 +250,13 @@ main(int argc, char **argv)
 	state->out.write_new = snmp_xml_write_stream_new;
 	state->out.write_pkt = snmp_xml_write_stream_pkt;
 	state->out.write_end = snmp_xml_write_stream_end;
+	state->out.ext = "xml";
 	break;
     case OUTPUT_CSV:
 	state->out.write_new = snmp_csv_write_stream_new;
 	state->out.write_pkt = snmp_csv_write_stream_pkt;
 	state->out.write_end = snmp_csv_write_stream_end;
+	state->out.ext = "csv";
 	break;
     default:
 	fprintf(stderr, "%s: unknown output format - aborting...\n", progname);

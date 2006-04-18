@@ -248,6 +248,8 @@ typedef struct _snmp_write {
     void (*write_new) (FILE *stream);
     void (*write_pkt) (FILE *stream, snmp_packet_t *pkt);
     void (*write_end) (FILE *stream);
+    const char *path;
+    const char *ext;
 } snmp_write_t;
 
 void snmp_flow_init(snmp_write_t *out);

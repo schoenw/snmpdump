@@ -182,6 +182,18 @@ snmp_flow_new(snmp_write_t *out)
     /* nothing to be done here yet */
 }
 
+static FILE*
+snmp_flow_open_stream(snmp_flow_t *flow, snmp_write_t *out, const char *mode)
+{
+#define MAX_FILENAME_SIZE 4096
+    char filename[MAX_FILENAME_SIZE];
+    FILE *stream;
+
+    snprintf(filename, MAX_FILENAME_SIZE, "%s.%s", flow->name, out->ext);
+    stream = fopen(filename, mode);
+    return stream;
+}
+
 void
 snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
@@ -190,7 +202,7 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
 	FILE *f;
-	f = fopen(flow->name, (flow->cnt == 0) ? "w" : "a");
+	f = snmp_flow_open_stream(flow, out, (flow->cnt == 0) ? "w" : "a");
 	if (f) {
 	    if (flow->cnt == 0 && out->write_new) {
 		out->write_new(f);
@@ -215,9 +227,8 @@ snmp_flow_done(snmp_write_t *out)
 
     for (p = flow_list; p; ) {
 	if (p->name) {
-	    fprintf(stderr, "flow \"%s\"\t%"PRIu64"\n", p->name, p->cnt);
 	    FILE *f;
-	    f = fopen(p->name, "a");
+	    f = snmp_flow_open_stream(p, out, "a");
 	    if (f) {
 		if (out->write_end) {
 		    out->write_end(f);
