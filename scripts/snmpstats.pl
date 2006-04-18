@@ -35,7 +35,7 @@ sub basic_done {
 	printf("%-18s", "$op:");
 	foreach my $version (0, 1, 3) {
 	    my $val = $basic_ops{"$version,$op"};
-	    printf(" %8d %3d\%", $val, 32);
+	    printf(" %8d %3d\%", $val, $basic_ops{"$version,$op"}*100/$total);
 	    $basic_ops{"total,$op"} += $val;
 	}
 	printf(" %8d %3d\%\n", $basic_ops{"total,$op"}, 
