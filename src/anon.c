@@ -56,15 +56,6 @@ static struct {
     { NULL,	ANON_TYPE_NONE }
 };
 
-/*
- * The default key (which probably should not be here) which ideally
- * would be set by passing a pass phrase to snmpdump and doing some
- * SHA1 hashing on the concatenated pass phrase.
- */
- 
-static unsigned char my_key[32] = 
-  {21,34,23,141,51,164,207,128,19,10,91,22,73,144,125,16,
-   216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
 
 anon_tf_t*
 anon_tf_new(anon_key_t *key, const char *name, const char *type,

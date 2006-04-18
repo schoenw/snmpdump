@@ -160,45 +160,67 @@ csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
 static void
 csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 {
+    int show;
+
     if (varbind->attr.flags & SNMP_FLAG_VALUE) {
 	csv_write_oid(stream, &varbind->name);
 	switch(varbind->type) {
 	case SNMP_TYPE_NULL:
+	    show = (varbind->value.null.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "null" : "");
 	    csv_write_null(stream, &varbind->value.null, NULL);
 	    break;
 	case SNMP_TYPE_INT32:
+	    show = (varbind->value.i32.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "integer32" : "");
 	    csv_write_int32(stream, &varbind->value.i32);
 	    break;
 	case SNMP_TYPE_UINT32:
+	    show = (varbind->value.u32.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "unsigned32" : "");
 	    csv_write_uint32(stream, &varbind->value.u32);
 	    break;
 	case SNMP_TYPE_UINT64:
+	    show = (varbind->value.u64.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "unsigned64" : "");
 	    csv_write_uint64(stream, &varbind->value.u64);
 	    break;
 	case SNMP_TYPE_IPADDR:
+	    show = (varbind->value.ip.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "ipaddress" : "");
 	    csv_write_ipaddr(stream, &varbind->value.ip);
 	    break;
 	case SNMP_TYPE_OCTS:
+	    show = (varbind->value.octs.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "octet-string" : "");
 	    csv_write_octs(stream, &varbind->value.octs);
 	    break;
 	case SNMP_TYPE_OID:
+	    show = (varbind->value.oid.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "object-identifier" : "");
 	    csv_write_oid(stream, &varbind->value.oid);
 	    break;
-	case SNMP_TYPE_NO_SUCH_OBJ:	/* xxx */
+	case SNMP_TYPE_NO_SUCH_OBJ:
+	    show = (varbind->value.null.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "no-such-object" : "");
 	    csv_write_null(stream, &varbind->value.null, "no-such-object");
 	    break;
-	case SNMP_TYPE_NO_SUCH_INST:	/* xxx */
+	case SNMP_TYPE_NO_SUCH_INST:
+	    show = (varbind->value.null.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "no-such-instance" : "");
 	    csv_write_null(stream, &varbind->value.null, "no-such-instance");
 	    break;
-	case SNMP_TYPE_END_MIB_VIEW:	/* xxx */
+	case SNMP_TYPE_END_MIB_VIEW:
+	    show = (varbind->value.null.attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "end-of-mib-view" : "");
 	    csv_write_null(stream, &varbind->value.null, "end-of-mib-view");
 	    break;
 	default:
-	    /* xxx */
+	    fprintf(stream, "%c%s%c", sep, "?", sep);
 	    break;
 	}
     } else {
-	fprintf(stream, "%c%c", sep, sep);
+	fprintf(stream, "%c%c%c", sep, sep, sep);
     }
 }
 
