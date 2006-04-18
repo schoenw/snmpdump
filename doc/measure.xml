@@ -1070,6 +1070,12 @@
 	      separated by commas.
 	    </t>
 	    <t>
+	      Object base type name or exception names, that is one of
+	      the following: null, integer32, unsigned32, unsigned64,
+	      ipaddress, octet-string, object-identifier,
+	      no-such-object, no-such-instance, and end-of-mib-view.
+	    </t>
+	    <t>
 	      Object values are printed as numbers if the underlying
 	      base type is numeric. IPv4 addresses are printed in the
 	      usual decimal notation and IPv6 addresses in the usual

@@ -1069,7 +1069,12 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
             notation, for example "1.3.6.1.2.1.1.3.0".  Object names are
             separated by commas.
 
-        2.  Object values are printed as numbers if the underlying base
+        2.  Object base type name or exception names, that is one of the
+            following: null, integer32, unsigned32, unsigned64,
+            ipaddress, octet-string, object-identifier, no-such-object,
+            no-such-instance, and end-of-mib-view.
+
+        3.  Object values are printed as numbers if the underlying base
             type is numeric.  IPv4 addresses are printed in the usual
             decimal notation and IPv6 addresses in the usual hexadecimal
             notation.  Octet string values are printed in hexadecimal
@@ -1077,11 +1082,6 @@ Internet-Draft          SNMP Traffic Measurements             March 2006
             decimal notation.  Exceptions are encoded by their name,
             that is no-such-object, no-such-instance, and end-of-mib-
             view.
-
-
-
-
-
 
 
 
