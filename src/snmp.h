@@ -278,4 +278,10 @@ void snmp_filter_delete(snmp_filter_t *filter);
 void snmp_anon_learn(snmp_packet_t *pkt);
 void snmp_anon_apply(snmp_packet_t *pkt);
 
+/*
+ * Other useful global symbols...
+ */
+
+extern const char *progname;
+
 #endif /* _SNMP_H */

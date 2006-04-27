@@ -1,8 +1,7 @@
 /*
  * flow.c --
  *
- * Utility functions to make copies of packets and to convert trap
- * messages in the common RFC 3416 format.
+ * The functions in this module identify SNMP flows.
  *
  * Copyright (c) 2006 Juergen Schoenwaelder
  *
@@ -18,6 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -176,11 +176,9 @@ snmp_flow_find(snmp_packet_t *pkt)
     return NULL;
 }
 
-void
-snmp_flow_new(snmp_write_t *out)
-{
-    /* nothing to be done here yet */
-}
+/*
+ * Helper function to open a flow file with a nice extension.
+ */
 
 static FILE*
 snmp_flow_open_stream(snmp_flow_t *flow, snmp_write_t *out, const char *mode)
@@ -189,9 +187,27 @@ snmp_flow_open_stream(snmp_flow_t *flow, snmp_write_t *out, const char *mode)
     char filename[MAX_FILENAME_SIZE];
     FILE *stream;
 
-    snprintf(filename, MAX_FILENAME_SIZE, "%s.%s", flow->name, out->ext);
+    snprintf(filename, MAX_FILENAME_SIZE, "%s%s%s.%s",
+	     out->path ? out->path : "", out->path ? "/" : "",
+	     flow->name, out->ext);
     stream = fopen(filename, mode);
+    if (! stream) {
+	fprintf(stderr, "%s: failed to open flow file %s: %s\n",
+		progname, filename, strerror(errno));
+    }
     return stream;
+}
+
+/*
+ * Below are the interface functions as defined in snmp.h, namely the
+ * initializing function, the per packet write functions, and the
+ * finalizing function.
+ */
+
+void
+snmp_flow_init(snmp_write_t *out)
+{
+    /* nothing to be done here yet */
 }
 
 void

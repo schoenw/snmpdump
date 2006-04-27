@@ -31,7 +31,7 @@
 #include <regex.h>
 #include <smi.h>
 
-static const char *progname = "snmpdump";
+const char *progname = "snmpdump";
 
 typedef enum {
     INPUT_XML = 1,
@@ -159,7 +159,7 @@ int
 main(int argc, char **argv)
 {
     int i, c;
-    char *expr = NULL;
+    char *expr = NULL, *path = NULL;
     output_t output = OUTPUT_XML;
     input_t input = INPUT_PCAP;
     char *errmsg;
@@ -173,7 +173,7 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:t")) != -1) {
+    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:tC:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -206,6 +206,9 @@ main(int argc, char **argv)
 		fprintf(stderr, "%s: ignoring output format: %s unknown\n",
 			progname, optarg);
 	    }
+	    break;
+	case 'C':
+	    path = optarg;
 	    break;
 	case 't':
 	    state->flags |= STATE_FLAG_V1V2;
@@ -240,6 +243,7 @@ main(int argc, char **argv)
     state->out.write_new = NULL;
     state->out.write_pkt = NULL;
     state->out.write_end = NULL;
+    state->out.path = path;
 
     if (state->do_anon) {
 	anon_init(key);
