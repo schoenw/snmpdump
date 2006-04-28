@@ -6,4 +6,4 @@
 MIBS="IF-MIB"
 OUTFILE=mib
 
-smidump -f identifiers $MIBS > $MIBS
+smidump -f identifiers $MIBS > $OUTFILE
