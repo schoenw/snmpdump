@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 #
 # This script computes from CSV SNMP packet trace files:
+#
 # o basic statistics
 # o counts oids for each SNMP operaiton
 #
@@ -14,7 +15,6 @@
 # 
 
 use Getopt::Std;
-
 use strict;
 
 my @basic_vers;
@@ -29,37 +29,6 @@ my @oid_unidentified; # varbinds for which we have not found a matching oid
 my %oid_count; # hash (by operation) of hashes (by oids)
 my @oid_op_total; #how many varbinds have we seen for each operation
 		  # (includes also unidentified varbinds)
-
-#
-# Command line options processing
-#
-sub init()
-{
-    #use Getopt::Std;
-    my %opt;
-    getopts( "m:", \%opt ) or usage();
-    usage() if $opt{h};
-    load_mib($opt{m}) if $opt{m};
-}
-
-#
-# Message about this program and how to use it
-#
-sub usage()
-{
-#     print STDERR << "EOF";
-    
-#     This program does...
-	
-#       usage: $0 [-h] [-m MIB_file] [files|-]
-      
-#       -h            : this (help) message
-#       -m MIB_file   : file containing MIB information
-# 			(in smidump -f identifiers format)
-      
-#     EOF
-    exit;
-}
 
 sub basic {
     my $aref = shift;
@@ -79,7 +48,7 @@ sub basic {
     $basic_nvbs{"$op,$nvbs"}++;
 }
 
-sub basic_done {
+sub basic_print {
     my $total = shift;
     printf("# The following table shows the protocol operations statistics\n" .
 	   "# broken down by SNMP protocol version plus the overall sums.\n" .
@@ -147,7 +116,7 @@ sub basic_done {
 #
 # load MIB information from file passed as argument
 #
-sub load_mib() {
+sub load_mib {
     my $file = shift;
     open(F, "<$file") or die "Can't open $file: $!";
     while(<F>) {
@@ -158,7 +127,7 @@ sub load_mib() {
 	}
     }
     close(F);
-    #print STDERR "loaded ".keys(%oid_name)." oids from file $file\n";
+    print STDERR "loaded ".keys(%oid_name)." oids from file $file\n";
 }
 
 #
@@ -183,7 +152,7 @@ sub oid {
 	$oid_op_total[$op]++;
 	if ($oid) {
 	    # matched $varbind to $oid
-	    #print "mathced $varbind to $oid\n";
+	    #print "matched $varbind to $oid\n";
 	    $oid_count{$op}{$oid}++;
 	} else {
 	    # could not match varbind, append to @oid_unidentified
@@ -203,8 +172,8 @@ sub oid {
 
 sub oid_done {
     my $total = shift;
-    printf("\n# The following table shows the oid statistics for each".
-	   "SNMP operation we have seen in the trace\n\n");
+    printf("\n# The following table shows the oid statistics for each\n".
+	   "# SNMP operation we have seen in the trace\n\n");
     foreach my $op (keys %oid_count) {
 	print "OPERTAION $op\n";
 	printf("%-25s  %25s  %10s\n", 
@@ -240,12 +209,35 @@ sub process {
 	oid(\@a);
 	$total++;
     }
-    basic_done($total);
+    basic_print($total);
     oid_done($total);
     close(F);
 }
 
-init();
+#
+# Print usage information about this program.
+#
+sub usage()
+{
+     print STDERR << "EOF";
+Usage: $0 [-h] [-m mibfile] [files|-]
+      
+This program computes statistics from SNMP trace files in CSV format.
+	
+  -h         display this (help) message
+  -m mibfile file with MIB information (in smidump -f identifiers format)
+EOF
+     exit;
+}
+
+# Here is where the script basically begins. Parse the command line
+# arguments and then process all files on the commandline in turn.
+
+my %opt;
+getopts( "m:h", \%opt ) or usage();
+usage() if defined $opt{h};
+load_mib($opt{m}) if defined $opt{m};
+
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
     process($ARGV);
