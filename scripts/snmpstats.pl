@@ -17,6 +17,11 @@
 use Getopt::Std;
 use strict;
 
+my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
+		"set-request", 
+		"trap", "trap2", "inform", 
+		"response", "report", "");
+
 my @basic_vers;
 my %basic_ops;
 my %basic_errs;
@@ -24,11 +29,11 @@ my %basic_errs_max;
 my %basic_nvbs;
 my %basic_nvbs_max;
 
-my %oid_name; # oid to name mapping
-my @oid_unidentified; # varbinds for which we have not found a matching oid
-my %oid_count; # hash (by operation) of hashes (by oids)
-my @oid_op_total; #how many varbinds have we seen for each operation
-		  # (includes also unidentified varbinds)
+my %oid_name;		# oid to name mapping
+my %oid_unidentified;	# varbinds for which we have not found a matching oid
+my %oid_count;		# hash (by operation) of hashes (by oids)
+my @oid_op_total;	# how many varbinds have we seen for each operation
+			# (includes also unidentified varbinds)
 
 sub basic {
     my $aref = shift;
@@ -55,9 +60,7 @@ sub basic_print {
 	   "\n");
     printf("%-18s  %12s  %12s  %12s  %12s\n", 
 	   "OPERATION", "SNMPv1", "SNMPv2c", "SNMPv3", "TOTAL");
-    foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-		    "set-request", "trap", "trap2", "inform",
-		    "response", "report") {
+    foreach my $op (@snmp_ops) {
 	printf("%-18s", "$op:");
 	foreach my $version (0, 1, 3) {
 	    my $val = $basic_ops{"$version,$op"};
@@ -82,9 +85,7 @@ sub basic_print {
 	   "\n");
     printf("%-18s  %12s  %15s\n", 
 	   "OPERATION", "VARBINDS", "NUMBER");
-    foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-		    "set-request", "trap", "trap2", "inform",
-		    "response", "report") {
+    foreach my $op (@snmp_ops) {
 	for (my $i = 0; $i <= $basic_nvbs_max{$op}; $i++) {
 	    if ($basic_nvbs{"$op,$i"}) {
 		printf("%-18s  %12d %12d %3d\%\n", "$op:", $i, 
@@ -100,9 +101,7 @@ sub basic_print {
 	   "\n");
     printf("%-18s  %12s  %15s\n", 
 	   "OPERATION", "STATUS", "NUMBER");
-    foreach my $op ("get-request", "get-next-request", "get-bulk-request",
-		    "set-request", "trap", "trap2", "inform",
-		    "response", "report") {
+    foreach my $op (@snmp_ops) {
 	for (my $i = 0; $i <= $basic_errs_max{$op}; $i++) {
 	    if ($basic_errs{"$op,$i"}) {
 		printf("%-18s  %12d %12d %3d\%\n", "$op:", $i, 
@@ -155,17 +154,7 @@ sub oid {
 	    #print "matched $varbind to $oid\n";
 	    $oid_count{$op}{$oid}++;
 	} else {
-	    # could not match varbind, append to @oid_unidentified
-	    my $found = 0;
-	    foreach my $val (@oid_unidentified) {
-		if ($val eq $varbind) {
-		    $found = 1;
-		    last;
-		}
-	    }
-	    if (! $found) {
-		push @oid_unidentified, $varbind;
-	    }
+	    $oid_unidentified{$op}{$oid}++;
 	}
     }
 }
@@ -189,13 +178,10 @@ sub oid_done {
 	}
     }
 	
-    if (@oid_unidentified > 0) {
-	print "\n# Could not identify ".scalar(@oid_unidentified)
-	    ." oid(s):\n";
- 	foreach my $oid (@oid_unidentified) {
- 	    print "$oid\n";
- 	}
-	print "\n";
+    foreach my $op (@snmp_ops) {
+#	foreach my $oid (keys %oid_unidentified{$op}) {
+	    #printf("%s\t%s\t%d\n", $op, $oid, $oid_unidentified{$op}{$oid});
+#	}
     }
 }
 
