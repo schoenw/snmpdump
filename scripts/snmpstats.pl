@@ -30,8 +30,10 @@ my %basic_nvbs;
 my %basic_nvbs_max;
 
 my %oid_name;		# oid to name mapping
-my %oid_unidentified;	# varbinds for which we have not found a matching oid
+my %varbind_count;	# hash (by operation) of hashes (by varbinds)
 my %oid_count;		# hash (by operation) of hashes (by oids)
+my %oid_unidentified;	# varbinds for which we have not found a matching oid
+			# hash (by operation) of hashes (by varbinds) 
 my @oid_op_total;	# how many varbinds have we seen for each operation
 			# (includes also unidentified varbinds)
 
@@ -130,60 +132,67 @@ sub load_mib {
 }
 
 #
-# count oids in varbinds for each operation
+# count varbinds for each operation
 #
 sub oid {
     my $aref = shift;
-    my $version = ${$aref}[6];
-    my $op = ${$aref}[7]; # snmp operation
-    my $err = ${$aref}[9];
-    my $varbind_count = ${$aref}[11]; #number of varbinds in this packet
+    my $op = ${$aref}[7];	      # snmp operation
+    my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
     for (my $i = 0; $i < $varbind_count; $i++) {
 	my $varbind =  ${$aref}[12 + 3*$i];
-	my $oid; # oid matching the varbind
-	my $tmp = $varbind; # chopped off varbind
-	# chop off last number and dot from varbind
-	# until we find a matching oid
-	while(! $oid_name{$tmp} && $tmp =~ s/(.*)\.\d+$/$1/) {
-	    #print "tmp: $tmp\n";
-	}
-	if ($oid_name{$tmp}) {
-	    $oid  = $tmp;
-	}
+	$varbind_count{$op}{$varbind}++;
 	$oid_op_total[$op]++;
-	if ($oid) {
-	    # matched $varbind to $oid
-	    #print "matched $varbind to $oid\n";
-	    $oid_count{$op}{$oid}++;
-	} else {
-	    $oid_unidentified{$op}{$oid}++;
-	}
     }
 }
 
 sub oid_print {
     my $total = shift;
+    # match varbinds to oids
+    foreach my $op (keys %varbind_count) {
+	foreach my $varbind (keys %{$varbind_count{$op}}) {
+	    # match varbind to a known oid
+	    my $oid = $varbind;
+	    while(! $oid_name{$oid} && $oid =~ s/(.*)\.\d+$/$1/) {
+		#print "oid: $oid\n";
+	    }
+	    if ($oid_name{$oid}) {
+		# matched $varbind to a known oid
+		#print "matched $varbind to $oid\n";
+		$oid_count{$op}{$oid} += $varbind_count{$op}{$varbind};
+	    } else {
+		$oid_unidentified{$op}{$varbind} +=
+		    $varbind_count{$op}{$varbind};
+	    }
+	    delete $varbind_count{$op}{$varbind};
+	}
+	delete $varbind_count{$op};
+    }
+    # produce output for known oids
     printf("\n# The following table shows the oid statistics for each\n".
 	   "# SNMP operation we have seen in the trace\n\n");
     foreach my $op (keys %oid_count) {
 	print "OPERTAION $op\n";
-	printf("%-25s  %25s  %10s\n", 
+	printf("%-28s  %-30s  %10s\n", 
 	       "OID", "NAME", "NUMBER");
 	foreach my $oid
 	    (sort {$oid_count{$op}{$b} <=> $oid_count{$op}{$a}}
 	     (keys %{$oid_count{$op}}) )
 	{
-	    printf("%-25s  %25s  %10d %3.3f\%\n", 
+	    printf("%-28s  %-30s  %10d %3.3f\%\n", 
 		   $oid, $oid_name{$oid},
 		   $oid_count{$op}{$oid},
 		   $oid_count{$op}{$oid} / $oid_op_total[$op] * 100);
 	}
     }
-	
-    foreach my $op (@snmp_ops) {
-#	foreach my $oid (keys %oid_unidentified{$op}) {
-	    #printf("%s\t%s\t%d\n", $op, $oid, $oid_unidentified{$op}{$oid});
-#	}
+    # dump unknown oids
+    print "\n# Could not identify the following oids:\n";
+    foreach my $op (keys %oid_unidentified) {
+	foreach my $oid (sort {$oid_unidentified{$op}{$b}
+			       <=> $oid_unidentified{$op}{$a}}
+			 (keys %{$oid_unidentified{$op}}) ) {
+	    printf("%-15s  %-30s  %10d\n",
+		   $op, $oid, $oid_unidentified{$op}{$oid});
+	}
     }
 }
 
