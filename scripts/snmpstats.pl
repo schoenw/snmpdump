@@ -141,12 +141,14 @@ sub oid {
     for (my $i = 0; $i < $varbind_count; $i++) {
 	my $varbind =  ${$aref}[12 + 3*$i];
 	my $oid; # oid matching the varbind
-	foreach my $key (keys %oid_name) {
-	    if ($varbind =~ /^$key/) {
-		if (length($key) > length($oid)) {
-		    $oid = $key;
-		}
-	    }
+	my $tmp = $varbind; # chopped off varbind
+	# chop off last number and dot from varbind
+	# until we find a matching oid
+	while(! $oid_name{$tmp} && $tmp =~ s/(.*)\.\d+$/$1/) {
+	    #print "tmp: $tmp\n";
+	}
+	if ($oid_name{$tmp}) {
+	    $oid  = $tmp;
 	}
 	$oid_op_total[$op]++;
 	if ($oid) {
@@ -159,7 +161,7 @@ sub oid {
     }
 }
 
-sub oid_done {
+sub oid_print {
     my $total = shift;
     printf("\n# The following table shows the oid statistics for each\n".
 	   "# SNMP operation we have seen in the trace\n\n");
@@ -196,7 +198,7 @@ sub process {
 	$total++;
     }
     basic_print($total);
-    oid_done($total);
+    oid_print($total);
     close(F);
 }
 
