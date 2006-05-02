@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH SNMPDUMP 1 "April 14, 2006"
+.TH SNMPDUMP 1 "May 02, 2006"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -66,7 +66,7 @@ format is XML.
 \fB-p \fItext\fB, --passphrase=\fItext\fP
 Provide a passphrase \fItext\fP as a parameter to the anonymization
 transformations. This option has only effect if anonymization is
-enabled. Note that specifying a passphrase on the comand line is a
+enabled. Note that specifying a passphrase on the command line is a
 security risk since it might be visible in process lists.
 .TP
 .B \-t, \-\-translate
@@ -76,7 +76,7 @@ additional details.
 .TP
 \fB-m \fIfile\fB \-\-module \fIfile\fB
 Load SMI MIB module definitions from \fIfile\fP.  This option can be
-used several times to load several MIB modules into snmpanon.
+used several times to load several MIB modules into snmpdump.
 .TP
 \fB-z \fIregex\fB, --zap=\fIregex\fP
 Clear all attributes or elements in the XML document whose name
@@ -104,19 +104,32 @@ The following command converts SNMP traces stored in the file
 .RS 
 \f(CWsnmpdump trace.pcap\fP
 .RE
+.PP
+To convert the trace into CSV format, one would use the following command.
+.PP
+.RS
+\f(CWsnmpdump -o csv trace.pcap\fP
+.RE
+.PP
+In order to extract flows in CSV format which should be writting into flow
+files located in /tmp, one would use the following command.
+.PP
+.RS
+\f(CWsnmpdump -o csv -F -C /tmp trace.pcap\fP
+.RE
 .PP 
 To zero out all community strings, you can use the following command
 line:
 .PP
 .RS
-\f(CWsnmpdump -c 'community' trace.pcap\fP
+\f(CWsnmpdump -z 'community' trace.pcap\fP
 .RE
 .PP
 To filter out all vlen and blen attributes, use the following command
 line:
 .PP
 .RS
-\f(CWsnmpdump -c 'vlen|blen' trace.pcap\fP
+\f(CWsnmpdump -z 'vlen|blen' trace.pcap\fP
 .RE
 .PP
 To filter out only certain SNMP packets from a given source using a
