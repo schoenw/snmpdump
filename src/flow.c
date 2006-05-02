@@ -41,6 +41,14 @@ typedef struct _snmp_flow {
 
 static snmp_flow_t *flow_list = NULL;
 
+typedef struct _snmp_cache_elem {
+    snmp_packet_t *pkt;
+    struct _snmp_cache_elem *next;
+    struct _snmp_cache_elem *kids;
+} snmp_cache_elem_t;
+
+static snmp_cache_elem_t *snmp_cache_list = NULL;
+
 static inline void*
 xmalloc(size_t size)
 {
@@ -103,15 +111,96 @@ snmp_flow_name(snmp_flow_t *flow)
 }
 
 /*
- * Find a flow, potentially creating new flows if the flow does not
- * yet exist.
+ * Helper function to test whether two IPv4 addresses are equal.
  */
 
-static snmp_flow_t*
-snmp_flow_find(snmp_packet_t *pkt)
+static inline int
+snmp_ipaddr_equal(snmp_ipaddr_t *a, snmp_ipaddr_t *b)
 {
-    snmp_flow_t *p;
+    return (a->attr.flags & SNMP_FLAG_VALUE
+	    && b->attr.flags & SNMP_FLAG_VALUE
+	    && memcmp(&a->value, &b->value, 4) == 0);
+}
+
+/*
+ * Helper function to test whether two IPv6 addresses are equal.
+ */
+
+static inline int
+snmp_ip6addr_equal(snmp_ip6addr_t *a, snmp_ip6addr_t *b)
+{
+    return (a->attr.flags & SNMP_FLAG_VALUE
+	    && b->attr.flags & SNMP_FLAG_VALUE
+	    && memcmp(&a->value, &b->value, 16) == 0);
+}
+
+/*
+ * Helper function to test whether two int32 values are equal.
+ */
+
+static inline int
+snmp_int32_equal(snmp_int32_t *a, snmp_int32_t *b)
+{
+    return (a->attr.flags & SNMP_FLAG_VALUE
+	    && b->attr.flags & SNMP_FLAG_VALUE
+	    && a->value == b->value);
+}
+
+/*
+ *
+ */
+
+static snmp_cache_elem_t*
+snmp_cache_add(snmp_cache_elem_t *list, snmp_packet_t *pkt)
+{
+    snmp_cache_elem_t *p;
+
+    p = xmalloc(sizeof(snmp_cache_elem_t));
+    p->pkt = snmp_pkt_copy(pkt);
+    p->next = list;
+    return p;
+}
+
+/*
+ * For a given packet pkt, find a suitable matching packet in the
+ * cache.
+ */
+
+static snmp_cache_elem_t*
+snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
+{
+    snmp_cache_elem_t *p;
+
+    for (p = list; p; p = p->next) {
+	fprintf(stderr, ".");
+	if (snmp_int32_equal(&p->pkt->snmp.scoped_pdu.pdu.req_id,
+			     &pkt->snmp.scoped_pdu.pdu.req_id)
+	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
+	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)) {
+	    fprintf(stderr, "o\n");
+	    /* xxx check that the pdu type combination makes sense */
+	    return p;
+	}
+    }
+
+    fprintf(stderr, "\n");
+    return NULL;
+}
+
+static snmp_cache_elem_t*
+snmp_cache_expire(snmp_cache_elem_t *list)
+{
+    /* xxx */
+}
+
+static inline int
+snmp_flow_type(snmp_packet_t *pkt)
+{
     int type = SNMP_FLOW_NONE;
+    
+    if (! pkt->snmp.scoped_pdu.pdu.attr.flags & SNMP_FLAG_VALUE) {
+	return SNMP_FLOW_NONE;
+    }
 
     switch (pkt->snmp.scoped_pdu.pdu.type) {
     case SNMP_PDU_GET:
@@ -131,49 +220,84 @@ snmp_flow_find(snmp_packet_t *pkt)
 	break;
     }
 
-    /* The simple case first - we know the type of the flow. Lookup a
-     * flow entry or create a new one if there is no appropriate flow
-     * entry.
+    return type;
+}
+
+/*
+ * Find a flow, potentially creating new flows if a flow does not yet
+ * exist.
+ */
+
+static snmp_flow_t*
+snmp_flow_find(snmp_packet_t *pkt)
+{
+    snmp_flow_t *p;
+    snmp_cache_elem_t *e;
+    int type;
+    int reverse = 0;
+
+    type = snmp_flow_type(pkt);
+
+    /*
+     * If we have a report or a response, we try to find the
+     * corresponding request in the list of recently seen requests. If
+     * we find the request, we can set the flow type. If we are
+     * unsuccessful, we return that we were unable to identify the
+     * flow to which this packet belongs.
      */
 
-    if (type != SNMP_FLOW_NONE) {
-	for (p = flow_list; p; p = p->next) {
-	    if (pkt->src_addr.attr.flags & SNMP_FLAG_VALUE
-		&& pkt->dst_addr.attr.flags & SNMP_FLAG_VALUE
-		&& memcmp(&p->dst_addr.value, &pkt->dst_addr.value, 4) == 0
-		&& memcmp(&p->src_addr.value, &pkt->src_addr.value, 4) == 0
-		&& p->type == type) {
-		break;
-	    }
-	    if (pkt->src_addr6.attr.flags & SNMP_FLAG_VALUE
-		&& pkt->dst_addr6.attr.flags & SNMP_FLAG_VALUE
-		&& memcmp(&p->dst_addr6.value, &pkt->dst_addr6.value, 16) == 0
-		&& memcmp(&p->src_addr6.value, &pkt->src_addr6.value, 16) == 0
-		&& p->type == type) {
-		break;
-	    }
+    if (type == SNMP_FLOW_NONE) {
+	e = snmp_cache_find(snmp_cache_list, pkt);
+	if (e && e->pkt->snmp.scoped_pdu.pdu.attr.flags & SNMP_FLAG_VALUE) {
+	    type = snmp_flow_type(e->pkt);
+	    reverse = 1;
 	}
-	if (! p) {
-	    p = xmalloc(sizeof(snmp_flow_t));
-	    p->type = type;
-	    if (pkt->src_addr.attr.flags & SNMP_FLAG_VALUE
-		&& pkt->dst_addr.attr.flags & SNMP_FLAG_VALUE) {
-		memcpy(&p->src_addr, &pkt->src_addr, sizeof(p->src_addr));
-		memcpy(&p->dst_addr, &pkt->dst_addr, sizeof(p->dst_addr));
-	    }
-	    if (pkt->src_addr6.attr.flags & SNMP_FLAG_VALUE
-		&& pkt->dst_addr6.attr.flags & SNMP_FLAG_VALUE) {
-		memcpy(&p->src_addr6, &pkt->src_addr6, sizeof(p->src_addr6));
-		memcpy(&p->dst_addr6, &pkt->dst_addr6, sizeof(p->dst_addr6));
-	    }
-	    p->name = snmp_flow_name(p);
-	    p->next = flow_list;
-	    flow_list = p;
-	} /* perhaps we should put the hit always at the head of the list */
-	return p;
     }
 
-    return NULL;
+    if (type == SNMP_FLOW_NONE) {
+	return NULL;
+    }
+
+    /*
+     * Now we know the flow. Lookup a flow entry or create a new one
+     * if there is no appropriate flow entry yet.
+     */
+
+    for (p = flow_list; p; p = p->next) {
+	if (p->type == type
+	    && snmp_ipaddr_equal(&p->src_addr,
+				 reverse ? &pkt->dst_addr : &pkt->src_addr)
+	    && snmp_ipaddr_equal(&p->dst_addr,
+				 reverse ? &pkt->src_addr : &pkt->dst_addr)) {
+	    break;
+	}
+	if (p->type == type
+	    && snmp_ip6addr_equal(&p->src_addr6,
+				  reverse ? &pkt->dst_addr6 : &pkt->src_addr6)
+	    && snmp_ip6addr_equal(&p->dst_addr6,
+				  reverse ? &pkt->src_addr6 : &pkt->dst_addr6)) {
+	    break;
+	}
+    }
+
+    if (! p) {
+	p = xmalloc(sizeof(snmp_flow_t));
+	p->type = type;
+	if (pkt->src_addr.attr.flags & SNMP_FLAG_VALUE
+	    && pkt->dst_addr.attr.flags & SNMP_FLAG_VALUE) {
+	    memcpy(&p->src_addr, &pkt->src_addr, sizeof(p->src_addr));
+	    memcpy(&p->dst_addr, &pkt->dst_addr, sizeof(p->dst_addr));
+	}
+	if (pkt->src_addr6.attr.flags & SNMP_FLAG_VALUE
+	    && pkt->dst_addr6.attr.flags & SNMP_FLAG_VALUE) {
+	    memcpy(&p->src_addr6, &pkt->src_addr6, sizeof(p->src_addr6));
+	    memcpy(&p->dst_addr6, &pkt->dst_addr6, sizeof(p->dst_addr6));
+	}
+	p->name = snmp_flow_name(p);
+	p->next = flow_list;
+	flow_list = p;
+    }
+    return p;
 }
 
 /*
@@ -228,12 +352,20 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 	    }
 	    fclose(f);
 	    flow->cnt++;
+	    snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
 	    return;
 	}
     }
+
+    /*
+     * xxx shall we cache these packets since the request might still
+     * be coming? xxx
+     */
+
     if (out->stream && out->write_pkt) {
 	out->write_pkt(out->stream, pkt);
     }
+    snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
 }
 
 void
