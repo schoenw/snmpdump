@@ -234,7 +234,7 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-F] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-F] [-C path] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }
