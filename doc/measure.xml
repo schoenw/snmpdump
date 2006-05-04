@@ -3,7 +3,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?> 
 <rfc ipr='full3978'
-     docName="draft-schoenw-nrmg-snmp-measure-01.txt"
+     docName="draft-irtf-nmrg-snmp-measure-00.txt"
      category="info">
 
   <!--
@@ -40,7 +40,7 @@
       </address>
     </author>
 
-    <date month="March" year="2006"/>
+    <date month="May" year="2006"/>
 
       <area>Operations and Management</area>
 
@@ -90,19 +90,19 @@
       <t>
 	There have been several publications in the recent past
 	dealing with the performance of SNMP in general <xref
-	target="Pat01"/>, the impact of SNMPv3 security <xref
-	target="DSR01"/><xref target="CT04"/>, or the relative
-	performance of SNMP compared to Web Services <xref
-	target="PDMQ04"/><xref target="PFGL04"/>. While these papers
-	are generally useful to better understand the impact of
-	various design decisions and technologies, some of these
-	papers lack a strong foundation because authors typically
-	assume certain SNMP interaction patterns without having
-	experimental evidence that the assumptions are correct. In
-	fact, there are many speculations how SNMP is being used in
-	real world production networks and how it performs, but no
-	systematic measurements have been performed and published so
-	far.
+	target="SM99"/><xref target="Mal02"/><xref target="Pat01"/>,
+	the impact of SNMPv3 security <xref target="DSR01"/><xref
+	target="CT04"/>, or the relative performance of SNMP compared
+	to Web Services <xref target="PDMQ04"/><xref
+	target="PFGL04"/>. While these papers are generally useful to
+	better understand the impact of various design decisions and
+	technologies, some of these papers lack a strong foundation
+	because authors typically assume certain SNMP interaction
+	patterns without having experimental evidence that the
+	assumptions are correct. In fact, there are many speculations
+	how SNMP is being used in real world production networks and
+	how it performs, but no systematic measurements have been
+	performed and published so far.
       </t>
       <t>
 	Many authors use the ifTable of the IF-MIB <xref
@@ -218,6 +218,18 @@
 	  can be used to merge or split pcap trace files as needed.
         </t>
 	<t>
+	  Several operating systems can offload some of the TCP/IP
+	  processing such as the calculation of transport layer
+	  checksum to network interface cards. Traces that include
+	  traffic to/from a capturing interface which supports TCP/IP
+	  offloading can include incorrect transport layer checksums.
+	  The simplest solution is of course to turn checksum
+	  offloading off while capturing traces (if that is feasible
+	  without loosing too many packets). The other solution is to
+	  correct or ignore checksums during the subsequent analysis
+	  of the raw pcap files.
+	</t>
+	<t>
 	  It is important to note that the raw pcap files should be
 	  kept in stable storage (e.g., compressed and encrypted on a
 	  CD ROM or DVD). To verify measurements, it might be
@@ -269,7 +281,14 @@
 	  captures the most essential parts of SNMP messages and is
 	  thus more compact and faster to process.
 	</t>
-	
+	<t>
+	  As explained in the previous sections, analysis programs
+	  which process raw pcap files should have an option to ignore
+	  incorrect checksums caused by TCP/IP offloading. In
+	  addition, analysis programs which process raw pcap files
+	  should be able to perform IP reassembly for SNMP messages
+	  that got fragmented at the IP layer.
+	</t>
 	<t>
 	  The <eref
 	  target="https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump">snmpdump</eref>
@@ -277,8 +296,7 @@
 	  XML and CSV format. The snmpdump program reads either pcap
 	  files or XML files as input and produces XML files or CSV
 	  files as output. Specific elements can be filtered if that
-	  is required to protect sensitive data. The current snmpdump
-	  implementation is able to correctly deal with IPv4 fragments.
+	  is required to protect sensitive data.
 	</t>
       </section>
 
@@ -360,10 +378,6 @@
 	  data.
 	</t>
 	<t>
-	  <xref target="snmpstat"/> show a simple Perl script which
-	  computes some summary statistics.
-	</t>
-	<t>
 	  It should be noted here that the snmpdump tool provides an
 	  API to process SNMP messages in C/C++. While the coding of
 	  trace analysis programs in C/C++ should in general be
@@ -390,9 +404,9 @@
 	    versions used or the protocol operations used in a traffic
 	    trace. In addition, a rough classification of the data
 	    manipulated into 'standardized', 'proprietary', and
-	    'experimental' can be done. <xref target="snmpstat"/>
-	    contains a simple analysis script deriving some of these
-	    very basic statistics from a traffic trace.
+	    'experimental' data can be done. Finally, general trace
+	    characteristics such as message size distributions or the
+	    periodicity of traces can be analyzed.
 	  </t>
 	</section>
 
@@ -472,7 +486,7 @@
 	  </t>
         </section>
 
-        <section title="Popular MIB Modules">
+        <section title="Popular MIB Definitions">
 	  <t>
 	    An analysis of object identifier prefixes can identify the
 	    most popular MIB modules and the most important object
@@ -601,8 +615,8 @@
         This document was influenced by discussions within the Network
         Management Research Group (NMRG). Special thanks to Remco van
         de Meent for writing the initial Perl script that lead to the
-        script in <xref target="snmpstat"/> and Matus Harvan for his
-        work on lexicographic order preserving anonymization
+        development of the snmpdump software package and Matus Harvan
+        for his work on lexicographic order preserving anonymization
         transformations.  Aiko Pras contributed ideas to <xref
         target="analysis"/> while David Harrington helped to improve
         the readability of this document.
@@ -642,59 +656,11 @@
         <seriesInfo name="RFC" value="2578"/>
       </reference>
 
-      <reference anchor="RFC3411">
-        <front>
-          <title>
-            An Architecture for Describing Simple Network Management
-            Protocol (SNMP) Management Frameworks
-          </title>
-          <author initials="D." surname="Harrington" fullname="David Harrington">
-            <organization>Enterasys Networks</organization>
-          </author>
-          <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
-            <organization>BMC Software, Inc.</organization>
-          </author>
-          <author initials="B." surname="Wijnen" fullname="Bert Wijnen">
-            <organization>Lucent Technologies</organization>
-          </author>
-          <date month="December" year="2002"/>
-        </front>
-        <seriesInfo name="STD" value="62"/>
-        <seriesInfo name="RFC" value="3411"/>
-      </reference>
-
-      <reference anchor="RFC3416">
-        <front>
-          <title>
-            Version 2 of the Protocol Operations for the Simple 
-            Network Management Protocol (SNMP)
-          </title>
-          <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
-            <organization>BMC Software, Inc.</organization>
-          </author>
-          <author initials="J." surname="Case" fullname="Jeff Case">
-            <organization>SNMP Research, Inc.</organization>
-          </author>
-          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
-            <organization>Cisco Systems, Inc.</organization>
-          </author>
-          <author initials="M." surname="Rose" fullname="Marshall Rose">
-            <organization>Dover Beach Consulting, Inc.</organization>
-          </author>
-          <author initials="S." surname="Waldbusser" fullname="Steve Waldbusser">
-            <organization>International Network Services</organization>
-          </author>
-          <date month="December" year="2002"/>
-        </front>
-        <seriesInfo name="STD" value="62"/>
-        <seriesInfo name="RFC" value="3416"/>
-      </reference>
-
       <reference anchor="RFC3418">
         <front>
           <title>
             Management Information Base (MIB) for the
-	    Simple Network Management Protocol (SNMP)
+            Simple Network Management Protocol (SNMP)
           </title>
           <author initials="R." surname="Presuhn" fullname="Randy Presuhn">
             <organization>BMC Software, Inc.</organization>
@@ -765,20 +731,6 @@
         <seriesInfo name="RFC" value="1052"/>
       </reference>
 
-      <reference anchor="RFC2011">
-        <front>
-          <title>
-            SNMPv2 Management Information Base for the Internet 
-            Protocol using SMIv2
-          </title>
-          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
-            <organization>Cisco Systems</organization>
-          </author>
-          <date month="November" year="1996"/>
-        </front>
-        <seriesInfo name="RFC" value="2011"/>
-      </reference>
-
       <reference anchor="RFC2863">
         <front>
           <title>
@@ -818,25 +770,11 @@
         <seriesInfo name="RFC" value="3410"/>
       </reference>
 
-      <reference anchor="RFC3430">
-        <front>
-          <title>
-            Simple Network Management Protocol (SNMP) over Transmission 
-	    Control Protocol (TCP) Transport Mapping
-          </title>
-          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
-            <organization>TU Braunschweig</organization>
-          </author>
-          <date month="December" year="2002"/>
-        </front>
-        <seriesInfo name="RFC" value="3430"/>
-      </reference>
-
       <reference anchor="RFC4022">
         <front>
           <title>
-	    Management Information Base for the Transmission 
-	    Control Protocol (TCP)
+            Management Information Base for the Transmission 
+            Control Protocol (TCP)
           </title>
           <author initials="R." surname="Raghunarayan" fullname="R. Raghunarayan">
             <organization>Cisco Systems</organization>
@@ -902,19 +840,19 @@
 
       <reference anchor="CT04">
         <front>
-	  <title>
-	    Security Performance Analysis of SNMPv3 with Respect to SNMPv2c
-	  </title>
+          <title>
+            Security Performance Analysis of SNMPv3 with Respect to SNMPv2c
+          </title>
           <author initials="A." surname="Corrente" fullname="A. Corrente">
             <organization>Cefriel</organization>
           </author>
           <author initials="L." surname="Tura" fullname="L. Tura">
             <organization>Cefriel</organization>
           </author>
-	  <date month="April" year="2004"/>
-	</front>
+          <date month="April" year="2004"/>
+        </front>
         <seriesInfo name="Proc. 2004 IEEE/IFIP Network Operations and 
-	Management Symposium" value=""/>
+        Management Symposium" value=""/>
       </reference>
 
       <reference anchor="PFGL04">
@@ -990,16 +928,16 @@
     <section anchor="schema" title="RELAX NG Schema Definition">
       <t>
         The XML format has been designed to keep all information
-	associated with SNMP messages. The format is specified in
-	RELAX NG compact notation <xref target="OASISRNC"/>. Freely
-	available tools such as <eref
-	target="http://www.relaxng.org/">trang</eref> can be used to
-	convert RELAX NG compact syntax to other XML schema notations.
+        associated with SNMP messages. The format is specified in
+        RELAX NG compact notation <xref target="OASISRNC"/>. Freely
+        available tools such as <eref
+        target="http://www.relaxng.org/">trang</eref> can be used to
+        convert RELAX NG compact syntax to other XML schema notations.
       </t>
       <figure>
         <artwork>
-	  <?rfc include='snmptrace.rnc'?>
-	</artwork>
+          <?rfc include='snmptrace.rnc'?>
+        </artwork>
       </figure>
     </section>
 
@@ -1007,122 +945,120 @@
       <t>
         The CSV format has been design to capture only the most
         relevant information about an SNMP message. The CSV format
-	uses the following fields:
+        uses the following fields:
       </t>
       <list style="numbers">
         <t>
-	  Time-stamp in the format seconds.microseconds since 1970,
-	  for example "1137764769.425484".
+          Time-stamp in the format seconds.microseconds since 1970,
+          for example "1137764769.425484".
         </t>
-	<t>
-          Source IP address in dotted quad notation (IPv4), for
-	  example "127.0.0.1", or compact hexadecimal notation (IPv6),
-	  for example "::1".
-	</t>
-	<t>
-	  Source port number represented as a decimal number, for
-	  example "4242".
-	</t>
-	<t>
-          Destination IP address in dotted quad notation (IPv4), for
-	  example "127.0.0.1", or compact hexadecimal notation (IPv6),
-	  for example "::1".
-	</t>
-	<t>
-	  Destination port number represented as a decimal number, for
-	  example "161".
-	</t>
-	<t>
-	  Size of the SNMP message (a decimal number) counted in
-	  bytes, for example "123". The size excludes all transport,
-	  network, and link-layer headers.
-	</t>
-	<t>
-	  SNMP message version represented as a decimal number. The
-	  version 0 stands for SNMPv1, 1 for SNMPv2c, and 3 for
-	  SNMPv3, for example "3".
-	</t>
-	<t>
-	  SNMP protocol operation indicated by one of the keywords
-	  get-request, get-next-request, get-bulk-request, set-request,
-	  trap, trap2, inform, response, report.
-	</t>
-	<t>
-	  SNMP request-id in decimal notation, for example "1511411010".
-	</t>
-	<t>
-	  SNMP error-status in decimal notation, for example "0".
-	</t>
-	<t>
-	  SNMP error-index in decimal notation, for example "0".
-	</t>
-	<t>
-	  Number of variable-bindings contained in the varbind-list in
-	  decimal notation, for example "5".
-	</t>
         <t>
-	  For every varbind in the varbind list, two output elements
-	  are generated
-	  <list>
-	    <t>
-	      Object names given as object identifiers in dotted decimal
-	      notation, for example "1.3.6.1.2.1.1.3.0". Object names are
-	      separated by commas.
-	    </t>
-	    <t>
-	      Object base type name or exception names, that is one of
-	      the following: null, integer32, unsigned32, unsigned64,
-	      ipaddress, octet-string, object-identifier,
-	      no-such-object, no-such-instance, and end-of-mib-view.
-	    </t>
-	    <t>
-	      Object values are printed as numbers if the underlying
-	      base type is numeric. IPv4 addresses are printed in the
-	      usual decimal notation and IPv6 addresses in the usual
-	      hexadecimal notation. Octet string values are printed in
-	      hexadecimal format while object identifiers are printed
-	      in dotted decimal notation. Exceptions are encoded by
-	      their name, that is no-such-object, no-such-instance,
-	      and end-of-mib-view.
-	    </t>
-	  </list>
-	</t>
+          Source IP address in dotted quad notation (IPv4), for
+          example "127.0.0.1", or compact hexadecimal notation (IPv6),
+          for example "::1".
+        </t>
+        <t>
+          Source port number represented as a decimal number, for
+          example "4242".
+        </t>
+        <t>
+          Destination IP address in dotted quad notation (IPv4), for
+          example "127.0.0.1", or compact hexadecimal notation (IPv6),
+          for example "::1".
+        </t>
+        <t>
+          Destination port number represented as a decimal number, for
+          example "161".
+        </t>
+        <t>
+          Size of the SNMP message (a decimal number) counted in
+          bytes, for example "123". The size excludes all transport,
+          network, and link-layer headers.
+        </t>
+        <t>
+          SNMP message version represented as a decimal number. The
+          version 0 stands for SNMPv1, 1 for SNMPv2c, and 3 for
+          SNMPv3, for example "3".
+        </t>
+        <t>
+          SNMP protocol operation indicated by one of the keywords
+          get-request, get-next-request, get-bulk-request, set-request,
+          trap, trap2, inform, response, report.
+        </t>
+        <t>
+          SNMP request-id in decimal notation, for example "1511411010".
+        </t>
+        <t>
+          SNMP error-status in decimal notation, for example "0".
+        </t>
+        <t>
+          SNMP error-index in decimal notation, for example "0".
+        </t>
+        <t>
+          Number of variable-bindings contained in the varbind-list in
+          decimal notation, for example "5".
+        </t>
+        <t>
+          For every varbind in the varbind list, two output elements
+          are generated
+          <list>
+            <t>
+              Object names given as object identifiers in dotted decimal
+              notation, for example "1.3.6.1.2.1.1.3.0". Object names are
+              separated by commas.
+            </t>
+            <t>
+              Object base type name or exception names, that is one of
+              the following: null, integer32, unsigned32, unsigned64,
+              ipaddress, octet-string, object-identifier,
+              no-such-object, no-such-instance, and end-of-mib-view.
+            </t>
+            <t>
+              Object values are printed as numbers if the underlying
+              base type is numeric. IPv4 addresses are printed in the
+              usual decimal notation and IPv6 addresses in the usual
+              hexadecimal notation. Octet string values are printed in
+              hexadecimal format while object identifiers are printed
+              in dotted decimal notation. Exceptions are encoded by
+              their name, that is no-such-object, no-such-instance,
+              and end-of-mib-view.
+            </t>
+          </list>
+        </t>
       </list>
-    </section>
-
-    <section anchor="snmpstat" title="Sample Perl Analysis Script">
-      <t>
-        [XXX] This script probably should go away since it does not
-	scale at all. It seems that we can provide perhaps a series of
-	simple scripts that operate on the CSV format to produce
-	something meaningful.
-      </t>
-      <figure>
-        <artwork>
-	  <?rfc include='snmpstat.pl.xml'?>
-	</artwork>
-      </figure>
     </section>
 
     <section anchor="form" title="Trace Description Form">
       <t>
         The following ASCII form is suggested to keep track of meta
-        information associated with a traffic trace.
+        information associated with a traffic trace. The format is
+        simple:
       </t>
       <figure>
         <artwork>
-Name:	      [name of the trace]
+Name:         [name of the trace]
 Network:      [name of the network]
 Organization: [name of the organization operating the network]
 Contact:      [name and email address of a contact person]
 Start-Date:   [date in ISO date format]
 End-Date:     [date in ISO date format]
-Size:	      [size of the pcap trace in bytes]
-Description:  [description, multiple lines with white space indentation]
+Size:         [size of the pcap trace in bytes]
+Description:  [description of the trace]
         </artwork>
       </figure>
+      <t>
+	Keywords always start at the beginning of a line and are
+	followed by a colon. Subsequent text is the value associated
+	with a keyword. Text can crossing multiple lines if subsequent
+	lines are indented.
+      </t>
+      <t>
+        [TODO] Someone should turn that into XML to simplify
+	conversion and to have the option to actually embed this
+	information into XML formatted trace files. We should probably
+	also allocate proper name spaces.
+      </t>
     </section>
-
 
   </back>
     

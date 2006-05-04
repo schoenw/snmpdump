@@ -88,7 +88,7 @@ value.elem =
   element ipaddress { length.attrs, ipaddress.type } |
   element octet-string { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
-  element (no-such-object | no-such-instance | end-of-mib-view) { empty }
+  element (no-such-object|no-such-instance|end-of-mib-view) { empty }
 
 # The blen attribute indicates the number of bytes used by the BER
 # encoded tag / length / value triple. The vlen attribute indicates
