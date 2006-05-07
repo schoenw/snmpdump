@@ -414,6 +414,7 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
 	memset(v->value, 0, v->len);
 	v->len = 0;
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
+	free(new_value);
 	return;	
     }
 
@@ -486,7 +487,7 @@ anon_pdu(snmp_pdu_t *pdu)
 	    smiType = smiGetNodeType(smiNode);
 	}
 	tfp = anon_find_transform(smiNode, smiType);
-	
+
 	switch (vb->type) {
 	case SNMP_TYPE_NULL:
 	    break;

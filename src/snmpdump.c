@@ -27,6 +27,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <unistd.h>
 #include <regex.h>
 #include <smi.h>
@@ -165,6 +166,7 @@ main(int argc, char **argv)
     char *errmsg;
     anon_key_t *key = NULL;
     callback_state_t _state, *state = &_state;
+    FILE *stream = stdout;
 
     smiInit(progname);
 
@@ -173,7 +175,7 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "FVz:f:i:o:c:m:hap:tC:")) != -1) {
+    while ((c = getopt(argc, argv, "FVz:f:w:i:o:c:m:hap:tC:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -186,6 +188,14 @@ main(int argc, char **argv)
 		continue;
 	    }
 	    state->do_filter = snmp_filter_apply;
+	    break;
+	case 'w':
+	    stream = fopen(optarg, "w");
+	    if (! stream) {
+		fprintf(stderr, "%s: failed to open file %s: %s\n",
+			progname, optarg, strerror(errno));
+		exit(1);
+	    }
 	    break;
 	case 'i':
 	    if (strcmp(optarg, "pcap") == 0) {
@@ -234,12 +244,12 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-h] [-V] [-F] [-C path] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-w file] [-h] [-V] [-F] [-C path] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }
 
-    state->out.stream = stdout;
+    state->out.stream = stream;
     state->out.write_new = NULL;
     state->out.write_pkt = NULL;
     state->out.write_end = NULL;
