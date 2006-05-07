@@ -199,7 +199,7 @@
 	  pcap filter expressions that match the SNMP transport
 	  endpoints used to carry SNMP traffic (typically 'udp and
 	  (port 161 or port 162)').  Furthermore, it is necessary to
-	  ensure that full packets are capture, that is packets are
+	  ensure that full packets are captured, that is packets are
 	  not truncated (tcpdump option -s 0). Finally, it is
 	  necessary to carefully select the placement of the capturing
 	  probe within the network. Especially on bridged LANs, it is
