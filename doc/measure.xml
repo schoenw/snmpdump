@@ -999,9 +999,9 @@
           decimal notation, for example "5".
         </t>
         <t>
-          For every varbind in the varbind list, two output elements
+          For each varbind in the varbind list, three output elements
           are generated
-          <list>
+	  <list>
             <t>
               Object names given as object identifiers in dotted decimal
               notation, for example "1.3.6.1.2.1.1.3.0". Object names are
