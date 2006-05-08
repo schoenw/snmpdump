@@ -6,7 +6,7 @@
 # o counts oids for each SNMP operaiton
 #
 # To run this script:
-#    snmpstats.pl [-m MIB_file] [<filename>]
+#    snmpstats.pl [<filename>]
 #
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
@@ -30,13 +30,10 @@ my %basic_nvbs;
 my %basic_nvbs_max;
 my %basic_size;
 
-my %oid_name;		# oid to name mapping
-my %varbind_count;	# hash (by operation) of hashes (by varbinds)
-my %oid_count;		# hash (by operation) of hashes (by oids)
+my %oid_count;		# hash (by operation) of hashes (by oid)
 my %oid_unidentified;	# varbinds for which we have not found a matching oid
 			# hash (by operation) of hashes (by varbinds) 
-my @oid_op_total;	# how many varbinds have we seen for each operation
-			# (includes also unidentified varbinds)
+my $oid_total;		# how many varbinds have we seen
 
 sub basic {
     my $aref = shift;
@@ -133,23 +130,6 @@ sub basic_print {
 }
 
 #
-# load MIB information from file passed as argument
-#
-sub load_mib {
-    my $file = shift;
-    open(F, "<$file") or die "Can't open $file: $!";
-    while(<F>) {
-	my @a = split(/\s+/);
-	if ($a[2] =~ /scalar|column|notification/) {
-	#if ($a[2] =~ /scalar|column/) {
-	    $oid_name{$a[3]} = $a[1];
-	}
-    }
-    close(F);
-    print STDERR "loaded ".keys(%oid_name)." oids from file $file\n";
-}
-
-#
 # count varbinds for each operation
 #
 sub oid {
@@ -157,67 +137,28 @@ sub oid {
     my $op = ${$aref}[7];	      # snmp operation
     my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
     for (my $i = 0; $i < $varbind_count; $i++) {
-	my $varbind =  ${$aref}[12 + 3*$i];
-	$varbind_count{$op}{$varbind}++;
-	$oid_op_total[$op]++;
+	my $oid =  ${$aref}[12 + 3*$i];
+	$oid_count{$op}{$oid}++;
     }
+    $oid_total += $varbind_count;
 }
 
 sub oid_print {
     my $total = shift;
-    # match varbinds to oids
-    foreach my $op (keys %varbind_count) {
-	foreach my $varbind (keys %{$varbind_count{$op}}) {
-	    # match varbind to a known oid
-	    my $oid = $varbind;
-	    while(! $oid_name{$oid} && $oid =~ s/(.*)\.\d+$/$1/) {
-		#print "oid: $oid\n";
-	    }
-	    if ($oid_name{$oid}) {
-		# matched $varbind to a known oid
-		#print "matched $varbind to $oid\n";
-		$oid_count{$op}{$oid} += $varbind_count{$op}{$varbind};
-	    } else {
-		$oid_unidentified{$op}{$varbind} +=
-		    $varbind_count{$op}{$varbind};
-	    }
-	    delete $varbind_count{$op}{$varbind};
-	}
-	delete $varbind_count{$op};
-    }
-    # produce output for known oids
-    printf("\n" .
-	   "# The following table shows the oid statistics for each\n".
-	   "# SNMP operation we have seen in the trace.\n" .
-	   "\n");
-    printf("%-18s %-30s %13s     %s\n", 
-	   "OPERATION", "OID", "NUMBER", "NAME");
-    foreach my $op (keys %oid_count) {
-	foreach my $oid
-	    (sort {$oid_count{$op}{$b} <=> $oid_count{$op}{$a}}
-	     (keys %{$oid_count{$op}}) )
-	{
-	    printf("%-18s %-30s %8d %5.1f\% (%s)\n", 
-		   $op,
-		   $oid, 
-		   $oid_count{$op}{$oid},
-		   $oid_count{$op}{$oid} / $oid_op_total[$op] * 100,
-		   $oid_name{$oid});
-	}
-    }
     # dump unknown oids
     printf("\n" .
-	   "# The following OIDs could not be identified:\n" .
+	   "# The following table shows the oid statistics for each\n".
+           "# SNMP operation we have seen in the trace.\n" .
 	   "\n");
-    printf("%-18s %-40s    %13s\n", 
+    printf("%-18s %-50s    %13s\n", 
 	   "OPERATION", "OID", "NUMBER");
-    foreach my $op (keys %oid_unidentified) {
-	foreach my $oid (sort {$oid_unidentified{$op}{$b}
-			       <=> $oid_unidentified{$op}{$a}}
-			 (keys %{$oid_unidentified{$op}}) ) {
+    foreach my $op (keys %oid_count) {
+	foreach my $oid (sort {$oid_count{$op}{$b}
+			       <=> $oid_count{$op}{$a}}
+			 (keys %{$oid_count{$op}}) ) {
 	    printf("%-18s %-40s  %10d %5.1f\%\n",
-		   $op, $oid, $oid_unidentified{$op}{$oid},
-		   $oid_unidentified{$op}{$oid}*100/$oid_op_total[$op]);
+		   $op, $oid, $oid_count{$op}{$oid},
+		   $oid_count{$op}{$oid}*100/$oid_total);
 	}
     }
 }
@@ -243,12 +184,11 @@ sub process {
 sub usage()
 {
      print STDERR << "EOF";
-Usage: $0 [-h] [-m mibfile] [files|-]
+Usage: $0 [-h] [files|-]
       
 This program computes statistics from SNMP trace files in CSV format.
 	
   -h         display this (help) message
-  -m mibfile file with MIB information (in smidump -f identifiers format)
 EOF
      exit;
 }
@@ -257,9 +197,8 @@ EOF
 # arguments and then process all files on the commandline in turn.
 
 my %opt;
-getopts( "m:h", \%opt ) or usage();
+getopts( "h", \%opt ) or usage();
 usage() if defined $opt{h};
-load_mib($opt{m}) if defined $opt{m};
 
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
