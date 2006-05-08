@@ -195,7 +195,7 @@
 	  sniffers such as <eref
 	  target="http://www.tcpdump.org/">tcpdump</eref>, <eref
 	  target="http://www.ethereal.com/">ethereal</eref>, or
-	  similar applications.  Somce care must be taken to specify
+	  similar applications.  Some care must be taken to specify
 	  pcap filter expressions that match the SNMP transport
 	  endpoints used to carry SNMP traffic (typically 'udp and
 	  (port 161 or port 162)').  Furthermore, it is necessary to
