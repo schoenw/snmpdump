@@ -39,6 +39,7 @@
 # o don't dump walks of length 1
 # o cleanup code
 # o get-bulk support
+# o 1 request, 2 responses
 
 #
 # To run this script:
@@ -51,6 +52,7 @@
 # 
 
 use Getopt::Std;
+use File::Basename;
 use strict;
 
 my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
@@ -85,6 +87,8 @@ my $walk_nonwalk_packets;
 
 my $dirout = "walks";  # directory where the walk files should go
 my $file;	       # currently processed input file
+my $packet;	       # string representing the original packet as read
+		       # from the CSV file
 
 # We need the following information to identify a walk:
 # o manager IP
@@ -180,13 +184,19 @@ sub walk {
 	    }
 	    $walk->{"request_id"} = $request_id;
 	    $walk->{"length"}++;
+ 	    #print {$walk->{"F"}} join(",",@{$aref});
+ 	    print {$walk->{"F"}} $packet;
 	} else {
 	    # first packet of a walk
 	    $walks_total++;
-# 	    open(F, ">$file-$walks_total")
-# 		or die "$0: unable to open $file$walks_total: $!\n";
-# 	    $walk{"F"} = \*F;
-# 	    print F {$aref};
+	    my $filename = $dirout."/".basename($file)."-$walks_total";
+ 	    open(my $f, ">$filename")
+		or die "$0: unable to open $filename: $!\n";
+ 	    $walk{"F"} = \*$f;
+ 	    #$walk{"F"} = \*F;
+ 	    #print F join(",", @{$aref});
+ 	    #print {$walk{"F"}} join(",", @{$aref});
+ 	    print {$walk{"F"}} $packet;
 	    $walk{"manag_ip"} = $manag_ip;
 	    $walk{"agent_ip"} = $agent_ip;
 	    #$walk["op"] = $op;
@@ -201,8 +211,7 @@ sub walk {
 	    push(@walks_open, { %walk });
 	    print "packet starting a new walk, oids: ";
 	    print "@{$walk{'pref'}}";
-	    print "\n";
-	    
+	    print "\n";   
 	}
     }
     if ($op =~ /response/) {
@@ -235,6 +244,8 @@ sub walk {
 	if ($found) {
 	    # found a walk for this response
 	    $walk->{"length"}++;
+ 	    #print {$walk->{"F"}} join(',',@{$aref});
+ 	    print {$walk->{"F"}} $packet;
 	    # do OIDs match the prefix?
 	    for (my $i = 0; $i < $varbind_count; $i++) {
 		my $oid =  ${$aref}[12 + 3*$i];
@@ -281,6 +292,7 @@ sub process {
     my $total = 0;
     open(F, "<$file") or die "$0: unable to open $file: $!\n";
     while (<F>) {
+	$packet = $_;
 	my @a = split(/,/, $_);
 	walk(\@a);
 	$total++;
@@ -311,7 +323,14 @@ EOF
 my %opt;
 getopts( "d:h", \%opt ) or usage();
 usage() if defined $opt{h};
-$dirout = $opt{m} if defined $opt{m};
+if (defined $opt{d}) {
+    $dirout = $opt{d};
+    if (-e $dirout) {
+	# check if there are some files inside
+    } else {
+	mkdir $dirout;
+    }
+}
 
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
