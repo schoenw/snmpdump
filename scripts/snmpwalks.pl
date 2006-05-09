@@ -1,8 +1,8 @@
-#!/usr/bin/perl
+#!/usr/bin/perl -w
 #
 # This script tries to extract talbe walks out of CSV SNMP packet
-# trace files. Detected walks are written into separate files in
-# specified output directory.
+# trace files. Optionally, detected walks are written into separate
+# files in specified directory.
 #
 
 # A walk is defined as a series of get-next/response or
@@ -35,7 +35,6 @@
 
 # TODO:
 
-# o dump walks into separate files, use only basename of file
 # o don't dump walks of length 1
 # o cleanup code
 # o get-bulk support
@@ -78,14 +77,14 @@ my @oid_op_total;	# how many varbinds have we seen for each operation
 my @walks_open;		# open walks, array of hashes of:
 			# manag_ip, agent_ip, varbind_count,
 			# @pref, @last_oid
-my $walks_total;
-my $walks_total_packets;
-my $walks_holes;
-my $walks_closed_ok;
-my $walks_closed_heur;
-my $walk_nonwalk_packets;
+my $walks_total = 0;
+my $walks_total_packets = 0;
+#my $walks_holes;
+my $walks_closed_ok = 0;
+#my $walks_closed_timeout = 0;
+#my $walk_nonwalk_packets = 0;
 
-my $dirout = "walks";  # directory where the walk files should go
+my $dirout;	       # directory where the walk files should go
 my $file;	       # currently processed input file
 my $packet;	       # string representing the original packet as read
 		       # from the CSV file
@@ -113,16 +112,24 @@ my $packet;	       # string representing the original packet as read
 sub cmp_oids {
     my $a = shift;
     my $b = shift;
-    my @a = split('.', $a);
-    my @b = split('.', $b);
-    for (my $i = 0; $i < @a && $i < @b && $a[$i] == $b[$i];  $i++) {
+    my @a = split(/\./, $a);
+    my @b = split(/\./, $b);
+    my $i;
+    for ($i = 0; $i < @a && $i < @b;  $i++) {
 	if ($a[$i] > $b[$i]) {
 	    return 1;
-	} else {
+	} elsif ($a[$i] < $b[$i]) {
 	    return -1;
 	}
     }
-    return 0;
+    
+    if (@a == @b) {
+	return 0;
+    } elsif (@a > @b) {
+	return 1;
+    } elsif ($a[$i] < $b[$i]) {
+	return -1;
+    }
 }
 
 #
@@ -147,8 +154,8 @@ sub walk {
 	$manag_ip = $from;
 	$agent_ip = $to;
 	foreach my $w ( @walks_open ) {
-	    if ($w->{"manag_ip"} == $manag_ip
-		&& $w->{"agent_ip"} == $agent_ip
+	    if ($w->{"manag_ip"} eq $manag_ip
+		&& $w->{"agent_ip"} eq $agent_ip
 		#&& $walk["op"] == $op
 		&& $w->{"varbind_count"} == $varbind_count) {
 		# do OIDs match the prefix?
@@ -184,19 +191,18 @@ sub walk {
 	    }
 	    $walk->{"request_id"} = $request_id;
 	    $walk->{"length"}++;
- 	    #print {$walk->{"F"}} join(",",@{$aref});
- 	    print {$walk->{"F"}} $packet;
+ 	    print {$walk->{"F"}} $packet if defined $dirout;
 	} else {
 	    # first packet of a walk
 	    $walks_total++;
-	    my $filename = $dirout."/".basename($file)."-$walks_total";
- 	    open(my $f, ">$filename")
-		or die "$0: unable to open $filename: $!\n";
- 	    $walk{"F"} = \*$f;
- 	    #$walk{"F"} = \*F;
- 	    #print F join(",", @{$aref});
- 	    #print {$walk{"F"}} join(",", @{$aref});
- 	    print {$walk{"F"}} $packet;
+	    if (defined $dirout) {
+		my $filename = $dirout."/".basename($file)."-$walks_total";
+		open(my $f, ">$filename")
+		    or die "$0: unable to open $filename: $!\n";
+		$walk{"F"} = \*$f;
+		#print {$walk{"F"}} join(",", @{$aref});
+		print {$walk{"F"}} $packet;
+	    }
 	    $walk{"manag_ip"} = $manag_ip;
 	    $walk{"agent_ip"} = $agent_ip;
 	    #$walk["op"] = $op;
@@ -220,8 +226,8 @@ sub walk {
 	$agent_ip = $from;
 	my $prefix_match = 0;
 	foreach my $w ( @walks_open ) {
-	    if ($w->{"manag_ip"} == $manag_ip
-		&& $w->{"agent_ip"} == $agent_ip
+	    if ($w->{"manag_ip"} eq $manag_ip
+		&& $w->{"agent_ip"} eq $agent_ip
 		#&& $walk["op"] == $op
 		&& $w->{"varbind_count"} == $varbind_count
 		&& $w->{"request_id"} == $request_id) {
@@ -244,8 +250,7 @@ sub walk {
 	if ($found) {
 	    # found a walk for this response
 	    $walk->{"length"}++;
- 	    #print {$walk->{"F"}} join(',',@{$aref});
- 	    print {$walk->{"F"}} $packet;
+ 	    print {$walk->{"F"}} $packet if defined $dirout;
 	    # do OIDs match the prefix?
 	    for (my $i = 0; $i < $varbind_count; $i++) {
 		my $oid =  ${$aref}[12 + 3*$i];
@@ -312,7 +317,7 @@ Usage: $0 [-h] [-d output directory] [files|-]
 This program tries to detect table walks in SNMP trace files in CSV format.
 	
   -h            display this (help) message
-  -d directory	where should the alk files go
+  -d directory	if used, walks will be dumped into sepaprate files in directory
 EOF
      exit;
 }
