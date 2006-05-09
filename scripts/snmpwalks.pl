@@ -159,7 +159,7 @@ sub walk {
 		    my $last_oid =  $w->{"last_oid"}[$i];
 		    my $pref = $w->{"pref"}[$i];
 		    if ($oid =~ /^$pref/
-			&& cmp_oids($oid, $last_oid) >= 0 ) {
+			&& cmp_oids($oid, $last_oid) > 0 ) {
 			$found = 1;
 		    }
 		}
@@ -230,7 +230,7 @@ sub walk {
 		    my $oid =  ${$aref}[12 + 3*$i];
 		    my $last_oid =  $w->{"last_oid"}[$i];
 		    my $pref = $w->{"pref"}[$i];
-		    if (cmp_oids($oid, $last_oid) >= 0 ) {
+		    if (cmp_oids($oid, $last_oid) > 0 ) {
 			$found = 1;
 		    }
 		}
