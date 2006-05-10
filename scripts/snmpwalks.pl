@@ -40,12 +40,12 @@
 # the beginning of the table, we would probably notnotice the end of
 # the walk
 
+# o 1 request, 2 responses considered ok
+
 # TODO:
 
-# o don't dump walks of length 1
 # o cleanup code
-# o get-bulk support
-# o 1 request, 2 responses
+# o don't dump walks with 1 iteration only
 
 #
 # To run this script:
@@ -54,7 +54,7 @@
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
 #
-# $Id: snmpstats.pl 1911 2006-04-29 22:47:00Z harvan $
+# $Id$
 # 
 
 use Getopt::Std;
@@ -65,13 +65,6 @@ my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
 		"set-request", 
 		"trap", "trap2", "inform", 
 		"response", "report", "");
-
-my @basic_vers;
-my %basic_ops;
-my %basic_errs;
-my %basic_errs_max;
-my %basic_nvbs;
-my %basic_nvbs_max;
 
 my %oid_name;		# oid to name mapping
 my %varbind_count;	# hash (by operation) of hashes (by varbinds)
@@ -84,10 +77,16 @@ my @oid_op_total;	# how many varbinds have we seen for each operation
 my @walks_open;		# open walks, array of hashes of:
 			# manag_ip, agent_ip, varbind_count,
 			# @pref, @last_oid
-my $walks_total = 0;
-my $walks_total_packets = 0;
+my @walks_closed;	# closed walks
+my @walks_timeout;	# walks timed out
+
+my %pref_count;		# OID pref startign a walk - count
+
+my $walks_total = 0;    # number of walks seem
+my $walks_total_packets = 0; # number of packets belonging to walks
+my $total_packets = 0; # number of packets seen
 #my $walks_holes;
-my $walks_closed_ok = 0;
+#my $walks_closed_ok = 0;
 #my $walks_closed_timeout = 0;
 #my $walk_nonwalk_packets = 0;
 
@@ -95,6 +94,7 @@ my $dirout;	       # directory where the walk files should go
 my $file;	       # currently processed input file
 my $packet;	       # string representing the original packet as read
 		       # from the CSV file
+my $timeout = 20;      # timeout in s for closing an open walk
 
 # We need the following information to identify a walk:
 # o manager IP
@@ -159,6 +159,7 @@ sub walk {
     #my %walk;
     my $walk;	# reference
 
+    $total_packets++;
     if ($op =~ /get-next-request|get-bulk-request/) {
 	$manag_ip = $from;
 	$agent_ip = $to;
@@ -186,7 +187,7 @@ sub walk {
 	}
 	if ($found) {
 	    # existing walk
-	    #print "found walk: $walk->{'manag_ip'}\n";
+#	    print "found walk: $walk->{'manag_ip'}\n";
 # 	    print "packet oids: ";
 # 	    print "@{$walk->{'last_oid'}}";
 # 	    print "\n matched to walk with oid prefixes: ";
@@ -203,6 +204,8 @@ sub walk {
 		    or die "$0: unable to open $filename: $!\n";
 		$walk->{"F"} = \*$f;
 	    }
+	    $walk->{'name'} = basename($file)."-$walks_total";
+	    $walk->{'time_start'} = ${$aref}[0];
 	    $walk->{"manag_ip"} = $manag_ip;
 	    $walk->{"agent_ip"} = $agent_ip;
 	    $walk->{"op"} = $op;
@@ -211,6 +214,7 @@ sub walk {
 	    for (my $i = 0; $i < $varbind_count; $i++) {
 		my $oid =  ${$aref}[12 + 3*$i];
 		# check for non-standard net-snmp snmptable get-bulk
+		$pref_count{$oid}++;
 		if ($oid =~ /\.0$/) {
 		    print STDERR
 			"WARNING: oid prefix ending with .0 starting a walk\n".
@@ -220,9 +224,9 @@ sub walk {
 		}
 		$walk->{"pref"}[$i] = $oid;
 	    }
-	    print "packet starting a new walk, oids: ";
-	    print "@{$walk->{'pref'}}";
-	    print "\n";   
+	    #print "packet starting a new walk, oids: ";
+	    #print "@{$walk->{'pref'}}";
+	    #print "\n";   
 	}
 	# common cound for both new and existing walks
 	for (my $i = 0; $i < $varbind_count; $i++) {
@@ -238,7 +242,7 @@ sub walk {
 	    $walk->{'non-rep'} = $err_stat;
 	    $walk->{'max-rep'} = $err_ind;
 	}
-	
+	$walks_total_packets++;
     }
     if ($op =~ /response/) {
 	# match to request (probably last active walk)
@@ -287,6 +291,7 @@ sub walk {
 	if ($found) {
 	    # found a walk for this response
 	    $walk->{"packets"}++;
+	    $walks_total_packets++;
  	    print {$walk->{"F"}} $packet if defined $dirout;
 	    # split based on response to get-next or get-bulk
 	    if ($walk->{"op"} eq "get-next-request") {
@@ -325,14 +330,16 @@ sub walk {
 	    }
 	    if (! $prefix_match) {
 		# all OIDs have run out of prefix, hence this walk is ended
-		print "walk ended - out of prefix (${$aref}[12])\n";
-		$walks_closed_ok++;
-		print "walk packets: $walk->{'packets'}, " .
-		      "walk iterations: $walk->{'iterations'}, " .
-		      "varbind_count: $walk->{'varbind_count'}\n";
+		#print "walk ended - out of prefix (${$aref}[12])\n";
+		#$walks_closed_ok++;
+		$walk->{'time_end'} = ${$aref}[0];
+		#walk_print_single($walk);
+		#print "walk packets: $walk->{'packets'}, " .
+		#      "walk iterations: $walk->{'iterations'}, " .
+		#      "varbind_count: $walk->{'varbind_count'}\n";
 		for (my $i=0; $i<@walks_open;$i++) {
 		    if ($walks_open[$i] ==  $walk) {
-			$walks_total_packets++;
+			push(@walks_closed, $walk);
 			delete $walks_open[$i];
 			last;
 		    }
@@ -346,16 +353,57 @@ sub walk {
     }
 }
 
+sub walk_print_single {
+    my $walk = shift;
+    #my %walk = %{$aref};
+    print "name: $walk->{'name'}\n";
+    print "number of packets: $walk->{'packets'}\n";
+    print "number of iterations: $walk->{'iterations'}\n";
+    print "number of columns retreived in parallel: ".@{$walk->{'pref'}}."\n";
+    print "operation: $walk->{'op'}\n";
+    print "oid prefixes starting the walk: @{$walk->{'pref'}}\n";
+    if ($walk->{'packets'} != 2*$walk->{'iterations'}) {
+	print "WARNING: number of packets is not twice number of iterations, ".
+	      "probably not all packets have been captured!\n";
+    }
+    print "\n";
+}
+
 sub walk_print {
     my $total = shift;
-    print "walks properly closed: $walks_closed_ok\n\n";
-    print "open walks: ".@walks_open."\n";
+    print "# The following shows summary information about walks.\n\n";
+    print "total packets seen: $total_packets\n";
+    print "total packets belonging to walks: $walks_total_packets\n";
+    print "number of walks seen: $walks_total\n";
+    #print "walks properly closed: $walks_closed_ok\n";
+    print "number of closed walks: ".@walks_closed."\n";
+    print "number of open walks: ".@walks_open."\n";
+    print "number of timed out walks: ".@walks_timeout."\n";
+    print "\n";
+
+    print "# The following shows detailed information about properly " .
+	  "closed walks.\n\n";
+    foreach my $walk (@walks_closed) {
+	# filter short walks (one iteration only)
+	#walk_print_single($walk) if $walk->{'iterations'} > 1;
+	walk_print_single($walk);
+    }
+    print "# The following shows detailed information about walks " .
+	  " for which we have not found an end yet\n\n";
     foreach my $walk (@walks_open) {
-	print "oid prefix: @{$walk->{'pref'}}\n" .
-	    "walk packets: $walk->{'packets'}\n" .
-	    "walk length: $walk->{'iterations'}\n" .
-	    "varbind_count: $walk->{'varbind_count'}\n";
-	
+	walk_print_single($walk);
+    }
+    print "# The following shows detailed information about walks " .
+	  " which were timed out (no end found with timeout $timeout s)\n\n";
+    foreach my $walk (@walks_timeout) {
+	walk_print_single($walk);
+    }
+
+    print "# The following table shows OIDs starting walks.\n\n";
+    printf("%-50s %10s\n", "OID", "count");
+    foreach my $oid (sort {$pref_count{$b} <=> $pref_count{$a}}
+		     (keys %pref_count)) {
+	    printf("%-50s %10s\n", $oid, $pref_count{$oid});
     }
 }
 
