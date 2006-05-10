@@ -10,7 +10,7 @@
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
 #
-# $Id: snmpstats.pl 1915 2006-05-03 21:51:21Z schoenw $
+# $Id$
 # 
 
 use Getopt::Std;
