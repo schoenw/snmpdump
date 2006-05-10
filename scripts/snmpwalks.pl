@@ -49,7 +49,7 @@
 
 #
 # To run this script:
-#    snmpwalks.pl [-d directory] [<filename>]
+#    snmpwalks.pl [-d directory] [-W] [<filename>]
 #
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
@@ -95,6 +95,7 @@ my $file;	       # currently processed input file
 my $packet;	       # string representing the original packet as read
 		       # from the CSV file
 my $timeout = 20;      # timeout in s for closing an open walk
+my $detailed_walk_report = 0;
 
 # We need the following information to identify a walk:
 # o manager IP
@@ -369,18 +370,7 @@ sub walk_print_single {
     print "\n";
 }
 
-sub walk_print {
-    my $total = shift;
-    print "# The following shows summary information about walks.\n\n";
-    print "total packets seen: $total_packets\n";
-    print "total packets belonging to walks: $walks_total_packets\n";
-    print "number of walks seen: $walks_total\n";
-    #print "walks properly closed: $walks_closed_ok\n";
-    print "number of closed walks: ".@walks_closed."\n";
-    print "number of open walks: ".@walks_open."\n";
-    print "number of timed out walks: ".@walks_timeout."\n";
-    print "\n";
-
+sub walk_print_detailed {
     print "# The following shows detailed information about properly " .
 	  "closed walks.\n\n";
     foreach my $walk (@walks_closed) {
@@ -405,19 +395,32 @@ sub walk_print {
 		     (keys %pref_count)) {
 	    printf("%-50s %10s\n", $oid, $pref_count{$oid});
     }
+    print "\n";
+}
+
+sub walk_print {
+    my $total = shift;
+    print "# The following shows summary information about walks.\n\n";
+    print "total packets seen: $total_packets\n";
+    print "total packets belonging to walks: $walks_total_packets\n";
+    print "number of walks seen: $walks_total\n";
+    #print "walks properly closed: $walks_closed_ok\n";
+    print "number of closed walks: ".@walks_closed."\n";
+    print "number of open walks: ".@walks_open."\n";
+    print "number of timed out walks: ".@walks_timeout."\n";
+    print "\n";
 }
 
 sub process {
     $file = shift;
-    my $total = 0;
     open(F, "<$file") or die "$0: unable to open $file: $!\n";
     while (<F>) {
 	$packet = $_;
 	my @a = split(/,/, $_);
 	walk(\@a);
-	$total++;
     }
-    walk_print($total);
+    walk_print();
+    walk_print_detailed if $detailed_walk_report;
     close(F);
 }
 
@@ -433,6 +436,7 @@ This program tries to detect table walks in SNMP trace files in CSV format.
 	
   -h            display this (help) message
   -d directory	if used, walks will be dumped into sepaprate files in directory
+  -W            display detailed report for each walk
 EOF
      exit;
 }
@@ -441,8 +445,11 @@ EOF
 # arguments and then process all files on the commandline in turn.
 
 my %opt;
-getopts( "d:h", \%opt ) or usage();
+getopts( "d:hW", \%opt ) or usage();
 usage() if defined $opt{h};
+if (defined $opt{W}) {
+    $detailed_walk_report = 1;
+}
 if (defined $opt{d}) {
     $dirout = $opt{d};
     if (! -e $dirout) {
