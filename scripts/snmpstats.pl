@@ -66,7 +66,7 @@ sub basic_print {
 	printf("%-18s", "$op:");
 	foreach my $version (0, 1, 3) {
 	    my $val = $basic_ops{"$version,$op"};
-	    printf(" %8d %5.1f\%", $val, $basic_ops{"$version,$op"}*100/$total);
+	    printf(" %8d %5.1f%%", $val, $basic_ops{"$version,$op"}*100/$total);
 	    $basic_ops{"total,$op"} += $val;
 	}
 	printf(" %8d %5.1f\%\n", $basic_ops{"total,$op"}, 
@@ -90,7 +90,7 @@ sub basic_print {
     foreach my $op (@snmp_ops) {
 	for (my $i = 0; $i <= $basic_nvbs_max{$op}; $i++) {
 	    if ($basic_nvbs{"$op,$i"}) {
-		printf("%-18s  %12d %12d %5.1f\%\n", "$op:", $i, 
+		printf("%-18s  %12d %12d %5.1f%%\n", "$op:", $i, 
 		       $basic_nvbs{"$op,$i"},
 		       $basic_nvbs{"$op,$i"}*100/$total);
 	    }
@@ -106,7 +106,7 @@ sub basic_print {
     foreach my $op (@snmp_ops) {
 	for (my $i = 0; $i <= $basic_errs_max{$op}; $i++) {
 	    if ($basic_errs{"$op,$i"}) {
-		printf("%-18s  %12d %12d %5.1f\%\n", "$op:", $i, 
+		printf("%-18s  %12d %12d %5.1f%%\n", "$op:", $i, 
 		       $basic_errs{"$op,$i"},
 		       $basic_errs{"$op,$i"}*100/$total);
 	    }
@@ -122,7 +122,7 @@ sub basic_print {
     foreach my $op (@snmp_ops) {
 	foreach my $size (sort {$a <=> $b}
 			  (keys %{$basic_size{$op}})) {
-	    printf("%-18s  %8d  %10d %5.1f\%\n",
+	    printf("%-18s  %8d  %10d %5.1f%%\n",
 		   "$op:", $size, $basic_size{$op}{$size},
 		   $basic_size{$op}{$size}*100/$total);
 	}
@@ -156,7 +156,7 @@ sub oid_print {
 	foreach my $oid (sort {$oid_count{$op}{$b}
 			       <=> $oid_count{$op}{$a}}
 			 (keys %{$oid_count{$op}}) ) {
-	    printf("%-18s %-40s  %10d %5.1f\%\n",
+	    printf("%-18s %-40s  %10d %5.1f%%\n",
 		   $op, $oid, $oid_count{$op}{$oid},
 		   $oid_count{$op}{$oid}*100/$oid_total);
 	}

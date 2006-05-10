@@ -26,7 +26,7 @@ sub load_mib {
     my $file = shift;
     open(F, "<$file") or die "Can't open $file: $!";
     while(<F>) {
-	my @a = split(/\s+/);
+	my @a = split;
 	if ($a[2] =~ /scalar|column|notification/) {
 	#if ($a[2] =~ /scalar|column/) {
 	    $oid_name{$a[3]} = $a[1];
@@ -124,7 +124,7 @@ sub process {
 	    if (/^$/) {
 		last;
 	    }
-	    my ($op, $oid, $num) = split(/\s+/);
+	    my ($op, $oid, $num) = split;
 	    $oid_count{$op}{$oid} = $num;
 #	    printf("<%s>\t%s\t%d\n", $op, $oid, $num);
 #	    $stat{$op}[$size] = $num;

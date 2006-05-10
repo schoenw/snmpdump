@@ -34,7 +34,7 @@ sub load_mib {
     my $file = shift;
     open(F, "<$file") or die "Can't open $file: $!";
     while(<F>) {
-	my @a = split(/\s+/);
+	my @a = split;
 	if ($a[2] =~ /scalar|column|notification|node|table|row/) {
 	#if ($a[2] =~ /scalar|column|notification/) {
 	#if ($a[2] =~ /scalar|column/) {
