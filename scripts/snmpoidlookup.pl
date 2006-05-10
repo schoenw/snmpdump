@@ -4,12 +4,12 @@
 # mib file and output contents of the input files with known OIDs
 # replaces with theior names.  The script only becomes useful if MIB
 # information (see -m option) is passed to it. At the end, unknown
-# OIDs and some statistics are printed to STDERR. If only a prefix is
-# matched, then the OID is repalced by name (matching the prefix)
-# appended with the unknown sufffix.
+# OIDs and some statistics are printed to STDERR unless the -s option
+# is used. If only a prefix is matched, then the OID is repalced by
+# name (matching the prefix) appended with the unknown sufffix.
 #
 # To run this script:
-#    snmpoidlookup.pl [-m MIB_file] [<filename.oids>] [> <filename.names>]
+#    snmpoidlookup.pl [-m MIB_file] [-q] [<filename.oids>] [> <filename.names>]
 #
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
@@ -124,6 +124,7 @@ This program computes statistics from SNMP trace files in CSV format.
 	
   -h         display this (help) message
   -m mibfile file with MIB information (in smidump -f identifiers format)
+  -q	     suppress statistics and unknown OID output
 EOF
      exit;
 }
@@ -131,7 +132,7 @@ EOF
 # Here is where the script basically begins. Parse the command line
 # arguments and then process all files on the commandline in turn.
 my %opt;
-getopts( "m:h", \%opt ) or usage();
+getopts( "m:hq", \%opt ) or usage();
 usage() if defined $opt{h};
 load_mib($opt{m}) if defined $opt{m};
 
@@ -139,6 +140,8 @@ load_mib($opt{m}) if defined $opt{m};
 while ($ARGV = shift) {
     process($ARGV);
 }
-print_unknown_oids();
-print_stats();
+if (! defined $opt{q}) {
+    print_unknown_oids();
+    print_stats();
+}
 exit(0);
