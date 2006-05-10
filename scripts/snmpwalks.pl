@@ -6,7 +6,8 @@
 #
 
 # A walk is defined as a series of get-next/response or
-# get-bulk/response operations. Oids in the requests in the same
+# get-bulk/response operations. A mixture of get-next and get-bulk
+# requests is not considered a walk. Oids in the requests in the same
 # varbind index (corresponding to the same table column) are
 # increasing lexicographically and have the same oid prefix. This
 # prefix is obtained from the first request within the walk. A request
@@ -17,6 +18,12 @@
 # prefix than the (initial) request for all varbinds (some columns may
 # be shorter than others, but the walks ends when we reach the end of
 # the longest column rather than the shortest one).
+
+# WORKAROUNDS:
+
+# net-snmp snmptable starts a bulk walk appending .0 to the table oid
+# when using protocol version 2c. In order to detect walks properly,
+# we strip off the trailing .0 and print a warning.
 
 # BUGS:
 
@@ -100,7 +107,8 @@ my $packet;	       # string representing the original packet as read
 
 # additionally we keep the following information about a walk:
 # o first packet (request), unless written already
-# o number of packets (length of walk)
+# o number of packets
+# o number of iterations (request-response pairs, i.e. counting requests)
 # o number of holes seen
 # o file handle for output
 # o walk ID
@@ -142,21 +150,22 @@ sub walk {
     my $version = ${$aref}[6];
     my $op = ${$aref}[7];	      # snmp operation
     my $request_id = ${$aref}[8];
-    my $err = ${$aref}[9];
+    my $err_stat = ${$aref}[9];	      # error status
+    my $err_ind = ${$aref}[10];	      # error index
     my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
     my $manag_ip;
     my $agent_ip;
     my $found = 0;
-    my %walk;
-    my $walk;
+    #my %walk;
+    my $walk;	# reference
 
-    if ($op =~ /get-next-request/) { #/get-next-request|get-bulk-request/
+    if ($op =~ /get-next-request|get-bulk-request/) {
 	$manag_ip = $from;
 	$agent_ip = $to;
-	foreach my $w ( @walks_open ) {
+	WALKS: foreach my $w ( @walks_open ) {
 	    if ($w->{"manag_ip"} eq $manag_ip
 		&& $w->{"agent_ip"} eq $agent_ip
-		#&& $walk["op"] == $op
+		&& $w->{"op"} eq $op
 		&& $w->{"varbind_count"} == $varbind_count) {
 		# do OIDs match the prefix?
 		# are OIDs lex. >= than in previous request ?
@@ -168,57 +177,68 @@ sub walk {
 		    if ($oid =~ /^$pref/
 			&& cmp_oids($oid, $last_oid) > 0 ) {
 			$found = 1;
+			$walk = $w;
+			#print "found walk: $walk->{'manag_ip'}\n";
+			last WALKS;
 		    }
 		}
 	    }
-	    if ($found) {
-		$walk = $w;
-		#print "found walk: $walk->{'manag_ip'}\n";
-		last;
-	    }
 	}
 	if ($found) {
-	    #print "found walk: $walk->{'manag_ip'}\n";
 	    # existing walk
+	    #print "found walk: $walk->{'manag_ip'}\n";
 # 	    print "packet oids: ";
 # 	    print "@{$walk->{'last_oid'}}";
 # 	    print "\n matched to walk with oid prefixes: ";
 # 	    print "@{$walk->{'pref'}}";
 # 	    print "\n";
-	    for (my $i = 0; $i < $varbind_count; $i++) {
-		my $oid =  ${$aref}[12 + 3*$i];
-		$walk->{"last_oid"}[$i] = $oid;
-	    }
-	    $walk->{"request_id"} = $request_id;
-	    $walk->{"length"}++;
- 	    print {$walk->{"F"}} $packet if defined $dirout;
 	} else {
-	    # first packet of a walk
+	    # first packet of a walk - starts a new walk
 	    $walks_total++;
+	    $walk = {}; # create a new walk and give us the reference to it
+	    push(@walks_open, $walk);
 	    if (defined $dirout) {
 		my $filename = $dirout."/".basename($file)."-$walks_total";
 		open(my $f, ">$filename")
 		    or die "$0: unable to open $filename: $!\n";
-		$walk{"F"} = \*$f;
-		#print {$walk{"F"}} join(",", @{$aref});
-		print {$walk{"F"}} $packet;
+		$walk->{"F"} = \*$f;
 	    }
-	    $walk{"manag_ip"} = $manag_ip;
-	    $walk{"agent_ip"} = $agent_ip;
-	    #$walk["op"] = $op;
-	    $walk{"varbind_count"} = $varbind_count;
+	    $walk->{"manag_ip"} = $manag_ip;
+	    $walk->{"agent_ip"} = $agent_ip;
+	    $walk->{"op"} = $op;
+	    $walk->{"varbind_count"} = $varbind_count;
+	    # save OID prefix for this walk
 	    for (my $i = 0; $i < $varbind_count; $i++) {
 		my $oid =  ${$aref}[12 + 3*$i];
-		$walk{"pref"}[$i] = $oid;
-		$walk{"last_oid"}[$i] = $oid;
+		# check for non-standard net-snmp snmptable get-bulk
+		if ($oid =~ /\.0$/) {
+		    print STDERR
+			"WARNING: oid prefix ending with .0 starting a walk\n".
+			"\tprobably net-snmp snmptable, ".
+			"stripping off the .0\n";
+		    $oid =~ s/(\.0$)//;
+		}
+		$walk->{"pref"}[$i] = $oid;
 	    }
-	    $walk{"request_id"} = $request_id;
-	    $walk{"length"}++;
-	    push(@walks_open, { %walk });
 	    print "packet starting a new walk, oids: ";
-	    print "@{$walk{'pref'}}";
+	    print "@{$walk->{'pref'}}";
 	    print "\n";   
 	}
+	# common cound for both new and existing walks
+	for (my $i = 0; $i < $varbind_count; $i++) {
+	    my $oid =  ${$aref}[12 + 3*$i];
+	    $walk->{"last_oid"}[$i] = $oid;
+	}
+	$walk->{'request_id'} = $request_id;
+	$walk->{'packets'}++;
+	$walk->{'iterations'}++;
+	#$walk->{"op"} = $op;
+	print {$walk->{"F"}} $packet if defined $dirout;
+	if ($walk->{'op'} eq "get-bulk-request") {
+	    $walk->{'non-rep'} = $err_stat;
+	    $walk->{'max-rep'} = $err_ind;
+	}
+	
     }
     if ($op =~ /response/) {
 	# match to request (probably last active walk)
@@ -228,16 +248,33 @@ sub walk {
 	foreach my $w ( @walks_open ) {
 	    if ($w->{"manag_ip"} eq $manag_ip
 		&& $w->{"agent_ip"} eq $agent_ip
-		#&& $walk["op"] == $op
-		&& $w->{"varbind_count"} == $varbind_count
+		# varbind_count would not match for get-bulk response
+		# && $w->{"varbind_count"} == $varbind_count
 		&& $w->{"request_id"} == $request_id) {
-		# are OIDs lex. >= than in previous request ?
-		for (my $i = 0; $i < $varbind_count; $i++) {
-		    my $oid =  ${$aref}[12 + 3*$i];
-		    my $last_oid =  $w->{"last_oid"}[$i];
-		    my $pref = $w->{"pref"}[$i];
-		    if (cmp_oids($oid, $last_oid) > 0 ) {
-			$found = 1;
+		# split based on response to get-next or get-bulk
+		if ($w->{"op"} eq "get-next-request") {
+		    # are OIDs lex. >= than in previous request ?
+		    for (my $i = 0; $i < $varbind_count; $i++) {
+			my $oid =  ${$aref}[12 + 3*$i];
+			my $last_oid =  $w->{"last_oid"}[$i];
+			my $pref = $w->{"pref"}[$i];
+			if (cmp_oids($oid, $last_oid) > 0 ) {
+			    $found = 1;
+			    last;
+			}
+		    }
+		} elsif ($w->{"op"} eq "get-bulk-request") {
+		    # are OIDs lex. >= than in previous request ?
+		    # sufficient to check only the first repetitions
+		    # ? optimization: ignore non-repeaters
+		    for (my $i = 0; $i < $w->{"varbind_count"}; $i++) {
+			my $oid =  ${$aref}[12 + 3*$i];
+			my $last_oid =  $w->{"last_oid"}[$i];
+			my $pref = $w->{"pref"}[$i];
+			if (cmp_oids($oid, $last_oid) > 0 ) {
+			    $found = 1;
+			    last;
+			}
 		    }
 		}
 	    }
@@ -249,21 +286,50 @@ sub walk {
 	}
 	if ($found) {
 	    # found a walk for this response
-	    $walk->{"length"}++;
+	    $walk->{"packets"}++;
  	    print {$walk->{"F"}} $packet if defined $dirout;
-	    # do OIDs match the prefix?
-	    for (my $i = 0; $i < $varbind_count; $i++) {
-		my $oid =  ${$aref}[12 + 3*$i];
-		my $pref = $walk->{"pref"}[$i];
-		if ($oid =~ /^$pref/) {
-		    $prefix_match = 1;
+	    # split based on response to get-next or get-bulk
+	    if ($walk->{"op"} eq "get-next-request") {
+		# does at least one OID match the prefix?
+		for (my $i = 0; $i < $varbind_count; $i++) {
+		    my $oid =  ${$aref}[12 + 3*$i];
+		    my $pref = $walk->{"pref"}[$i];
+		    if ($oid =~ /^$pref/) {
+			$prefix_match = 1;
+			last;
+		    }
+		}
+	    } elsif ($walk->{"op"} eq "get-bulk-request") {
+		my $reps = ($varbind_count - $walk->{'non-rep'})
+		    / $walk->{'max-rep'}; # repetitions
+		my $repeaters = $walk->{"varbind_count"} - $walk->{'non-rep'};
+		# ignore non-repeateres
+		# ignore last repetition if incomplete
+		# does at least one OID in each repetition match the prefix?
+		for (my $rep = 0; $rep < $reps; $rep++) {
+		    $prefix_match = 0;
+		    for (my $i = 0; $i < $repeaters; $i++) {
+			my $j = $walk->{'non-rep'} + $rep*$repeaters + $i;
+			my $oid =  ${$aref}[12 + 3*$j];
+			my $pref = $walk->{"pref"}[$i];
+			if ($oid =~ /^$pref/) {
+			    $prefix_match = 1;
+			    last;
+			}
+		    }
+		    if (! $prefix_match) {
+			# no OID matches prefix
+			last;
+		    }
 		}
 	    }
 	    if (! $prefix_match) {
+		# all OIDs have run out of prefix, hence this walk is ended
 		print "walk ended - out of prefix (${$aref}[12])\n";
 		$walks_closed_ok++;
-		print "walk length: $walk->{'length'}, " .
-		      " varbind_count: $walk->{'varbind_count'}\n";
+		print "walk packets: $walk->{'packets'}, " .
+		      "walk iterations: $walk->{'iterations'}, " .
+		      "varbind_count: $walk->{'varbind_count'}\n";
 		for (my $i=0; $i<@walks_open;$i++) {
 		    if ($walks_open[$i] ==  $walk) {
 			$walks_total_packets++;
@@ -286,7 +352,8 @@ sub walk_print {
     print "open walks: ".@walks_open."\n";
     foreach my $walk (@walks_open) {
 	print "oid prefix: @{$walk->{'pref'}}\n" .
-	    "walk length: $walk->{'length'}\n" .
+	    "walk packets: $walk->{'packets'}\n" .
+	    "walk length: $walk->{'iterations'}\n" .
 	    "varbind_count: $walk->{'varbind_count'}\n";
 	
     }
@@ -330,10 +397,12 @@ getopts( "d:h", \%opt ) or usage();
 usage() if defined $opt{h};
 if (defined $opt{d}) {
     $dirout = $opt{d};
-    if (-e $dirout) {
-	# check if there are some files inside
-    } else {
+    if (! -e $dirout) {
+	#die "Directory $dirout does not exist!\n";
+	print STDERR "Directory $dirout does not exist, creating it\n";
 	mkdir $dirout;
+    } else {
+	# check if there are some files inside
     }
 }
 
