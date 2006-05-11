@@ -48,9 +48,7 @@
 
 # TODO:
 
-# o sort table 1 by repetitions
 # o cleanup code
-# o don't dump walks with 1 interaction only
 
 #
 # To run this script:
@@ -582,7 +580,7 @@ sub walk_print {
     print "# resp_vbs - sum of #varbinds in all response packets\n";
     print "# duration - time of last packet minus time of first packet ".
 	  "in the walk\n";
-    printf("%-15s %16s %5s %5s %5s %10s %10s %10s\n",
+    printf("%-30s %16s %5s %5s %5s %10s %10s %10s\n",
 	   "name", "type", "intrs", "rep", "nrep", "reps", "resp_vbs",
 	   "duration");
     #foreach my $w ( (@walks_closed)) {
@@ -591,7 +589,7 @@ sub walk_print {
 			 <=> $walks_closed[$a]->{'repetitions'}}
 			 (0 .. $#walks_closed)) {
 	my $w = $walks_closed[$i];
-	printf("%-15s %16s %5s %5s %5s %10s %10s %10f\n", $w->{'name'},
+	printf("%-30s %16s %5s %5s %5s %10s %10s %10f\n", $w->{'name'},
 	       $w->{'op'}, $w->{'interactions'}, $w->{'rep'}, $w->{'non-rep'},
 	       $w->{'repetitions'}, $w->{'resp_vbs'},
 	       $w->{'end_time'} - $w->{'start_time'});
