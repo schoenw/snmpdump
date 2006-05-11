@@ -369,8 +369,9 @@ sub walk {
 		# repetitions for get-next are always one
 		$walk->{"repetitions"}++;
 	    } elsif ($walk->{"op"} eq "get-bulk-request") {
+		# determine number of repetitions
 		my $reps = ($varbind_count - $walk->{'non-rep'})
-		    / $walk->{'max-rep'}; # repetitions
+		    / $walk->{'rep'};
 		$walk->{"repetitions"} += $reps;
 		my $repeaters = $walk->{"vbc"} - $walk->{'non-rep'};
 		# ignore non-repeateres
