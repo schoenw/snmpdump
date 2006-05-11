@@ -545,7 +545,7 @@ sub walk_print {
 	$time_max = $time if ! defined $time_max;
 	$time_max = $time if ($time > $time_max);
     }
-    $time_avg /= $n;
+    $time_avg /= $n if $n > 0;
 
     print "# The following shows summary information about duration ".
 	  "of closed walks.\n";
@@ -569,6 +569,7 @@ sub walk_print {
     }
     
     # table 1
+    print "# table 1\n";
     print "# The following table shows following information ".
 	  "for each closed walk:\n";
     print "# name - name of walk\n";
@@ -578,16 +579,26 @@ sub walk_print {
     print "# nrep - non-repeaters (using heurisitcs for get-next walks)\n";
     print "# reps - sum of repetitions for all response packets\n";
     print "# resp_vbs - sum of #varbinds in all response packets\n";
-    printf("%-15s %16s %5s %5s %5s %10s %10s\n",
-	   "name", "type", "intrs", "rep", "nrep", "reps", "resp_vbs");
-    foreach my $w ( (@walks_closed)) {
-	printf("%-15s %16s %5s %5s %5s %10s %10s\n", $w->{'name'},
+    print "# duration - time of last packet minus time of first packet ".
+	  "in the walk\n";
+    printf("%-15s %16s %5s %5s %5s %10s %10s %10s\n",
+	   "name", "type", "intrs", "rep", "nrep", "reps", "resp_vbs",
+	   "duration");
+    #foreach my $w ( (@walks_closed)) {
+    # sort by #repetitions
+    foreach my $i (sort {$walks_closed[$b]->{'repetitions'}
+			 <=> $walks_closed[$a]->{'repetitions'}}
+			 (0 .. $#walks_closed)) {
+	my $w = $walks_closed[$i];
+	printf("%-15s %16s %5s %5s %5s %10s %10s %10f\n", $w->{'name'},
 	       $w->{'op'}, $w->{'interactions'}, $w->{'rep'}, $w->{'non-rep'},
-	       $w->{'repetitions'}, $w->{'resp_vbs'});
+	       $w->{'repetitions'}, $w->{'resp_vbs'},
+	       $w->{'end_time'} - $w->{'start_time'});
     }
     print "\n";
 
     # table 2
+    print "# table 2\n";
     print "# The following table shows OIDs starting walks.\n";
     print "# count - number of walks where this OID was in the initial ".
 	  "request\n";
@@ -607,6 +618,7 @@ sub walk_print {
     print "\n";
     
     # table 3
+    print "# table 3\n";
     print "# The following table shows OIDs starting walks.\n".
 	  "# OIDs are grouped by which OIDs have been ".
 	  "in the initial request.\n";
