@@ -52,7 +52,7 @@
 
 #
 # To run this script:
-#    snmpwalks.pl [-d directory] [-W] [<filename>]
+#    snmpwalks.pl [-d <directory>] [-W] [-s <filename>] [<filename>]
 #
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 # (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
@@ -131,6 +131,8 @@ my $dirout;	        # directory where the walk files should go
 my $timeout;		# timeout in s for closing an open walk
 my $detailed_walk_report# produce a detailed report for each walk?
     = 0;
+my $timesfile;		# file handle - if defined, packets starting walks
+			# and unindentified requests go here
 
 # We need the following information to identify a walk:
 # o manager IP
@@ -280,6 +282,9 @@ sub walk {
 		}
 		$walk->{"pref"}[$i] = $oid;
 	    }
+	    if ($timesfile) {
+		print $timesfile $packet;
+	    }
 	    #print "packet starting a new walk, oids: ";
 	    #print "@{$walk->{'pref'}}";
 	    #print "\n";   
@@ -301,8 +306,7 @@ sub walk {
 	    $walk->{'rep'} = $varbind_count - $walk->{'non-rep'};
 	}
 	$walks_total_packets++;
-    }
-    if ($op =~ /response/) {
+    } elsif ($op =~ /response/) {
 	# match to request (probably last active walk)
 	$manag_ip = $to;
 	$agent_ip = $from;
@@ -424,6 +428,12 @@ sub walk {
 	    }
 	}
 	# optional: try to detect holes
+    } elsif ($op =~ /get-request/) {
+	if ($timesfile) {
+	    print $timesfile $packet;
+	}
+    } else {
+	# another type of SNMP operation
     }
 }
 
@@ -580,6 +590,7 @@ sub walk_print {
     print "# resp_vbs - sum of #varbinds in all response packets\n";
     print "# duration - time of last packet minus time of first packet ".
 	  "in the walk\n";
+    print "# Table is sorted by number of repetitions.\n";
     printf("%-30s %16s %5s %5s %5s %10s %10s %10s\n",
 	   "name", "type", "intrs", "rep", "nrep", "reps", "resp_vbs",
 	   "duration");
@@ -606,9 +617,11 @@ sub walk_print {
     print "# interactions - sum of interactions for all walks as in count\n";
 #    print "# resp_vbs - sum of varbinds in all response packets ".
 #	  "# in the walk\n";
+    print "# Table is sorted by number of repetitions.\n";
     printf("%-45s %10s %10s %10s\n", "OID", "count", "repetitions",
 	   "interactions");
-    foreach my $oid (sort {$pref_count{$b} <=> $pref_count{$a}}
+    foreach my $oid (sort {$pref_count{$b}{'repetitions'}
+			   <=> $pref_count{$a}{'repetitions'}}
 		     (keys %pref_count)) {
 	printf("%-45s %10d %10d %10d\n", $oid, $pref_count{$oid}{'count'},
 	       $pref_count{$oid}{'repetitions'},
@@ -628,9 +641,11 @@ sub walk_print {
     print "# interactions - sum of interactions for all walks as in count\n";
 #    print "# resp_vbs - sum of varbinds in all response packets ".
 #	  "# in the walk\n";
+    print "# Table is sorted by number of repetitions.\n";
     printf("%-140s %10s %10s %10s\n", "OID", "count", "repetitions",
 	   "interactions");
-    foreach my $oid (sort {$prefs_count{$b} <=> $prefs_count{$a}}
+    foreach my $oid (sort {$prefs_count{$b}{'repetitions'}
+			   <=> $prefs_count{$a}{'repetitions'}}
 		     (keys %prefs_count)) {
 	printf("%-140s %10d %10d %10d\n", $oid, $prefs_count{$oid}{'count'},
 	       $prefs_count{$oid}{'repetitions'},
@@ -667,6 +682,8 @@ This program tries to detect table walks in SNMP trace files in CSV format.
   -d directory	if used, walks will be dumped into sepaprate files in directory
   -W            display detailed report for each walk
   -t seconds    timeout in seconds for discarding a walk       
+  -s filename   file where to put packets starting walks and get-next requests
+
 EOF
      exit;
 }
@@ -675,7 +692,7 @@ EOF
 # arguments and then process all files on the commandline in turn.
 
 my %opt;
-getopts( "d:t:hW", \%opt ) or usage();
+getopts( "d:t:hWs:", \%opt ) or usage();
 usage() if defined $opt{h};
 $detailed_walk_report = 1 if defined $opt{W};
 $timeout = $opt{t} if defined $opt{t};
@@ -688,6 +705,12 @@ if (defined $opt{d}) {
     } else {
 	# check if there are some files inside
     }
+}
+if (defined $opt{s}) {
+    my $filename = $opt{s};
+    open(my $f, ">$filename")
+	or die "$0: unable to open $filename: $!\n";
+    $timesfile = \*$f;
 }
 
 @ARGV = ('-') unless @ARGV;
