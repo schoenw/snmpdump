@@ -48,7 +48,7 @@
 
 # TODO:
 
-# o cleanup code
+# o improve overshoots to statistics (maybe by OID)
 
 #
 # To run this script:
@@ -83,7 +83,7 @@ my @walks_degen;	# degenerated walks (1 iterations only)
 			# NOTE: only @walks_closed are considered
 my @walks_timeout;	# walks timed out
 			# NOT TESTED THOUROUGHLY
-# the walk hash contaisn the following elements:
+# the walk hash contains the following elements:
 # o manag_ip	 - command generator (manager) IP address
 # o agent_ip	 - command responder (agent) IP address
 # o start_time	 - time we have seen the first packet in the walk
@@ -110,6 +110,10 @@ my @walks_timeout;	# walks timed out
 #		   i.e. counting requests
 # o F		 - file handle for output
 # o name	 - unique name of the (input_file."-".walk_number)
+# o @overshoot	 - overshoot (number of repsonse varbinds with OID
+#		   out of prefix) -- array for each request OID (column)
+# o overshoott	 - overshoot (number of repsonse varbinds with OID
+#		   out of prefix) - total for all columns
 
 my %pref_count;		# OID prefixes starting a walk
 my %prefs_count;	# OID prefixes starting a walk grouped by walks
@@ -365,7 +369,11 @@ sub walk {
 		    my $pref = $walk->{"pref"}[$i];
 		    if ($oid =~ /^$pref/) {
 			$prefix_match = 1;
-			last;
+			#last;
+		    } else {
+			print STDERR "overshoot\n";
+			$walk->{"overshoott"}++;
+			$walk->{"overshoot"}[$i]++;
 		    }
 		}
 		# repetitions for get-next are always one
@@ -387,11 +395,26 @@ sub walk {
 			my $pref = $walk->{"pref"}[$i];
 			if ($oid =~ /^$pref/) {
 			    $prefix_match = 1;
-			    last;
+			    #last;
+			} else {
+			    print STDERR "overshoot\n";
+			    $walk->{"overshoott"}++;
+			    $walk->{"overshoot"}[$i+$walk->{'non-rep'}]++;
 			}
+
 		    }
 		    if (! $prefix_match) {
 			# no OID matches prefix
+			
+			# overshoot counting optimization
+			# assume all furter varbinds are overshoot
+			$walk->{"overshoott"}
+				+= ($reps - $rep -1) * $repeaters;
+			for (my $i = 0; $i < $repeaters; $i++) {
+			    $walk->{"overshoot"}[$i+$walk->{'non-rep'}]
+				+= $reps - $rep -1;
+
+			}
 			last;
 		    }
 		}
@@ -462,6 +485,15 @@ sub walk_print_single {
 	      "of interactions, ".
 	      "probably not all packets have been captured!\n";
     }
+    print "total overshoot: $walk->{'overshoott'}\n";
+    print "overshoot by OID: ";
+    foreach my $i (0 .. $#{$walk->{'overshoot'}}) {
+	if (! defined $walk->{'overshoot'}[$i]) {
+	    print "-\t";
+	} else {
+	    print "$walk->{'overshoot'}[$i]\t";
+	}
+    }
     print "\n";
 }
 
@@ -509,6 +541,10 @@ sub walk_print {
     my $pkts_open = 0;
     my $pkts_timeout = 0;
     my $pkts_degen = 0;
+    my $max_overshoot = 0; # maximum overshoot for an OID in one walk
+    my $max_overshoot_name;
+    my $max_overshoot_oid;
+    my %overshoot_ldistrib; # overshoot length distribution
 
     foreach my $i (0 .. $#walks_closed) {
 	$pkts_closed += $walks_closed[$i]->{'packets'};
@@ -521,6 +557,20 @@ sub walk_print {
     }
     foreach my $i (0 .. $#walks_degen) {
 	$pkts_degen += $walks_degen[$i]->{'packets'};
+    }
+
+    # overshoot statistics calculations
+    foreach my $w (@walks_closed) {
+	foreach my $i (0 .. $#{$w->{'overshoot'}}) {
+	    if ($w->{'overshoot'}[$i] > $max_overshoot) {
+		$max_overshoot = $w->{'overshoot'}[$i];
+		$max_overshoot_name = $w->{'name'};
+		$max_overshoot_oid = $w->{'pref'}[$i];
+	    }
+	    if (defined $w->{'overshoot'}[$i]) {
+		$overshoot_ldistrib{$w->{'overshoot'}[$i]}++;
+	    }
+	}
     }
 
     print "# The following shows summary information about walks.\n";
@@ -536,6 +586,8 @@ sub walk_print {
 	" ($pkts_timeout packets)\n";
     print "number of degenerated walks: ".@walks_degen.
 	" ($pkts_degen packets)\n";
+    print "maximum overshoot for an OID in a single walk: $max_overshoot".
+	  " ($max_overshoot_name, $max_overshoot_oid)\n";
     print "\n";
 
     # walk duration statistics calculation
@@ -650,6 +702,18 @@ sub walk_print {
 	printf("%-140s %10d %10d %10d\n", $oid, $prefs_count{$oid}{'count'},
 	       $prefs_count{$oid}{'repetitions'},
 	       $prefs_count{$oid}{'interactions'});
+    }
+    print "\n";
+
+    # overshoot distribution
+    print "# The following table shows overshoot distribution.\n";
+    print "# length - length of overshoot\n";
+    print "# count - number of overshoots with this length\n";
+    print "# Table is sorted by length of overshoots.\n";
+    printf("%-10s %10s\n", "length", "count");
+    
+    foreach my $l (sort (keys %overshoot_ldistrib)) {
+	printf("%-10d %10d\n", $l, $overshoot_ldistrib{$l});
     }
     print "\n";
 }
