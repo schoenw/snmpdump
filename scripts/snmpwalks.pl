@@ -615,10 +615,16 @@ sub walk_print {
     
     # calculate pref_count and prefs_count
     foreach my $w (@walks_closed) {
-	foreach my $oid (@{$w->{'pref'}}) {
+	#foreach my $oid (@{$w->{'pref'}}) {
+	foreach my $i (0 .. $#{$w->{'pref'}}) {
+	    my $oid = $w->{'pref'}[$i];
 	    $pref_count{$oid}{'count'}++;
 	    $pref_count{$oid}{'repetitions'} += $w->{'repetitions'};
 	    $pref_count{$oid}{'interactions'} += $w->{'interactions'};
+	    if (! defined $pref_count{$oid}{'max_overshoot'}
+		|| $pref_count{$oid}{'max_overshoot'} > $w->{'overshoot'}[$i]){
+		$pref_count{$oid}{'max_overshoot'} = $w->{'overshoot'}[$i];
+	    }
 	}
 	$prefs_count{join " ", @{$w->{'pref'}}}{'count'}++;
 	$prefs_count{join " ", @{$w->{'pref'}}}{'repetitions'}
@@ -640,20 +646,27 @@ sub walk_print {
     print "# resp_vbs - sum of #varbinds in all response packets\n";
     print "# duration - time of last packet minus time of first packet ".
 	  "in the walk\n";
+    print "# overshoot - max overshoot per OID in the walk\n";
     print "# Table is sorted by number of repetitions.\n";
-    printf("%-30s %16s %5s %5s %5s %10s %10s %10s\n",
+    printf("%-30s %16s %5s %5s %5s %10s %10s %10s %10s\n",
 	   "name", "type", "intrs", "rep", "nrep", "reps", "resp_vbs",
-	   "duration");
+	   "duration", "overshoot");
     #foreach my $w ( (@walks_closed)) {
     # sort by #repetitions
     foreach my $i (sort {$walks_closed[$b]->{'repetitions'}
 			 <=> $walks_closed[$a]->{'repetitions'}}
 			 (0 .. $#walks_closed)) {
 	my $w = $walks_closed[$i];
-	printf("%-30s %16s %5s %5s %5s %10s %10s %10f\n", $w->{'name'},
+	my $max_overshoot = 0;
+	foreach my $j (0 .. $#{$w->{'overshoot'}}) {
+	    if ($w->{'overshoot'}[$j] > $max_overshoot) {
+		$max_overshoot = $w->{'overshoot'}[$j];
+	    }
+	}
+	printf("%-30s %16s %5s %5s %5s %10s %10s %10f %10d\n", $w->{'name'},
 	       $w->{'op'}, $w->{'interactions'}, $w->{'rep'}, $w->{'non-rep'},
 	       $w->{'repetitions'}, $w->{'resp_vbs'},
-	       $w->{'end_time'} - $w->{'start_time'});
+	       $w->{'end_time'} - $w->{'start_time'}, $max_overshoot);
     }
     print "\n";
 
@@ -665,17 +678,19 @@ sub walk_print {
     print "# repetitions - sum of repetitions for all response packets ".
 	  "in the walk\n";
     print "# interactions - sum of interactions for all walks as in count\n";
+    print "# overshoot - maximum overshoot for this OID\n";
 #    print "# resp_vbs - sum of varbinds in all response packets ".
 #	  "# in the walk\n";
     print "# Table is sorted by number of repetitions.\n";
-    printf("%-45s %10s %10s %10s\n", "OID", "count", "repetitions",
-	   "interactions");
+    printf("%-45s %10s %10s %10s %10s\n", "OID", "count", "repetitions",
+	   "interactions", "overshoot");
     foreach my $oid (sort {$pref_count{$b}{'repetitions'}
 			   <=> $pref_count{$a}{'repetitions'}}
 		     (keys %pref_count)) {
-	printf("%-45s %10d %10d %10d\n", $oid, $pref_count{$oid}{'count'},
+	printf("%-45s %10d %10d %10d %10d\n", $oid, $pref_count{$oid}{'count'},
 	       $pref_count{$oid}{'repetitions'},
-	       $pref_count{$oid}{'interactions'});
+	       $pref_count{$oid}{'interactions'},
+	       $pref_count{$oid}{'max_overshoot'});
     }
     print "\n";
     
