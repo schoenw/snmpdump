@@ -371,7 +371,6 @@ sub walk {
 			$prefix_match = 1;
 			#last;
 		    } else {
-			print STDERR "overshoot\n";
 			$walk->{"overshoott"}++;
 			$walk->{"overshoot"}[$i]++;
 		    }
@@ -397,7 +396,6 @@ sub walk {
 			    $prefix_match = 1;
 			    #last;
 			} else {
-			    print STDERR "overshoot\n";
 			    $walk->{"overshoott"}++;
 			    $walk->{"overshoot"}[$i+$walk->{'non-rep'}]++;
 			}
