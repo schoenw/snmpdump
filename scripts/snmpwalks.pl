@@ -164,7 +164,7 @@ sub cmp_oids {
     my @a = split(/\./, $a);
     my @b = split(/\./, $b);
     my $i;
-    for ($i = 0; $i < @a && $i < @b;  $i++) {
+    for ($i = 0; $i <= $#a && $i <= $#b;  $i++) {
 	if ($a[$i] > $b[$i]) {
 	    return 1;
 	} elsif ($a[$i] < $b[$i]) {
@@ -172,11 +172,11 @@ sub cmp_oids {
 	}
     }
     
-    if (@a == @b) {
+    if ($#a == $#b) {
 	return 0;
-    } elsif (@a > @b) {
+    } elsif ($#a > $#b) {
 	return 1;
-    } elsif ($a[$i] < $b[$i]) {
+    } else {
 	return -1;
     }
 }
