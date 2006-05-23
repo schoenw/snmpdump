@@ -137,6 +137,7 @@ my $detailed_walk_report# produce a detailed report for each walk?
     = 0;
 my $timesfile;		# file handle - if defined, packets starting walks
 			# and unindentified requests go here
+my $interrupted = 0;	# if Ctrl-C is pressed, this will be 1
 
 # We need the following information to identify a walk:
 # o manager IP
@@ -736,8 +737,9 @@ sub process {
     open(F, "<$file") or die "$0: unable to open $file: $!\n";
     while (<F>) {
 	$packet = $_;
-	my @a = split(/,/, $_);
+	my @a = split(/,/);
 	walk(\@a);
+	last if $interrupted;
     }
     filter_degenerated_walks();
     walk_print();
@@ -764,6 +766,13 @@ This program tries to detect table walks in SNMP trace files in CSV format.
 EOF
      exit;
 }
+
+# install a signal handler for SIGINT
+
+$SIG{INT} = sub { $interrupted = 1;
+		  print STDERR "got SIGINT, stopping input parsing...\n";
+	      };
+
 
 # Here is where the script basically begins. Parse the command line
 # arguments and then process all files on the commandline in turn.
