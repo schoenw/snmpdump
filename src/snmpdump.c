@@ -277,14 +277,25 @@ main(int argc, char **argv)
 	abort();
     }
 
-    for (i = optind; i < argc; i++) {
+    if (optind == argc) {
 	switch (input) {
 	case INPUT_XML:
-	    snmp_xml_read_file(argv[i], print, state);
+	    snmp_xml_read_stream(stdin, print, state);
 	    break;
 	case INPUT_PCAP:
-	    snmp_pcap_read_file(argv[i], expr, print, state);
+	    snmp_pcap_read_stream(stdin, expr, print, state);
 	    break;
+	}
+    } else {
+	for (i = optind; i < argc; i++) {
+	    switch (input) {
+	    case INPUT_XML:
+		snmp_xml_read_file(argv[i], print, state);
+		break;
+	    case INPUT_PCAP:
+		snmp_pcap_read_file(argv[i], expr, print, state);
+		break;
+	    }
 	}
     }
     print(NULL, state);

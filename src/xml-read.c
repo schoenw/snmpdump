@@ -1020,37 +1020,14 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
     #endif
 }
 
-void
-snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
+
+static void
+process_reader(xmlTextReaderPtr reader, snmp_callback func, void *user_data)
 {
     snmp_packet_t packet;
     snmp_varbind_t *varbind = NULL;
-    xmlTextReaderPtr reader;
     int ret;
-    
-    if (file) {
-	reader = xmlNewTextReaderFilename(file);
-	if (! reader) {
-	    //return -1;
-	    return;
-	}
-    } else {
-	xmlParserInputBufferPtr input;
 	
-	input = xmlParserInputBufferCreateFile(stdin,
-		       XML_CHAR_ENCODING_NONE);
-	if (! input) {
-	    //return -1;
-	    return;
-	}
-	reader = xmlNewTextReader(input, NULL);
-	if (! reader) {
-	    xmlFreeParserInputBuffer(input);
-	    //return -1;
-	    return;
-	}
-    }
-    
     ret = xmlTextReaderRead(reader);
     while (ret == 1) {
 	process_node(reader, &packet, &varbind, func, user_data);
@@ -1058,75 +1035,49 @@ snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
     }
     xmlFreeTextReader(reader);
     if (ret != 0) {
-	fprintf(stderr, "xmlTextReaderRead: failed to parse '%s'\n", file);
+	fprintf(stderr, "xmlTextReaderRead: failed to parse\n");
 	//return -2;
     }
 
-    //return 0;
+}
+
+void
+snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
+{
+    xmlTextReaderPtr reader;
+
+    assert(file);
+    
+    reader = xmlNewTextReaderFilename(file);
+    if (! reader) {
+	fprintf(stderr, "%s: failed to open XML file '%s'\n",
+		progname, file);
+	return;
+    }
+
+    process_reader(reader, func, user_data);
 }
 
 void
 snmp_xml_read_stream(const FILE *stream, snmp_callback func, void *user_data)
 {
-}
-
-#if 0
-static int
-stream_file(char *filename)
-{
-    snmp_packet_t *packet = NULL;
-    snmp_varbind_t *varbind = NULL;
     xmlTextReaderPtr reader;
-    int i, ret;
-    
-    if (filename) {
-	reader = xmlNewTextReaderFilename(filename);
-	if (! reader) {
-	    return -1;
-	}
-    } else {
-	xmlParserInputBufferPtr input;
+    xmlParserInputBufferPtr input;
+
+    assert(stream);
 	
-	input = xmlParserInputBufferCreateFile(stdin,
-		       XML_CHAR_ENCODING_NONE);
-	if (! input) {
-	    return -1;
-	}
-	reader = xmlNewTextReader(input, NULL);
-	if (! reader) {
-	    xmlFreeParserInputBuffer(input);
-	    return -1;
-	}
+    input = xmlParserInputBufferCreateFile(stream, XML_CHAR_ENCODING_NONE);
+    if (! input) {
+	fprintf(stderr, "%s: failed to open XML stream\n", progname);
+	return;
+    }
+    reader = xmlNewTextReader(input, NULL);
+    if (! reader) {
+	xmlFreeParserInputBuffer(input);
+	fprintf(stderr, "%s: failed to create XML reader\n", progname);
+	return;
     }
     
-    ret = xmlTextReaderRead(reader);
-    while (ret == 1) {
-	process_node(reader, &packet, &varbind);
-	ret = xmlTextReaderRead(reader);
-    }
-    xmlFreeTextReader(reader);
-    if (ret != 0) {
-	fprintf(stderr, "%s: xmlTextReaderRead: failed to parse '%s'\n",
-		progname, filename);
-	return -2;
-    }
-
-    return 0;
+    process_reader(reader, func, user_data);
 }
 
-int
-main(int argc, char **argv)
-{
-    int i;
-
-    if (argc == 1) {
-	stream_file(NULL);
-    } else {
-	for (i = 1; i < argc; i++) {
-	    stream_file(argv[i]);
-	}
-    }
-    
-    return 0;
-}
-#endif

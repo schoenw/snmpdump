@@ -226,6 +226,8 @@ void snmp_xml_write_stream_end(FILE *stream);
 
 void snmp_pcap_read_file(const char *file, const char *filter,
 			 snmp_callback func, void *user_data);
+void snmp_pcap_read_stream(const FILE *stream, const char *filter,
+			   snmp_callback func, void *user_data);
 void snmp_pcap_read_life(const char *file,
 			 snmp_callback func, void *user_data);
 

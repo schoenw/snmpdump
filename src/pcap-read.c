@@ -59,8 +59,10 @@ int libnet_open_raw_sock() { return libnet_open_raw4(); }
 #include <stdint.h>
 #include <inttypes.h>
 #include <assert.h>
+#include <errno.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <regex.h>
 
 #include <pcap.h>
@@ -1659,6 +1661,8 @@ snmp_pcap_read_file(const char *file, const char *filter,
     nids_params.device = NULL;
     nids_params.pcap_filter = (char *) filter;
 
+    assert(file);
+
     user_callback = func;
     user_data = data;
 	
@@ -1669,4 +1673,59 @@ snmp_pcap_read_file(const char *file, const char *filter,
 
     nids_register_udp(udp_callback);
     nids_run();
+}
+
+void
+snmp_pcap_read_stream(const FILE *stream, const char *filter,
+		      snmp_callback func, void *data)
+{
+    char path[] = "/tmp/snmpdump.XXXXXX";
+    pid_t pid;
+
+    assert(stream);
+
+    if (mktemp(path) == NULL) {
+	fprintf(stderr, "%s: creating temporary file name failed\n",
+		progname);
+	exit(1);
+    }
+
+    if (mkfifo(path, 0600) == -1) {
+	fprintf(stderr, "%s: failed to create fifo: %s\n",
+		progname, strerror(errno));
+	exit(1);
+    }
+
+    pid = fork();
+    if (pid == -1) {
+	fprintf(stderr, "%s: fork failed: %s\n",
+		progname, strerror(errno));
+	exit(1);
+    }
+
+    if (pid == 0) {
+	FILE *fifo;
+	int c;
+	
+	fifo = fopen(path, "w");
+	if (! fifo) {
+	    fprintf(stderr, "%s: failed to open fifo: %s\n",
+		    progname, strerror(errno));
+	    exit(1);
+	}
+	while ((c = getc(stream)) != EOF) {
+	    putc(c, fifo);
+	}
+	
+	if (fflush(fifo) || ferror(fifo) || ferror(stream)) {
+	    perror(progname);
+	    exit(1);
+	}
+	fclose(fifo);
+	unlink(path);
+	exit(0);
+    } else {
+	snmp_pcap_read_file(path, filter, func, data);
+	unlink(path);
+    }
 }
