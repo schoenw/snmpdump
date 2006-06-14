@@ -1676,7 +1676,7 @@ snmp_pcap_read_file(const char *file, const char *filter,
 }
 
 void
-snmp_pcap_read_stream(const FILE *stream, const char *filter,
+snmp_pcap_read_stream(FILE *stream, const char *filter,
 		      snmp_callback func, void *data)
 {
     char path[] = "/tmp/snmpdump.XXXXXX";

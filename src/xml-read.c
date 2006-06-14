@@ -1059,7 +1059,7 @@ snmp_xml_read_file(const char *file, snmp_callback func, void *user_data)
 }
 
 void
-snmp_xml_read_stream(const FILE *stream, snmp_callback func, void *user_data)
+snmp_xml_read_stream(FILE *stream, snmp_callback func, void *user_data)
 {
     xmlTextReaderPtr reader;
     xmlParserInputBufferPtr input;

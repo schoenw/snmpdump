@@ -213,7 +213,7 @@ typedef void (*snmp_callback)(snmp_packet_t *pkt, void *user_data);
 
 void snmp_xml_read_file(const char *file,
 			snmp_callback func, void *user_data);
-void snmp_xml_read_stream(const FILE *stream,
+void snmp_xml_read_stream(FILE *stream,
 			  snmp_callback func, void *user_data);
 
 void snmp_xml_write_stream_new(FILE *stream);
@@ -226,7 +226,7 @@ void snmp_xml_write_stream_end(FILE *stream);
 
 void snmp_pcap_read_file(const char *file, const char *filter,
 			 snmp_callback func, void *user_data);
-void snmp_pcap_read_stream(const FILE *stream, const char *filter,
+void snmp_pcap_read_stream(FILE *stream, const char *filter,
 			   snmp_callback func, void *user_data);
 void snmp_pcap_read_life(const char *file,
 			 snmp_callback func, void *user_data);
