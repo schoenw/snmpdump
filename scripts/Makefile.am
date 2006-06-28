@@ -1,4 +1,11 @@
-EXTRA_DIST		= mib-identifiers.txt
+EXTRA_DIST		= mib-identifiers.txt \
+			  snmpobjectstat.pl \
+			  snmpoidlookup.pl \
+			  snmpreg.pl \
+			  snmpseries.pl \
+			  snmpsizes.pl \
+			  snmpstats.pl \
+			  snmpwalks.pl 
 
 MIBS = RFC1213-MIB \
 	SNMPv2-MIB IF-MIB IP-MIB IP-FORWARD-MIB UDP-MIB TCP-MIB \

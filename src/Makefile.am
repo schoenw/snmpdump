@@ -1,6 +1,7 @@
 INCLUDES		= -I../libanon $(XML_CFLAGS) $(XML_CPPFLAGS) $(OPENSSL_CFLAGS) $(NIDSINC)
 
-EXTRA_DIST		= $(man_MANS)
+EXTRA_DIST		= snmp.h anon.h \
+			  $(man_MANS)
 
 bin_PROGRAMS		= snmpdump
 
