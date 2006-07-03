@@ -28,6 +28,11 @@
 #define SNMP_FLOW_COMMAND	0x01
 #define SNMP_FLOW_NOTIFY	0x02
 
+typedef struct _snmp_flow_elem {
+    snmp_packet_t	   *pkt;
+    struct _snmp_flow_elem *next;
+} snmp_flow_elem;
+
 typedef struct _snmp_flow {
     int			type;
     char		*name;
@@ -36,7 +41,8 @@ typedef struct _snmp_flow {
     snmp_ipaddr_t       dst_addr;
     snmp_ip6addr_t      dst_addr6;
     uint64_t		cnt;
-    struct _snmp_flow *next;
+    snmp_flow_elem	*list;
+    struct _snmp_flow	*next;
 } snmp_flow_t;
 
 static snmp_flow_t *flow_list = NULL;
@@ -147,7 +153,36 @@ snmp_int32_equal(snmp_int32_t *a, snmp_int32_t *b)
 }
 
 /*
- *
+ * Compare two time stamps. This function returns a value less than 0
+ * if a < b, the value 0 if a == b, and a value > 0 if a > b.
+ */
+
+static inline int
+snmp_timestamp_compare(uint32_t a_sec, uint32_t a_usec,
+		       uint32_t b_sec, uint32_t b_usec)
+{
+    if (a_sec < b_sec) {
+	return -1;
+    }
+
+    if (a_sec > b_sec) {
+	return 1;
+    }
+    
+    if (a_sec == b_sec) {
+	if (a_usec < b_usec) {
+	    return -1;
+	}
+	if (a_usec < b_usec) {
+	    return 1;
+	}
+    }
+
+    return 0;
+}
+
+/*
+ * Add a new packet to the cache of recently seen packets.
  */
 
 static snmp_cache_elem_t*
@@ -159,6 +194,36 @@ snmp_cache_add(snmp_cache_elem_t *list, snmp_packet_t *pkt)
     p->pkt = snmp_pkt_copy(pkt);
     p->next = list;
     return p;
+}
+
+/*
+ * Remove all elements from the cache list that are older than the
+ * given time stamp. Since we add new packets at the front of the
+ * list, we basically have to traverse the list until we find old
+ * packets and then we can discard the tail. Perhaps a smarter data
+ * structure should be used to scale to very bursty SNMP traces...
+ */
+
+static snmp_cache_elem_t*
+snmp_cache_expire(snmp_cache_elem_t *list,
+		  uint32_t ts_sec, uint32_t ts_usec)
+{
+    snmp_cache_elem_t *p = list, *l = NULL, *x;
+    
+    while (p) {
+	if (snmp_timestamp_compare(p->pkt->time_sec.value,
+				   p->pkt->time_usec.value,
+				   ts_sec, ts_usec) < 0) {
+	    x = p;
+	    if (l) l->next = p->next;
+	    p = p->next;
+	    fprintf(stderr, "X");
+	    if (x->pkt) snmp_pkt_delete(x->pkt);
+	    free(x);
+	} else {
+	    l = p; p = p->next;
+	}
+    }
 }
 
 /*
@@ -187,12 +252,6 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
     return NULL;
 }
 
-static snmp_cache_elem_t*
-snmp_cache_expire(snmp_cache_elem_t *list)
-{
-    /* xxx */
-}
-
 static inline int
 snmp_flow_type(snmp_packet_t *pkt)
 {
@@ -210,6 +269,7 @@ snmp_flow_type(snmp_packet_t *pkt)
 	type = SNMP_FLOW_COMMAND;
 	break;
     case SNMP_PDU_RESPONSE:
+	type = SNMP_FLOW_NONE;
 	break;
     case SNMP_PDU_TRAP1:
     case SNMP_PDU_TRAP2:
@@ -217,6 +277,7 @@ snmp_flow_type(snmp_packet_t *pkt)
 	type = SNMP_FLOW_NOTIFY;
 	break;
     case SNMP_PDU_REPORT:
+	type = SNMP_FLOW_NONE;
 	break;
     }
 
@@ -338,6 +399,17 @@ void
 snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
     snmp_flow_t *flow;
+    static int cnt = 0;
+
+    cnt++;
+
+    /* the following constants should (a) have reasonable values and
+     * (b) be configurable */
+
+    if (cnt % 128) {
+	snmp_cache_expire(snmp_cache_list, pkt->time_sec.value - 300,
+			  pkt->time_usec.value);
+    }
     
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
@@ -352,7 +424,10 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 	    }
 	    fclose(f);
 	    flow->cnt++;
-	    snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
+	    if (pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_RESPONSE
+		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1) {
+		snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
+	    }
 	    return;
 	}
     }
