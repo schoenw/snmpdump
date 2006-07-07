@@ -403,7 +403,7 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
 	return;
     }
 
-    if (v->len) {
+    if (tfp && tfp->type == ANON_TYPE_OCTS && v->len) {
 	new_value = malloc(v->len);
     }
 
@@ -414,7 +414,7 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
 	memset(v->value, 0, v->len);
 	v->len = 0;
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
-	free(new_value);
+	if (new_value) free(new_value);
 	return;	
     }
 
