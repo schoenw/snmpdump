@@ -37,7 +37,7 @@
 
 #define _GNU_SOURCE
 
-#define HACK_AROUND_LIBNET_API_CHANGES
+#undef HACK_AROUND_LIBNET_API_CHANGES
 
 #ifdef HACK_AROUND_LIBNET_API_CHANGES
 int libnet_build_ip() { return libnet_build_ipv4(); }
