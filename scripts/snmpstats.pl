@@ -22,6 +22,12 @@ my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
 		"trap", "trap2", "inform", 
 		"response", "report", "");
 
+my $meta_first = 0;
+my $meta_last = 0;
+my %meta_agents;
+my %meta_managers;
+my %meta_unknowns;
+
 my @basic_vers;
 my %basic_ops;
 my %basic_errs;
@@ -34,6 +40,66 @@ my %oid_count;		# hash (by operation) of hashes (by oid)
 my %oid_unidentified;	# varbinds for which we have not found a matching oid
 			# hash (by operation) of hashes (by varbinds) 
 my $oid_total;		# how many varbinds have we seen
+
+sub meta {
+    my $aref = shift;
+    my $secs = ${$aref}[0];
+    my $src = ${$aref}[1];
+    my $dst = ${$aref}[3];
+    my $op = ${$aref}[7];
+
+    if ($secs > 0) {
+	$meta_last = $secs;
+	if ($meta_first == 0) {
+	    $meta_first = $meta_last;
+	}
+    }
+
+    for ($op) {
+        if (/get-request|get-next-request|get-bulk-request|set-request/) {
+            $meta_managers{$src}++;
+            $meta_agents{$dst}++;
+        } elsif (/trap|trap2|inform/) {
+            $meta_managers{$dst}++;
+            $meta_agents{$src}++;
+	} elsif (/response|report/) {
+	    $meta_unknowns{$dst}++;
+            $meta_unknowns{$src}++;
+	} else {
+	    printf("oouch\n");
+        }
+    }
+
+}
+
+sub meta_print {
+    my $total = shift;
+    my $gmt;
+    my $duration = $meta_last - $meta_first;
+    printf("# The following table shows some overall meta information in\n" .
+	   "# the form of a list of named properties.\n" .
+	   "\n");
+    printf("%-18s %s\n", "PROPERTY", "VALUE");
+#    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime($meta_first);
+    $gmt = gmtime($meta_first);
+    printf("%-18s %s\n", "start:", $gmt);
+    $gmt = gmtime($meta_last);
+    printf("%-18s %s\n", "end:", $gmt);
+    printf("%-18s %s\n", "days:", $duration/60/60/24);
+    printf("%-18s %s\n", "hours:", $duration/60/60);
+    printf("%-18s %s\n", "minutes:", $duration/60);
+    printf("%-18s %s\n", "messages:", $total);
+
+    foreach my $addr (keys %meta_unknowns) {
+	if (exists $meta_managers{$addr} || exists $meta_agents{$addr}) {
+	    delete $meta_unknowns{$addr};
+	}
+    }
+
+    printf("%-18s %s\n", "managers:", scalar keys(%meta_managers));
+    printf("%-18s %s\n", "agents:", scalar keys(%meta_agents));
+    printf("%-18s %s\n", "unknown:", scalar keys(%meta_unknowns));
+}
 
 sub basic {
     my $aref = shift;
@@ -57,7 +123,8 @@ sub basic {
 
 sub basic_print {
     my $total = shift;
-    printf("# The following table shows the protocol operations statistics\n" .
+    printf("\n" .
+	   "# The following table shows the protocol operations statistics\n" .
 	   "# broken down by SNMP protocol version plus the overall sums.\n" .
 	   "\n");
     printf("%-18s  %14s  %14s  %14s  %14s\n", 
@@ -169,10 +236,12 @@ sub process {
     open(F, "<$file") or die "$0: unable to open $file: $!\n";
     while (<F>) {
 	my @a = split(/,/, $_);
+	meta(\@a);
 	basic(\@a);
 	oid(\@a);
 	$total++;
     }
+    meta_print($total);
     basic_print($total);
     oid_print($total);
     close(F);
