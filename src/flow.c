@@ -215,15 +215,24 @@ snmp_cache_expire(snmp_cache_elem_t *list,
 				   p->pkt->time_usec.value,
 				   ts_sec, ts_usec) < 0) {
 	    x = p;
-	    if (l) l->next = p->next;
+	    if (l) {
+		l->next = p->next;
+	    } else {
+		list = p->next;
+	    }
 	    p = p->next;
 	    fprintf(stderr, "X");
-	    if (x->pkt) snmp_pkt_delete(x->pkt);
+	    if (x->pkt) {
+		snmp_pkt_delete(x->pkt);
+		x->pkt = NULL;
+	    }
 	    free(x);
 	} else {
 	    l = p; p = p->next;
 	}
     }
+
+    return list;
 }
 
 /*
@@ -407,8 +416,9 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
      * (b) be configurable */
 
     if (cnt % 128) {
-	snmp_cache_expire(snmp_cache_list, pkt->time_sec.value - 300,
-			  pkt->time_usec.value);
+	snmp_cache_list = snmp_cache_expire(snmp_cache_list,
+					    pkt->time_sec.value - 300,
+					    pkt->time_usec.value);
     }
     
     flow = snmp_flow_find(pkt);
