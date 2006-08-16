@@ -7,3 +7,4 @@ TODOs:
 - anon.c should read a config file which defines the filters to apply
 - flow.c should garbage collect data and reorder output to ensure
   responses always follow the request
+- more regression tests for libanon

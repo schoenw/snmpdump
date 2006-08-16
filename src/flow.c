@@ -221,7 +221,7 @@ snmp_cache_expire(snmp_cache_elem_t *list,
 		list = p->next;
 	    }
 	    p = p->next;
-	    fprintf(stderr, "X");
+	    /* fprintf(stderr, "X"); */
 	    if (x->pkt) {
 		snmp_pkt_delete(x->pkt);
 		x->pkt = NULL;
@@ -246,18 +246,18 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
     snmp_cache_elem_t *p;
 
     for (p = list; p; p = p->next) {
-	fprintf(stderr, ".");
+	/* fprintf(stderr, "."); */
 	if (snmp_int32_equal(&p->pkt->snmp.scoped_pdu.pdu.req_id,
 			     &pkt->snmp.scoped_pdu.pdu.req_id)
 	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
 	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)) {
-	    fprintf(stderr, "o\n");
+	    /* fprintf(stderr, "o\n"); */
 	    /* xxx check that the pdu type combination makes sense */
 	    return p;
 	}
     }
 
-    fprintf(stderr, "\n");
+    /* fprintf(stderr, "\n"); */
     return NULL;
 }
 

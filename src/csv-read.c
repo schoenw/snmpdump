@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -134,8 +135,7 @@ parse(char *line, snmp_callback func, void *user_data)
 {
     snmp_packet_t _pkt, *pkt = &_pkt;
     char *token;
-    int32_t i32;
-    uint32_t u32;
+    snmp_int32_t i32;
     int len;
     char *end;
 
@@ -229,8 +229,8 @@ snmp_csv_read_file(const char *file, snmp_callback func, void *user_data)
 
     stream = fopen(file, "r");
     if (! stream) {
-	fprintf(stderr, "%s: failed to open CSV file '%s'\n",
-		progname, file);
+	fprintf(stderr, "%s: failed to open CSV file '%s': %s\n",
+		progname, file, strerror(errno));
 	return;
     }
 
