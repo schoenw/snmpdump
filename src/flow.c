@@ -41,6 +41,7 @@ typedef struct _snmp_flow {
     snmp_ipaddr_t       dst_addr;
     snmp_ip6addr_t      dst_addr6;
     uint64_t		cnt;
+    FILE		*stream;
     snmp_flow_elem	*list;
     struct _snmp_flow	*next;
 } snmp_flow_t;
@@ -408,14 +409,16 @@ void
 snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
     snmp_flow_t *flow;
+    static snmp_flow_t *last = NULL;
     static int cnt = 0;
+    static int hits = 0;
 
     cnt++;
 
     /* the following constants should (a) have reasonable values and
      * (b) be configurable */
 
-    if (cnt % 128) {
+    if (! (cnt % 1024)) {
 	snmp_cache_list = snmp_cache_expire(snmp_cache_list,
 					    pkt->time_sec.value - 300,
 					    pkt->time_usec.value);
@@ -423,16 +426,25 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
     
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
-	FILE *f;
-	f = snmp_flow_open_stream(flow, out, (flow->cnt == 0) ? "w" : "a");
-	if (f) {
+	if (last == flow) hits++;
+	if (last && last != flow) {
+	    if (last->stream) {
+		fclose(last->stream);
+		last->stream = NULL;
+	    }
+	}
+	last = flow;
+	if (! flow->stream) {
+	    flow->stream = snmp_flow_open_stream(flow, out,
+						 (flow->cnt == 0) ? "w" : "a");
+	}
+	if (flow->stream) {
 	    if (flow->cnt == 0 && out->write_new) {
-		out->write_new(f);
+		out->write_new(flow->stream);
 	    }
 	    if (out->write_pkt) {
-		out->write_pkt(f, pkt);
+		out->write_pkt(flow->stream, pkt);
 	    }
-	    fclose(f);
 	    flow->cnt++;
 	    if (pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_RESPONSE
 		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1) {
@@ -460,13 +472,14 @@ snmp_flow_done(snmp_write_t *out)
 
     for (p = flow_list; p; ) {
 	if (p->name) {
-	    FILE *f;
-	    f = snmp_flow_open_stream(p, out, "a");
-	    if (f) {
+	    if (! p->stream) {
+		p->stream = snmp_flow_open_stream(p, out, "a");
+	    }
+	    if (p->stream) {
 		if (out->write_end) {
-		    out->write_end(f);
+		    out->write_end(p->stream);
 		}
-		fclose(f);
+		fclose(p->stream);
 	    }
 	    free(p->name);
 	}
