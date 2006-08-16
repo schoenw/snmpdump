@@ -8,7 +8,7 @@ bin_PROGRAMS		= snmpdump
 snmpdump_SOURCES	= snmpdump.c \
 			  pcap-read.c \
 			  xml-read.c xml-write.c \
-			  csv-write.c \
+			  csv-read.c csv-write.c \
 			  filter.c \
 			  anon.c \
 			  snmp.c \

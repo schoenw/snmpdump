@@ -36,7 +36,8 @@ const char *progname = "snmpdump";
 
 typedef enum {
     INPUT_XML = 1,
-    INPUT_PCAP = 2
+    INPUT_PCAP = 2,
+    INPUT_CSV = 3
 } input_t;
 
 typedef enum {
@@ -202,6 +203,8 @@ main(int argc, char **argv)
 		input = INPUT_PCAP;
 	    } else if (strcmp(optarg, "xml") == 0) {
 		input = INPUT_XML;
+	    } else if (strcmp(optarg, "csv") == 0) {
+		input = INPUT_CSV;
 	    } else {
 		fprintf(stderr, "%s: ignoring input format: %s unknown\n",
 			progname, optarg);
@@ -285,6 +288,9 @@ main(int argc, char **argv)
 	case INPUT_PCAP:
 	    snmp_pcap_read_stream(stdin, expr, print, state);
 	    break;
+	case INPUT_CSV:
+	    snmp_csv_read_stream(stdin, print, state);
+	    break;
 	}
     } else {
 	for (i = optind; i < argc; i++) {
@@ -294,6 +300,9 @@ main(int argc, char **argv)
 		break;
 	    case INPUT_PCAP:
 		snmp_pcap_read_file(argv[i], expr, print, state);
+		break;
+	    case INPUT_CSV:
+		snmp_csv_read_file(argv[i], print, state);
 		break;
 	    }
 	}

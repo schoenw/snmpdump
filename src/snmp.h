@@ -232,6 +232,15 @@ void snmp_pcap_read_life(const char *file,
 			 snmp_callback func, void *user_data);
 
 /*
+ * CSV input functions.
+ */
+
+void snmp_csv_read_file(const char *file, 
+			snmp_callback func, void *user_data);
+void snmp_csv_read_stream(FILE *stream, 
+			  snmp_callback func, void *user_data);
+
+/*
  * CSV output functions (we do not read CVS files)
  */
 

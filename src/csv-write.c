@@ -73,7 +73,6 @@ csv_write_ipaddr(FILE *stream, snmp_ipaddr_t *v)
     }
 }
 
-
 static void
 csv_write_ip6addr(FILE *stream, snmp_ip6addr_t *v)
 {
@@ -117,12 +116,12 @@ csv_write_oid(FILE *stream, snmp_oid_t *v)
 }
 
 static void
-csv_write_type(FILE *stream, int type, snmp_attr_t  *attr)
+csv_write_type(FILE *stream, snmp_pdu_t *v)
 {
     const char *name = NULL;
     
-    if (attr->flags & SNMP_FLAG_VALUE) {
-	switch (type) {
+    if (v->attr.flags & SNMP_FLAG_VALUE) {
+	switch (v->type) {
 	case SNMP_PDU_GET:
 	    name = "get-request";
 	    break;
@@ -279,8 +278,7 @@ snmp_csv_write_stream_pkt(FILE *stream, snmp_packet_t *pkt)
     if (pkt->snmp.attr.flags & SNMP_FLAG_VALUE) {
 	csv_write_int32(stream, &pkt->snmp.version);
 	
-	csv_write_type(stream, pkt->snmp.scoped_pdu.pdu.type,
-		       &pkt->snmp.scoped_pdu.pdu.attr);
+	csv_write_type(stream, &pkt->snmp.scoped_pdu.pdu);
 	
 	csv_write_int32(stream, &pkt->snmp.scoped_pdu.pdu.req_id);
 	
@@ -292,6 +290,8 @@ snmp_csv_write_stream_pkt(FILE *stream, snmp_packet_t *pkt)
 				     &pkt->snmp.scoped_pdu.pdu.varbindings);
 	
 	csv_write_varbind_list(stream, &pkt->snmp.scoped_pdu.pdu.varbindings);
+    } else {
+	fprintf(stream, "%c%c%c%c%c", sep, sep, sep, sep, sep);
     }
 
     fprintf(stream, "\n");
