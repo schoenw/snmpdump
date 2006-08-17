@@ -36,6 +36,19 @@ test_xml_reader()
     done
 }
 
+test_csv_reader()
+{
+    for file in *.csv; do
+	$SNMPDUMP -i csv -o csv $file \
+	    | diff -u $file -
+	if [ $? == 0 ]; then
+            echo "$FUNCNAME: $file: PASSED"
+        else
+            echo "$FUNCNAME: $file: FAILED"
+        fi
+    done
+}
+
 test_csv_writer()
 {
     for file in *pcap; do
@@ -52,5 +65,7 @@ test_csv_writer()
 test_pcap_reader
 echo ""
 test_xml_reader
+echo ""
+test_csv_reader
 echo ""
 test_csv_writer
