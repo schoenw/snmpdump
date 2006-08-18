@@ -99,7 +99,7 @@ csv_read_int32(char *s, snmp_int32_t *v)
     char *end;
 
     v->value = (int32_t) strtol(s, &end, 10);
-    if (*end == '\0') {
+    if (*end == '\0' && *s != '\0') {
 	v->attr.flags |= SNMP_FLAG_VALUE;
     }
 }
@@ -110,7 +110,7 @@ csv_read_uint32(char *s, snmp_uint32_t *v)
     char *end;
 
     v->value = (uint32_t) strtoul(s, &end, 10);
-    if (*end == '\0') {
+    if (*end == '\0' && *s != '\0') {
 	v->attr.flags |= SNMP_FLAG_VALUE;
     }
 }
@@ -121,7 +121,7 @@ csv_read_uint64(char *s, snmp_uint64_t *v)
     char *end;
 
     v->value = (uint64_t) strtoull(s, &end, 10);
-    if (*end == '\0') {
+    if (*end == '\0' && *s != '\0') {
 	v->attr.flags |= SNMP_FLAG_VALUE;
     }
 }
@@ -215,7 +215,7 @@ csv_read_oid(char *s, snmp_oid_t *v) {
 	    v->value[i] = (uint32_t) strtoul((const char *) s, &end, 10);
 	}
 	
-	if (*end == '\0') {
+	if (*end == '\0' && *s != '\0') {
 	    v->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
@@ -391,7 +391,7 @@ parse(char *line, snmp_callback func, void *user_data)
     token = mytok(&line, ",");
     if (! token) goto cleanup;
     pkt->snmp.attr.blen = strtol(token, &end, 10);
-    if (*end == '\0') {
+    if (*end == '\0' && *token != '\0') {
 	pkt->snmp.attr.flags |= SNMP_FLAG_BLEN;
     }
 
