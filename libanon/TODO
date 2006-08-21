@@ -1,0 +1,15 @@
+The function anon_key_set_passphase() seems to generate different keys
+for the same passphrase, which is at least surprising.
+
+The anon int64 and anon uint64 go into a loop if the number range is
+too small. Perhaps the bounds should be optional in the first place?
+
+Should the pcap_anon program not become a function of the anon
+program, i.e. 'anon pcap [-hl] [-p passphrase] <file>'?
+
+The manual page needs completion.
+
+We might want to introduce global options to reduce the duplicated
+code.  For example, the "-p passphrase" could be a global option and
+we could pass down a suitable key to the cmd functions.
+
