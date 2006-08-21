@@ -69,7 +69,7 @@ anon_key_set_random(anon_key_t *key)
 
 /*
  * Set the cryptographic key using a human memorizable passphrase.
- * The passphrase has to be null-terminated string.
+ * The passphrase has to be a null-terminated string.
  */
 
 void

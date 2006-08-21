@@ -99,7 +99,7 @@ anon_octs_hash(const struct hash_node *tohash)
     unsigned long hash = 0;
     char *p;
 
-    for (p = tohash->data; p; p++) {
+    for (p = tohash->data; *p; p++) {
 	hash = *p + (hash << 6) + (hash << 16) - hash;
     }
     

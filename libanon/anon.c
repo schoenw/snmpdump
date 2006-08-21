@@ -27,7 +27,7 @@
 
 #include "libanon.h"
 
-#define STRLEN 1024
+#define STRLEN (64*1024)
 
 static const char *progname = "anon";
 
@@ -47,29 +47,14 @@ static void cmd_octs(int argc, char **argv, struct cmd *cmd);
 
 static struct cmd cmds[] = {
     { "help",	cmd_help,   "anon help" },
-    { "ipv4",	cmd_ipv4,   "anon ipv4 [-hlc] -p passphrase file" },
-    { "ipv6",	cmd_ipv6,   "anon ipv6 [-hlc] -p passphrase file" },
-    { "mac",	cmd_mac,    "anon mac [-hl] file" },
-    { "int64",	cmd_int64,  "anon int64 lower upper [-hl] file" },
-    { "uint64",	cmd_uint64, "anon uint64 lower upper [-hl] file" },
-    { "octs",	cmd_octs,   "anon octs [-hl] file" },
+    { "ipv4",	cmd_ipv4,   "anon ipv4 [-hlc] [-p passphrase] file" },
+    { "ipv6",	cmd_ipv6,   "anon ipv6 [-hlc] [-p passphrase] file" },
+    { "mac",	cmd_mac,    "anon mac [-hl] [-p passphrase] file" },
+    { "int64",	cmd_int64,  "anon int64 lower upper [-hl] [-p passphrase] file" },
+    { "uint64",	cmd_uint64, "anon uint64 lower upper [-hl] [-p passphrase] file" },
+    { "octs",	cmd_octs,   "anon octs [-hl] [-p passphrase] file" },
     { NULL, NULL }
 };
-
-/* Provide your own 256-bit key here */
-static unsigned char my_key[32] = 
-  {21,34,23,141,51,164,207,128,19,10,91,22,73,144,125,16,
-   216,152,143,131,121,121,101,39,98,87,76,45,42,132,34,2};
-/*
-static unsigned char my_key[32] = 
-  {55,28,123,44,234,64,211,12,129,140,191,222,3,44,15,126,
-   26,12,243,131,121,222,10,3,198,7,6,45,142,132,34,12};
-*/
-/*
-static unsigned char my_key[32] = 
-  {255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
-   255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255};
-*/
 
 /*
  * Open a file and handle all errors by producing an error message
@@ -209,11 +194,11 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
     FILE *in;
     anon_ipv4_t *a;
     anon_key_t *key = NULL;
-    int c, lflag = 0, cflag = 0, pflag = 0;
+    int c, lflag = 0, cflag = 0;
     unsigned cnt;
 
     key = anon_key_new();
-    anon_key_set_key(key, my_key, sizeof(my_key));
+    anon_key_set_random(key);
 
     optind = 2;
     while ((c = getopt(argc, argv, "clhp:")) != -1) {
@@ -226,7 +211,6 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 	    break;
 	case 'p':
 	    anon_key_set_passphase(key, optarg);
-	    pflag = 1;
 	    break;
 	case 'h':
 	case '?':
@@ -243,12 +227,6 @@ cmd_ipv4(int argc, char **argv, struct cmd *cmd)
 	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
-
-    /*
-    if (!pflag) {
-	anon_key_random_key(key);
-    }
-    */
 
     in = fopen(argv[0], "r");
     if (! in) {
@@ -370,11 +348,11 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
     FILE *in;
     anon_ipv6_t *a;
     anon_key_t *key = NULL;
-    int c, lflag = 0, cflag = 0, pflag = 0;
+    int c, lflag = 0, cflag = 0;
     unsigned cnt = 0;
 
     key = anon_key_new();
-    anon_key_set_key(key, my_key, sizeof(my_key));
+    anon_key_set_random(key);
 
     optind = 2;
     while ((c = getopt(argc, argv, "clhp:")) != -1) {
@@ -402,12 +380,6 @@ cmd_ipv6(int argc, char **argv, struct cmd *cmd)
 	fprintf(stderr, "usage: %s\n", cmd->usage);
 	exit(EXIT_FAILURE);
     }
-
-    /*
-    if (!pflag) {
-	anon_key_random_key(key);
-    }
-    */
 
     in = fopen(argv[0], "r");
     if (! in) {
@@ -509,26 +481,35 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_mac_t *a;
+    anon_key_t *key = NULL;
     int c, lflag = 0;
 
+    key = anon_key_new();
+    anon_key_set_random(key);
+
     optind = 2;
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    while ((c = getopt(argc, argv, "lhp:")) != -1) {
 	switch (c) {
 	case 'l':
 	    lflag = 1;
+	    break;	
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
 	    break;
 	case 'h':
 	case '?':
 	default:
 	    printf("usage: %s\n", cmd->usage);
+	    anon_key_delete(key);
 	    exit(EXIT_SUCCESS);
 	}
     }
-     argc -= optind;
-     argv += optind;
-
+    argc -= optind;
+    argv += optind;
+    
     if (argc != 1) {
 	fprintf(stderr, "usage: %s\n", cmd->usage);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -536,7 +517,9 @@ cmd_mac(int argc, char **argv, struct cmd *cmd)
 
     a = anon_mac_new();
     if (! a) {
-	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
+	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n",
+		progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -607,41 +590,55 @@ cmd_int64(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_int64_t *a;
+    anon_key_t *key = NULL;
     int c, lflag = 0;
     int64_t lower, upper;
 
-    if (argc < 4) {
-	fprintf(stderr, "usage: %s\n", cmd->usage);
-	exit(EXIT_FAILURE);
-    }
-    optind = 4;
-    sscanf(argv[2], "%"SCNd64, &lower);
-    sscanf(argv[3], "%"SCNd64, &upper);
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    key = anon_key_new();
+    anon_key_set_random(key);
+
+    optind = 2;
+    while ((c = getopt(argc, argv, "lhp:")) != -1) {
 	switch (c) {
 	case 'l':
 	    lflag = 1;
+	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
 	    break;
 	case 'h':
 	case '?':
 	default:
 	    printf("usage: %s\n", cmd->usage);
+	    anon_key_delete(key);
 	    exit(EXIT_SUCCESS);
 	}
     }
-     argc -= optind;
-     argv += optind;
+    argc -= optind;
+    argv += optind;
 
-    if (argc != 1) {
+    if (argc < 3) {
 	fprintf(stderr, "usage: %s\n", cmd->usage);
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
+    if (sscanf(argv[0], "%"SCNd64, &lower) != 1) {
+	fprintf(stderr, "%s: lower bound must be a number\n", progname);
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
+    if (sscanf(argv[1], "%"SCNd64, &upper) != 1) {
+	fprintf(stderr, "%s: upper bound must be a number\n", progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
-    in = xfopen(argv[0], "r");
+    in = xfopen(argv[2], "r");
 
     a = anon_int64_new(lower,upper);
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize int64 mapping\n", progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -712,41 +709,56 @@ cmd_uint64(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_uint64_t *a;
+    anon_key_t *key = NULL;
     int c, lflag = 0;
     uint64_t lower, upper;
 
-    if (argc < 4) {
-	fprintf(stderr, "usage: %s\n", cmd->usage);
-	exit(EXIT_FAILURE);
-    }
-    optind = 4;
-    lower = strtol(argv[2], NULL, 10);
-    upper = strtol(argv[3], NULL, 10);
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    key = anon_key_new();
+    anon_key_set_random(key);
+
+    optind = 2;
+    while ((c = getopt(argc, argv, "lhp:")) != -1) {
 	switch (c) {
 	case 'l':
 	    lflag = 1;
+	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
 	    break;
 	case 'h':
 	case '?':
 	default:
 	    printf("usage: %s\n", cmd->usage);
+	    anon_key_delete(key);
 	    exit(EXIT_SUCCESS);
 	}
     }
-     argc -= optind;
-     argv += optind;
-
-    if (argc != 1) {
+    argc -= optind;
+    argv += optind;
+    
+    if (argc < 3) {
 	fprintf(stderr, "usage: %s\n", cmd->usage);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
-    in = xfopen(argv[0], "r");
+    if (sscanf(argv[0], "%"SCNu64, &lower) != 1) {
+	fprintf(stderr, "%s: lower bound must be a number\n", progname);
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
+    if (sscanf(argv[1], "%"SCNu64, &upper) != 1) {
+	fprintf(stderr, "%s: upper bound must be a number\n", progname);
+	anon_key_delete(key);
+	exit(EXIT_FAILURE);
+    }
+
+    in = xfopen(argv[1], "r");
 
     a = anon_uint64_new(lower,upper);
     if (! a) {
 	fprintf(stderr, "%s: Failed to initialize uint64 mapping\n", progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -823,26 +835,35 @@ cmd_octs(int argc, char **argv, struct cmd *cmd)
 {
     FILE *in;
     anon_octs_t *a;
+    anon_key_t *key = NULL;
     int c, lflag = 0;
 
+    key = anon_key_new();
+    anon_key_set_random(key);
+
     optind = 2;
-    while ((c = getopt(argc, argv, "lh")) != -1) {
+    while ((c = getopt(argc, argv, "lhp:")) != -1) {
 	switch (c) {
 	case 'l':
 	    lflag = 1;
+	    break;
+	case 'p':
+	    anon_key_set_passphase(key, optarg);
 	    break;
 	case 'h':
 	case '?':
 	default:
 	    printf("usage: %s\n", cmd->usage);
+	    anon_key_delete(key);
 	    exit(EXIT_SUCCESS);
 	}
     }
-     argc -= optind;
-     argv += optind;
+    argc -= optind;
+    argv += optind;
 
     if (argc != 1) {
 	fprintf(stderr, "usage: %s\n", cmd->usage);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
@@ -850,7 +871,9 @@ cmd_octs(int argc, char **argv, struct cmd *cmd)
 
     a = anon_octs_new();
     if (! a) {
-	fprintf(stderr, "%s: Failed to initialize IEEE 802 MAC mapping\n", progname);
+	fprintf(stderr, "%s: Failed to initialize octet string mapping\n",
+		progname);
+	anon_key_delete(key);
 	exit(EXIT_FAILURE);
     }
 
