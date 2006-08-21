@@ -50,8 +50,8 @@ mytok(char **s, char* delim)
 
     if (! *s) return NULL; /* end of string s */
 
-    for(c=*s;*s && !strchr(delim, **s);(*s)++);
-    if (*s) {
+    for(c=*s;**s && !strchr(delim, **s);(*s)++);
+    if (**s) {
 	**s = '\0';
 	(*s)++;
     }
@@ -252,7 +252,7 @@ dehexify(const char *str, unsigned *length) {
     int i;
     int tmp, tmp2;
     
-    if (strlen(str)%2 != 0) {
+    if (strlen(str)%2 != 0 || strlen(str) == 0) {
 	/* octet string implies pairs of hex numbers */
 	return NULL;
     }
@@ -351,9 +351,19 @@ parse(char *line, snmp_callback func, void *user_data)
     char *end;
     int varbind_count;
     int i;
-    
+    char *c;
+
     memset(pkt, 0, sizeof(snmp_packet_t));
 
+    /* cut string at first newline (marks the end of a CSV record */
+    for(c=line;*c;c++) {
+	if (*c == '\n') {
+	    *c = '\0';
+	    break;
+	}
+    }
+
+    
     /* xxx won't work if there is no time stamp in the input */
 
     if (2 != sscanf(line, "%u.%u,%n",
