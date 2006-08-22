@@ -421,7 +421,8 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 		uint32_t noct = elem->asnlen % ASN_BIT8;
 		elem->asnlen = 0;
 		if (len < noct) {
-			ifNotTruncated printf("[asnlen? %d<%d]", len, noct);
+			ifNotTruncated fprintf(stderr, "[asnlen? %d<%d]\n",
+					       len, noct);
 			return -1;
 		}
 		for (; noct-- > 0; len--, hdr++)
@@ -429,23 +430,25 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 	}
 	if (len < elem->asnlen) {
 		if (!truncated) {
-			printf("[len%d<asnlen%u]", len, elem->asnlen);
+			fprintf(stderr, "[len%d<asnlen%u]\n",
+				len, elem->asnlen);
 			return -1;
 		}
 		/* maybe should check at least 4? */
 		elem->asnlen = len;
 	}
 	if (form >= sizeof(Form)/sizeof(Form[0])) {
-		ifNotTruncated printf("[form?%d]", form);
+		ifNotTruncated fprintf(stderr, "[form?%d]\n", form);
 		return -1;
 	}
 	if (class >= sizeof(Class)/sizeof(Class[0])) {
-		ifNotTruncated printf("[class?%c/%d]", *Form[form], class);
+		ifNotTruncated fprintf(stderr, "[class?%c/%d]\n",
+				       *Form[form], class);
 		return -1;
 	}
 	if ((int)id >= Class[class].numIDs) {
-		ifNotTruncated printf("[id?%c/%s/%d]", *Form[form],
-			Class[class].name, id);
+		ifNotTruncated fprintf(stderr, "[id?%c/%s/%d]\n",
+				       *Form[form], Class[class].name, id);
 		return -1;
 	}
 
@@ -485,7 +488,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 			default:
 				elem->type = BE_OCTET;
 				elem->data.raw = (caddr_t)p;
-				printf("[P/U/%s]",
+				fprintf(stderr, "[P/U/%s]\n",
 					Class[class].Id[id]);
 				break;
 			}
@@ -524,7 +527,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 			default:
 				elem->type = BE_OCTET;
 				elem->data.raw = (caddr_t)p;
-				printf("[P/A/%s]",
+				fprintf(stderr, "[P/A/%s]\n",
 					Class[class].Id[id]);
 				break;
 			}
@@ -552,7 +555,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 		default:
 			elem->type = BE_OCTET;
 			elem->data.raw = (caddr_t)p;
-			printf("[P/%s/%s]",
+			fprintf(stderr, "[P/%s/%s]\n",
 				Class[class].name, Class[class].Id[id]);
 			break;
 		}
@@ -570,7 +573,8 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 			default:
 				elem->type = BE_OCTET;
 				elem->data.raw = (caddr_t)p;
-				printf("C/U/%s", Class[class].Id[id]);
+				fprintf(stderr, "C/U/%s\n",
+					Class[class].Id[id]);
 				break;
 			}
 			break;
@@ -583,7 +587,7 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 		default:
 			elem->type = BE_OCTET;
 			elem->data.raw = (caddr_t)p;
-			printf("C/%s/%s",
+			fprintf(stderr, "C/%s/%s\n",
 				Class[class].name, Class[class].Id[id]);
 			break;
 		}
@@ -673,7 +677,7 @@ asn1_print(struct be *elem)
 			return buffer;
 		} else
 			for (i = asnlen; i-- > 0; p++) {
-				printf(first ? "(fix me)%.2x" : "_%.2x", *p);
+				fprintf(stderr, first ? "(fix me)%.2x" : "_%.2x", *p);
 				first = 0;
 			}
 
