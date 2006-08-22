@@ -64,7 +64,9 @@ anon_key_set_random(anon_key_t *key)
 	fprintf(stderr, "done\n");
     }
 
-    RAND_bytes(key->key, key->length);
+    if (! RAND_bytes(key->key, key->length) ) {
+	fprintf(stderr, "failed to generate a random key\n");
+    }
 }
 
 /*

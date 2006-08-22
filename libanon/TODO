@@ -1,5 +1,7 @@
 The function anon_key_set_passphase() seems to generate different keys
 for the same passphrase, which is at least surprising.
+x There is now a test case for this in test_libanon. I could not reproduce the
+x bug.
 
 The anon int64 and anon uint64 go into a loop if the number range is
 too small. Perhaps the bounds should be optional in the first place?

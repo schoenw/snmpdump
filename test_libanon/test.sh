@@ -6,6 +6,7 @@
 #
 
 ANON=../libanon/anon
+ANONKEY=../libanon/anon_test_key
 PASSPHRASE=testing
 
 test_ipv4_pref()
@@ -60,6 +61,21 @@ test_ipv6_pref_lex()
     done
 }
 
+test_anon_passphrase_to_key()
+{
+    for file in anon_key.*.in; do
+	$ANONKEY < $file \
+	    | diff -u `basename $file .in`.out -
+	if [ $? == 0 ]; then
+	    echo "$FUNCNAME: $file: PASSED"
+	else 
+	    echo "$FUNCNAME: $file: FAILED"
+	fi
+    done
+}
+
+test_anon_passphrase_to_key
+echo ""
 test_ipv4_pref
 echo ""
 test_ipv4_pref_lex
