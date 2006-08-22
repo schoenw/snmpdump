@@ -100,8 +100,8 @@ test_xml_reader_xml_writer
 echo ""
 test_xml_reader_csv_writer
 echo ""
-test_csv_reader_xml_writer
-echo ""
+#test_csv_reader_xml_writer
+#echo ""
 test_csv_reader_csv_writer
 echo ""
 

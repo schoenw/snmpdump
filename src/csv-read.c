@@ -335,6 +335,10 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
 	v->value.null.attr.flags |= SNMP_FLAG_VALUE;
     } else {
 	fprintf(stderr, "%s: unkown varbind type: %s\n", progname, type);
+	if (v->name.attr.flags & SNMP_FLAG_VALUE) {
+	    /* don't ignore this varbind if we have an OID name for it */
+	    v->attr.flags |= SNMP_FLAG_VALUE;
+	}
 	return;
     }
 
