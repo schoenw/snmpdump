@@ -689,7 +689,10 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_OBJ;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    /* should be empty */
+	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
 	/* varbind (- value) - no-such-instance */
 	} else if (name && xmlStrcmp(name, BAD_CAST("no-such-instance")) == 0){
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
@@ -698,7 +701,10 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_INST;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    /* should be empty */
+	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
 	/* varbind (- value) - end-of-mib-view */
 	} else if (name && xmlStrcmp(name, BAD_CAST("end-of-mib-view")) == 0) {
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
@@ -707,7 +713,10 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_END_MIB_VIEW;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    /* should be empty */
+	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
 	/* varbind (- value) - value */
 	} else if (name && xmlStrcmp(name, BAD_CAST("value")) == 0) {
 	    if (state != IN_NAME) {
