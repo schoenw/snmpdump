@@ -924,42 +924,52 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		switch (elem.type) {
 		case BE_NULL:
 		    vb->type = SNMP_TYPE_NULL;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_null(&vb->value.null, count, &elem);
 		    break;
 		case BE_INT:
 		    vb->type = SNMP_TYPE_INT32;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_int32(&vb->value.i32, count, &elem);
 		    break;
 		case BE_UNS:
 		    vb->type = SNMP_TYPE_UINT32;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_uint32(&vb->value.u32, count, &elem);
 		    break;
 		case BE_UNS64:
 		    vb->type = SNMP_TYPE_UINT64;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_uint64(&vb->value.u64, count, &elem);
 		    break;
 		case BE_INETADDR:
 		    vb->type = SNMP_TYPE_IPADDR;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_ipaddr(&vb->value.ip, count, &elem);
 		    break;
 		case BE_STR:
 		    vb->type = SNMP_TYPE_OCTS;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_octs(&vb->value.octs, count, &elem);
 		    break;
 		case BE_OID:
 		    vb->type = SNMP_TYPE_OID;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_oid(&vb->value.oid, count, &elem);
 		    break;
 		case BE_NOSUCHOBJECT:
 		    vb->type = SNMP_TYPE_NO_SUCH_OBJ;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_null(&vb->value.null, count, &elem);
 		    break;
 		case BE_NOSUCHINST:
 		    vb->type = SNMP_TYPE_NO_SUCH_INST;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_null(&vb->value.null, count, &elem);
 		    break;
 		case BE_ENDOFMIBVIEW:
 		    vb->type = SNMP_TYPE_END_MIB_VIEW;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_null(&vb->value.null, count, &elem);
 		    break;
 		default:
