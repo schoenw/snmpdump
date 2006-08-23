@@ -202,17 +202,17 @@ csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	case SNMP_TYPE_NO_SUCH_OBJ:
 	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
 	    fprintf(stream, "%c%s", sep, show ? "no-such-object" : "");
-	    csv_write_null(stream, &varbind->value.null, "no-such-object");
+	    csv_write_null(stream, &varbind->value.null, NULL);
 	    break;
 	case SNMP_TYPE_NO_SUCH_INST:
 	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
 	    fprintf(stream, "%c%s", sep, show ? "no-such-instance" : "");
-	    csv_write_null(stream, &varbind->value.null, "no-such-instance");
+	    csv_write_null(stream, &varbind->value.null, NULL);
 	    break;
 	case SNMP_TYPE_END_MIB_VIEW:
 	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
 	    fprintf(stream, "%c%s", sep, show ? "end-of-mib-view" : "");
-	    csv_write_null(stream, &varbind->value.null, "end-of-mib-view");
+	    csv_write_null(stream, &varbind->value.null, NULL);
 	    break;
 	default:
 	    fprintf(stream, "%c%s%c", sep, "?", sep);
