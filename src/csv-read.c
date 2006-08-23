@@ -280,7 +280,7 @@ csv_read_octs(char* s, snmp_octs_t* v)
     if (v->value) v->attr.flags |= SNMP_FLAG_VALUE;
 }
 
-static int
+static void
 csv_read_varbind(char **s, snmp_varbind_t *v)
 {
     char *oid;
@@ -353,7 +353,7 @@ parse(char *line, snmp_callback func, void *user_data)
     memset(pkt, 0, sizeof(snmp_packet_t));
 
     /* cut string at first newline (marks the end of a CSV record */
-    for(c=line;*c;c++) {
+    for (c=line; *c; c++) {
 	if (*c == '\n') {
 	    *c = '\0';
 	    break;
@@ -439,7 +439,7 @@ parse(char *line, snmp_callback func, void *user_data)
     }
 
     snmp_var_bindings_t *varbindlist;
-    snmp_varbind_t *p, *q;
+    snmp_varbind_t *p, *q = NULL;
     varbindlist = &pkt->snmp.scoped_pdu.pdu.varbindings;
     
     varbindlist->attr.flags |= SNMP_FLAG_VALUE; /* even if zero varbinds */
