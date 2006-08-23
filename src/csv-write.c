@@ -5,6 +5,10 @@
  * as comma separated values (CSV). The format is specified in the
  * measure.txt documentation.
  *
+ * BUGS:
+ * o diagnostic messages are currently not generated when
+ *   values (in the snmp packet structure) are inconsistent
+ *
  * Copyright (c) 2006 Juergen Schoenwaelder
  *
  * $Id$
@@ -215,7 +219,7 @@ csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	    csv_write_null(stream, &varbind->value.null, NULL);
 	    break;
 	default:
-	    fprintf(stream, "%c%s%c", sep, "?", sep);
+	    fprintf(stream, "%c%c", sep, sep);
 	    break;
 	}
     } else {
