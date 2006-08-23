@@ -895,8 +895,7 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 
 		vb->attr.blen = count;
 		vb->attr.vlen = elem.asnlen;
-		vb->attr.flags
-			= SNMP_FLAG_VALUE | SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
+		vb->attr.flags = SNMP_FLAG_BLEN | SNMP_FLAG_VLEN;
 		
 		vbend = np + count;
 		vblength = length - count;
