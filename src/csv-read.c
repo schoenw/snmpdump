@@ -299,50 +299,43 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
     //fprintf(stdout, "varbind: %s,%s,%s\n", oid, type, value);
     if (strcmp(type, "null") == 0) {
 	v->type = SNMP_TYPE_NULL;
-	v->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
     } else if (strcmp(type, "integer32") == 0) {
 	v->type = SNMP_TYPE_INT32;
-	v->value.i32.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_int32(value, &v->value.i32);
     } else if (strcmp(type, "unsigned32") == 0) {
 	v->type = SNMP_TYPE_UINT32;
-	v->value.u32.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint32(value, &v->value.u32);
     } else if (strcmp(type, "unsigned64") == 0) {
 	v->type = SNMP_TYPE_UINT64;
-	v->value.u64.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint64(value, &v->value.u64);
     } else if (strcmp(type, "ipaddress") == 0) {
 	v->type = SNMP_TYPE_IPADDR;
-	v->value.ip.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_ipaddr(value, &v->value.ip);
     } else if (strcmp(type, "octet-string") == 0) {
 	v->type = SNMP_TYPE_OCTS;
-	v->value.octs.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_octs(value, &v->value.octs);
     } else if (strcmp(type, "object-identifier") == 0) {
 	v->type = SNMP_TYPE_OID;
-	v->value.oid.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_oid(value, &v->value.oid);
     } else if (strcmp(type, "no-such-object") == 0) {
 	v->type = SNMP_TYPE_NO_SUCH_OBJ;
-	v->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
     } else if (strcmp(type, "no-such-instance") == 0) {
 	v->type = SNMP_TYPE_NO_SUCH_INST;
-	v->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
     } else if (strcmp(type, "end-of-mib-view") == 0) {
 	v->type = SNMP_TYPE_END_MIB_VIEW;
-	v->value.null.attr.flags |= SNMP_FLAG_VALUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
     } else {
 	fprintf(stderr, "%s: unkown varbind type: %s\n", progname, type);
-	if (v->name.attr.flags & SNMP_FLAG_VALUE) {
-	    /* don't ignore this varbind if we have an OID name for it */
-	    v->attr.flags |= SNMP_FLAG_VALUE;
-	}
-	return;
     }
-
-    v->attr.flags |= SNMP_FLAG_VALUE;
 }
 
 static void

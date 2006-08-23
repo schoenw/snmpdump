@@ -154,10 +154,12 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
     char *name = "varbind";
     
     xml_write_open(stream, name, &varbind->attr);
+    
+    if (varbind->name.attr.flags) { /* don't write an empty name tag */
+	xml_write_oid(stream, "name", &varbind->name);
+    }
 
     if (varbind->attr.flags & SNMP_FLAG_VALUE) {
-
-	xml_write_oid(stream, "name", &varbind->name);
 	switch (varbind->type) {
 	case SNMP_TYPE_NULL:
 	    xml_write_null(stream, "null", &varbind->value.null);

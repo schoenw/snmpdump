@@ -593,7 +593,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &(*varbind)->attr);
-	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	/* varbind - name */
 	} else if (name && xmlStrcmp(name, BAD_CAST("name")) == 0) {
 	    assert(state == IN_VARBIND);
@@ -610,7 +609,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NULL;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    //assert((*varbind)->value == NULL);
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
@@ -622,6 +620,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_INTEGER32); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_INT32;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.i32.attr));
@@ -633,6 +632,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_UNSIGNED32); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_UINT32;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
@@ -644,6 +644,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_UNSIGNED64); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_UINT64;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.u64.attr));
@@ -655,6 +656,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_IPADDRESS); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_IPADDR;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.ip.attr));
@@ -666,6 +668,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_OCTET_STRING); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_OCTS;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.octs.attr));
@@ -678,6 +681,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    set_state(IN_OBJECT_IDENTIFIER); 
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_OID;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.oid.attr));
@@ -689,7 +693,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_OBJ;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
@@ -701,7 +704,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_NO_SUCH_INST;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.null.attr));
@@ -713,7 +715,6 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    (*varbind)->type = SNMP_TYPE_END_MIB_VIEW;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
-	    (*varbind)->value.null.attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.null.attr));

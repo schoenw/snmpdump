@@ -107,6 +107,10 @@ typedef struct _snmp_varbind {
     } value;
     struct _snmp_varbind *next;	/* next varbind (linked list) */
     snmp_attr_t		  attr;	/* attributes */
+				/* setting SNMP_FLAG_VALUE here indicates
+				 * that the type field is set, other fields
+				 * have their own flag fields
+				 */
 } snmp_varbind_t;
 
 typedef struct {
