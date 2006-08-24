@@ -168,7 +168,7 @@ process_snmp_int32(xmlTextReaderPtr reader, snmp_int32_t* snmpint) {
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
 	snmpint->value = (int32_t) strtol((char *) value, &end, 10);
-	if (*end == '\0') {
+	if (*end == '\0' && *value != '\0') {
 	    snmpint->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
@@ -184,7 +184,7 @@ process_snmp_uint32(xmlTextReaderPtr reader, snmp_uint32_t* snmpint) {
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
 	snmpint->value = (uint32_t) strtoul((char *) value, &end, 10);
-	if (*end == '\0') {
+	if (*end == '\0' && *value != '\0') {
 	    snmpint->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
@@ -200,7 +200,7 @@ process_snmp_uint64(xmlTextReaderPtr reader, snmp_uint64_t* snmpint) {
     const xmlChar* value = xmlTextReaderConstValue(reader);
     if (value) {
 	snmpint->value = (uint64_t) strtoull((char *) value, &end, 10);
-	if (*end == '\0') {
+	if (*end == '\0' && *value != '\0') {
 	    snmpint->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
@@ -343,7 +343,7 @@ process_snmp_oid(xmlTextReaderPtr reader, snmp_oid_t* snmpoid) {
 	    snmpoid->value[i] = (uint32_t) strtoul((const char *) value, &end, 10);
 	}
 	
-	if (*end == '\0') {
+	if (*end == '\0' && *value != '\0') {
 	    snmpoid->attr.flags |= SNMP_FLAG_VALUE;
 	}
     }
