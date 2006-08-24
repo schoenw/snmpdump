@@ -235,7 +235,7 @@ char_to_i(char c){
     } else if (n >= 'a' && n <= 'f') {
 	n -= 'a' - 10;
     } else if (n >= 'A' && n <= 'F') {
-	n -= 'F' - 10;
+	n -= 'A' - 10;
     } else {
 	n = -1;
     }
