@@ -1,10 +1,14 @@
 TODOs:
 
-- pcap-read.c sometimes writes to stdout where it should use stderr
 - we should deal with opaque values correctly
 - there should be a null anonymization transform
 - anon.c should filter-out all message fields
 - anon.c should read a config file which defines the filters to apply
-- flow.c should garbage collect data and reorder output to ensure
-  responses always follow the request
 - more regression tests for libanon
+- add an option -z which causes snmpdump to gzip output files 
+  automatically (may require changes to the internal output API)
+- accept gzip'ed input for csv files (libxml does this already)
+- hack pcap to support gzip'ed input and perhaps also mmap for plain
+  input
+- speedup the flow extractor by introducing an LRU cache of open flows
+  (which is definately needed once we think about gzip support)
