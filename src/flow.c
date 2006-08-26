@@ -247,18 +247,14 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
     snmp_cache_elem_t *p;
 
     for (p = list; p; p = p->next) {
-	/* fprintf(stderr, "."); */
 	if (snmp_int32_equal(&p->pkt->snmp.scoped_pdu.pdu.req_id,
 			     &pkt->snmp.scoped_pdu.pdu.req_id)
 	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
 	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)) {
-	    /* fprintf(stderr, "o\n"); */
-	    /* xxx check that the pdu type combination makes sense */
 	    return p;
 	}
     }
 
-    /* fprintf(stderr, "\n"); */
     return NULL;
 }
 
@@ -405,13 +401,84 @@ snmp_flow_init(snmp_write_t *out)
     /* nothing to be done here yet */
 }
 
+/*
+ * We keep an LRU cache of open flows to reduce the number of open()
+ * close() system calls.
+ */
+
+static snmp_flow_t *open_flow_cache[128];
+
+static void
+open_flow_cache_init()
+{
+    memset(open_flow_cache, 0, sizeof(open_flow_cache));
+}
+
+static snmp_flow_t*
+open_flow_cache_find(snmp_flow_t *flow)
+{
+    int i;
+    
+    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+	if (open_flow_cache[i] == flow) {
+	    return flow;
+	}
+    }
+    
+    return NULL;
+}
+
+static void
+open_flow_cache_close()
+{
+    int i;
+
+    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+	if (! open_flow_cache[i]) {
+	    return;
+	}
+    }
+
+    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+	if (open_flow_cache[i]) {
+	    if (open_flow_cache[i]->stream) {
+		fclose(open_flow_cache[i]->stream);
+		open_flow_cache[i]->stream = NULL;
+	    }
+	    open_flow_cache[i] = NULL;
+	}
+    }
+}
+
+static void
+open_flow_cache_add(snmp_flow_t *flow)
+{
+    int i;
+
+    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+	if (open_flow_cache[i] == flow) {
+	    return;
+	}
+    }
+
+    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+	if (! open_flow_cache[i]) {
+	    open_flow_cache[i] = flow;
+	    return;
+	}
+    }
+}
+
 void
 snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
     snmp_flow_t *flow;
-    static snmp_flow_t *last = NULL;
     static int cnt = 0;
     static int hits = 0;
+
+    if (cnt == 0) {
+	open_flow_cache_init();
+    }
 
     cnt++;
 
@@ -426,14 +493,15 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
     
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
-	if (last == flow) hits++;
-	if (last && last != flow) {
-	    if (last->stream) {
-		fclose(last->stream);
-		last->stream = NULL;
-	    }
+
+	if (! open_flow_cache_find(flow)) {
+	    open_flow_cache_close();
+	} else {
+	    hits++;
 	}
-	last = flow;
+
+	// fprintf(stderr, "** hits = %d, cnt = %d\n", hits, cnt);
+	
 	if (! flow->stream) {
 	    flow->stream = snmp_flow_open_stream(flow, out,
 						 (flow->cnt == 0) ? "w" : "a");
@@ -450,6 +518,7 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1) {
 		snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
 	    }
+	    open_flow_cache_add(flow);
 	    return;
 	}
     }
