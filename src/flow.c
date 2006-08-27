@@ -422,12 +422,11 @@ open_flow_cache_init()
 	open_flow_cache_size = 32;
     }
 
-    // fprintf(stderr, "** flow cache size %d\n", open_flow_cache_size);
-    
     open_flow_cache = malloc(sizeof(snmp_flow_t*) * open_flow_cache_size);
     memset(open_flow_cache, 0, open_flow_cache_size * sizeof(snmp_flow_t*));
 }
 
+#if 0
 static void
 open_flow_cache_print()
 {
@@ -436,45 +435,6 @@ open_flow_cache_print()
     for (i = 0; i < open_flow_cache_size; i++) {
 	fprintf(stderr, "%3d: %s\n", i,
 		open_flow_cache[i] ? open_flow_cache[i]->name : "");
-    }
-}
-
-#if 0
-static snmp_flow_t*
-open_flow_cache_find(snmp_flow_t *flow)
-{
-    int i;
-    
-    for (i = 0; i < open_flow_cache_size; i++) {
-	if (open_flow_cache[i] == flow) {
-	    return flow;
-	}
-    }
-    
-    return NULL;
-}
-#endif
-
-#if 0
-static void
-open_flow_cache_close()
-{
-    int i;
-    
-    for (i = 0; i < open_flow_cache_size; i++) {
-	if (! open_flow_cache[i]) {
-	    return;
-	}
-    }
-
-    for (i = 0; i < open_flow_cache_size; i++) {
-	if (open_flow_cache[i]) {
-	    if (open_flow_cache[i]->stream) {
-		fclose(open_flow_cache[i]->stream);
-		open_flow_cache[i]->stream = NULL;
-	    }
-	    open_flow_cache[i] = NULL;
-	}
     }
 }
 #endif
@@ -504,15 +464,12 @@ open_flow_cache_add(snmp_flow_t *flow)
 	return;
     }
 
-    // open_flow_cache_print();
-
     /* Flow not found in the cache, so close the last flow and assign
        the new flow to it... */
     
     if (i == open_flow_cache_size) {
 	i--;
 	if (open_flow_cache[i]) {
-	    // fprintf(stderr, "** closing %s\n", open_flow_cache[i]->name);
 	    if (open_flow_cache[i]->stream) {
 		fclose(open_flow_cache[i]->stream);
 		open_flow_cache[i]->stream = NULL;
@@ -524,7 +481,6 @@ open_flow_cache_add(snmp_flow_t *flow)
     /* Move the flow to the top... */
 
     tmp = open_flow_cache[i];
-    // fprintf(stderr, "** reorder: %s\n", flow->name);
     for (j = i; j > 0; j--) {
 	open_flow_cache[j] = open_flow_cache[j-1];
     }
