@@ -23,6 +23,8 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
 #define SNMP_FLOW_NONE		0x00
 #define SNMP_FLOW_COMMAND	0x01
@@ -222,7 +224,6 @@ snmp_cache_expire(snmp_cache_elem_t *list,
 		list = p->next;
 	    }
 	    p = p->next;
-	    /* fprintf(stderr, "X"); */
 	    if (x->pkt) {
 		snmp_pkt_delete(x->pkt);
 		x->pkt = NULL;
@@ -406,20 +407,45 @@ snmp_flow_init(snmp_write_t *out)
  * close() system calls.
  */
 
-static snmp_flow_t *open_flow_cache[128];
+static snmp_flow_t **open_flow_cache;
+static int open_flow_cache_size = 0;
 
 static void
 open_flow_cache_init()
 {
-    memset(open_flow_cache, 0, sizeof(open_flow_cache));
+
+    struct rlimit rl;
+
+    if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
+	open_flow_cache_size = rl.rlim_max - 16;
+    } else {
+	open_flow_cache_size = 32;
+    }
+
+    // fprintf(stderr, "** flow cache size %d\n", open_flow_cache_size);
+    
+    open_flow_cache = malloc(sizeof(snmp_flow_t*) * open_flow_cache_size);
+    memset(open_flow_cache, 0, open_flow_cache_size * sizeof(snmp_flow_t*));
 }
 
+static void
+open_flow_cache_print()
+{
+    int i;
+
+    for (i = 0; i < open_flow_cache_size; i++) {
+	fprintf(stderr, "%3d: %s\n", i,
+		open_flow_cache[i] ? open_flow_cache[i]->name : "");
+    }
+}
+
+#if 0
 static snmp_flow_t*
 open_flow_cache_find(snmp_flow_t *flow)
 {
     int i;
     
-    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+    for (i = 0; i < open_flow_cache_size; i++) {
 	if (open_flow_cache[i] == flow) {
 	    return flow;
 	}
@@ -427,19 +453,21 @@ open_flow_cache_find(snmp_flow_t *flow)
     
     return NULL;
 }
+#endif
 
+#if 0
 static void
 open_flow_cache_close()
 {
     int i;
-
-    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+    
+    for (i = 0; i < open_flow_cache_size; i++) {
 	if (! open_flow_cache[i]) {
 	    return;
 	}
     }
 
-    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+    for (i = 0; i < open_flow_cache_size; i++) {
 	if (open_flow_cache[i]) {
 	    if (open_flow_cache[i]->stream) {
 		fclose(open_flow_cache[i]->stream);
@@ -449,24 +477,58 @@ open_flow_cache_close()
 	}
     }
 }
+#endif
 
 static void
 open_flow_cache_add(snmp_flow_t *flow)
 {
-    int i;
+    int i, j;
+    snmp_flow_t *tmp;
 
-    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
+    for (i = 0; i < open_flow_cache_size; i++) {
 	if (open_flow_cache[i] == flow) {
-	    return;
+	    break;
+	}
+	if (!open_flow_cache[i]) {
+	    i = open_flow_cache_size;
+	    break;
 	}
     }
 
-    for (i = 0; i < sizeof(open_flow_cache)/sizeof(open_flow_cache[0]); i++) {
-	if (! open_flow_cache[i]) {
-	    open_flow_cache[i] = flow;
-	    return;
+    /* The current flow is on the top - don't bother any further... */
+
+    if (i == 0) {
+	if (! open_flow_cache[0]) {
+	    open_flow_cache[0] = flow;
 	}
+	return;
     }
+
+    // open_flow_cache_print();
+
+    /* Flow not found in the cache, so close the last flow and assign
+       the new flow to it... */
+    
+    if (i == open_flow_cache_size) {
+	i--;
+	if (open_flow_cache[i]) {
+	    // fprintf(stderr, "** closing %s\n", open_flow_cache[i]->name);
+	    if (open_flow_cache[i]->stream) {
+		fclose(open_flow_cache[i]->stream);
+		open_flow_cache[i]->stream = NULL;
+	    }
+	}
+	open_flow_cache[i] = flow;
+    }
+
+    /* Move the flow to the top... */
+
+    tmp = open_flow_cache[i];
+    // fprintf(stderr, "** reorder: %s\n", flow->name);
+    for (j = i; j > 0; j--) {
+	open_flow_cache[j] = open_flow_cache[j-1];
+    }
+    open_flow_cache[0] = tmp;
 }
 
 void
@@ -474,7 +536,6 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
     snmp_flow_t *flow;
     static int cnt = 0;
-    static int hits = 0;
 
     if (cnt == 0) {
 	open_flow_cache_init();
@@ -494,14 +555,6 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
 
-	if (! open_flow_cache_find(flow)) {
-	    open_flow_cache_close();
-	} else {
-	    hits++;
-	}
-
-	// fprintf(stderr, "** hits = %d, cnt = %d\n", hits, cnt);
-	
 	if (! flow->stream) {
 	    flow->stream = snmp_flow_open_stream(flow, out,
 						 (flow->cnt == 0) ? "w" : "a");
@@ -555,5 +608,10 @@ snmp_flow_done(snmp_write_t *out)
 	q = p->next;
 	free(p);
 	p = q;
+    }
+
+    if (open_flow_cache) {
+	free(open_flow_cache);
+	open_flow_cache = NULL;
     }
 }
