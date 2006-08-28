@@ -309,6 +309,10 @@ main(int argc, char **argv)
     }
     print(NULL, state);
 
+    if (state->do_anon) {
+	anon_done(key);
+    }
+
     if (state->filter) {
 	snmp_filter_delete(state->filter);
     }

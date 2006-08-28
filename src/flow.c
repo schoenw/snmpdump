@@ -428,7 +428,6 @@ snmp_flow_init(snmp_write_t *out)
 static snmp_flow_t **open_flow_cache;
 static int open_flow_cache_size = 0;
 static int cnt = 0;
-static int hits = 0;
 
 static void
 open_flow_cache_init()
@@ -481,7 +480,6 @@ open_flow_cache_add(snmp_flow_t *flow)
 	if (! open_flow_cache[0]) {
 	    open_flow_cache[0] = flow;
 	}
-	hits++;
 	return;
     }
 
@@ -582,10 +580,10 @@ snmp_flow_done(snmp_write_t *out)
 	p = q;
     }
 
-    fprintf(stderr, "** cnt = %d, hits = %d\n", cnt, hits);
-
     if (open_flow_cache) {
 	free(open_flow_cache);
 	open_flow_cache = NULL;
+	open_flow_cache_size = 0;
+	cnt = 0;
     }
 }

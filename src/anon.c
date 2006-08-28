@@ -248,10 +248,29 @@ anon_rule_delete(anon_rule_t *rp)
 }
 
 
+static void
+smi_error_handler(char *path, int line, int severity, char *msg, char *tag)
+{
+    if (path) {
+	fprintf(stderr, "%s:%d: ", path, line);
+    } else {
+	fprintf(stderr, "%s: ", progname);
+    }
+
+    fprintf(stderr, "%s\n", msg);
+}
+
+
+
 void
 anon_init(anon_key_t *key)
 {
     int i;
+
+    const char *preloadtab[] = {
+	"SNMPv2-SMI", "SNMPv2-TC", "INET-ADDRESS-MIB",
+	NULL
+    };
 
     const char *tftab[] = {
 	"tr-inet-address-ipv4", "ipv4",
@@ -268,7 +287,8 @@ anon_init(anon_key_t *key)
 
     for (i = 0; tftab[2*i]; i++) {
 	if (0 == anon_tf_new(key, tftab[2*i], tftab[2*i+1], NULL, NULL)) {
-	    fprintf(stderr, "*** adding transform %s failed\n", tftab[2*i]);
+	    fprintf(stderr, "%s: adding transform %s failed\n",
+		    progname, tftab[2*i]);
 	} else {
 	    fprintf(stderr, "transform: %s\n", tftab[2*i]);
 	}
@@ -276,11 +296,25 @@ anon_init(anon_key_t *key)
 
     for (i = 0; rtab[3*i]; i++) {
 	if (0 == anon_rule_new(rtab[3*i], rtab[3*i+1], rtab[3*i+2])) {
-	    fprintf(stderr, "*** adding rule %s failed\n", rtab[3*i]);
+	    fprintf(stderr, "%s: adding rule %s failed\n",
+		    progname, rtab[3*i]);
 	} else {
 	    fprintf(stderr, "rule: %s\n", tftab[2*i]);
 	}
     }
+
+    smiSetErrorHandler(smi_error_handler);
+    for (i = 0; preloadtab[i]; i++) {
+	if (! smiLoadModule(preloadtab[i])) {
+	    exit(1);
+	}
+    }
+}
+
+
+void
+anon_done()
+{
 }
 
 
