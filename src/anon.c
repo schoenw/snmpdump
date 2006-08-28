@@ -463,11 +463,28 @@ anon_ip6addr(anon_tf_t *tfp, snmp_ip6addr_t *v)
 static inline void
 anon_oid(anon_tf_t *tfp, snmp_oid_t *v)
 {
+    SmiNode *smiNode;
+    SmiValue *vals;
+    int i, valslen;
+    
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
 	return;
     }
 
-    /* xxx how do we deal with OIDs? */
+#if 0
+    smiNode = smiGetNodeByOID(v->len, v->value);
+    if (! smiNode) {
+	goto nukeOid;
+    }
+
+    smiUnpack(smiNode, v->value, v->len, &vals, &valslen);
+    for (i = 0; i < valslen; i++) {
+	printf("x");
+    }
+    printf("\n");
+#endif
+
+ nukeOid:
     memset(v->value, 0, v->len * sizeof(uint32_t));
     v->len = 0;
     v->attr.flags &= ~SNMP_FLAG_VALUE;
@@ -487,6 +504,8 @@ anon_pdu(snmp_pdu_t *pdu)
 	    smiType = smiGetNodeType(smiNode);
 	}
 	tfp = anon_find_transform(smiNode, smiType);
+
+	anon_oid(NULL, &vb->name);
 
 	switch (vb->type) {
 	case SNMP_TYPE_NULL:
@@ -528,11 +547,21 @@ snmp_anon_apply(snmp_packet_t *pkt)
     }
     
     smiType = smiGetType(NULL, "IpAddress");
+    if (! smiType) {
+	fprintf(stderr,
+		"%s: libsmi failed to locate the type 'IpAddress'\n",
+		progname);
+    }
     tfp = smiType ? anon_find_transform(NULL, smiType) : NULL;
     anon_ipaddr(tfp, &pkt->src_addr);
     anon_ipaddr(tfp, &pkt->dst_addr);
 
     smiType = smiGetType(NULL, "InetPortNumber");
+    if (! smiType) {
+	fprintf(stderr,
+		"%s: libsmi failed to locate the type 'InetPortNumber'\n",
+		progname);
+    }
     tfp = smiType ? anon_find_transform(NULL, smiType) : NULL;
     anon_uint32(tfp, &pkt->src_port);
     anon_uint32(tfp, &pkt->dst_port);

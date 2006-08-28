@@ -391,6 +391,24 @@ snmp_flow_open_stream(snmp_flow_t *flow, snmp_write_t *out, const char *mode)
 }
 
 /*
+ * Helper function to close a flow file stream. Any stream errors that
+ * might have occured are reported to stderr.
+ */
+
+static void
+snmp_flow_close_stream(snmp_flow_t *flow)
+{
+    if (flow && flow->stream) {
+	if (fflush(flow->stream) || ferror(flow->stream)) {
+	    fprintf(stderr, "%s: error on flow stream %s: %s\n",
+		    progname, flow->name, strerror(errno));
+	}
+	fclose(flow->stream);
+	flow->stream = NULL;
+    }
+}
+
+/*
  * Below are the interface functions as defined in snmp.h, namely the
  * initializing function, the per packet write functions, and the
  * finalizing function.
@@ -409,6 +427,8 @@ snmp_flow_init(snmp_write_t *out)
 
 static snmp_flow_t **open_flow_cache;
 static int open_flow_cache_size = 0;
+static int cnt = 0;
+static int hits = 0;
 
 static void
 open_flow_cache_init()
@@ -461,6 +481,7 @@ open_flow_cache_add(snmp_flow_t *flow)
 	if (! open_flow_cache[0]) {
 	    open_flow_cache[0] = flow;
 	}
+	hits++;
 	return;
     }
 
@@ -470,10 +491,7 @@ open_flow_cache_add(snmp_flow_t *flow)
     if (i == open_flow_cache_size) {
 	i--;
 	if (open_flow_cache[i]) {
-	    if (open_flow_cache[i]->stream) {
-		fclose(open_flow_cache[i]->stream);
-		open_flow_cache[i]->stream = NULL;
-	    }
+	    snmp_flow_close_stream(open_flow_cache[i]);
 	}
 	open_flow_cache[i] = flow;
     }
@@ -491,7 +509,6 @@ void
 snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 {
     snmp_flow_t *flow;
-    static int cnt = 0;
 
     if (cnt == 0) {
 	open_flow_cache_init();
@@ -510,7 +527,6 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
     
     flow = snmp_flow_find(pkt);
     if (flow && flow->name) {
-
 	if (! flow->stream) {
 	    flow->stream = snmp_flow_open_stream(flow, out,
 						 (flow->cnt == 0) ? "w" : "a");
@@ -557,7 +573,7 @@ snmp_flow_done(snmp_write_t *out)
 		if (out->write_end) {
 		    out->write_end(p->stream);
 		}
-		fclose(p->stream);
+		snmp_flow_close_stream(p);
 	    }
 	    free(p->name);
 	}
@@ -565,6 +581,8 @@ snmp_flow_done(snmp_write_t *out)
 	free(p);
 	p = q;
     }
+
+    fprintf(stderr, "** cnt = %d, hits = %d\n", cnt, hits);
 
     if (open_flow_cache) {
 	free(open_flow_cache);
