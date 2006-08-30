@@ -425,14 +425,13 @@ snmp_flow_init(snmp_write_t *out)
  * close() system calls.
  */
 
-static snmp_flow_t **open_flow_cache;
+static snmp_flow_t **open_flow_cache = NULL;
 static int open_flow_cache_size = 0;
 static int cnt = 0;
 
 static void
 open_flow_cache_init()
 {
-
     struct rlimit rl;
 
     if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
