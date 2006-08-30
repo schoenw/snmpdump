@@ -310,7 +310,7 @@ main(int argc, char **argv)
     print(NULL, state);
 
     if (state->do_anon) {
-	anon_done(key);
+	anon_done();
     }
 
     if (state->filter) {
