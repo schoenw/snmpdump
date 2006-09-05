@@ -434,14 +434,26 @@ open_flow_cache_init()
 {
     struct rlimit rl;
 
-    if (getrlimit(RLIMIT_NOFILE, &rl) == 0) {
-	open_flow_cache_size = rl.rlim_max - 16;
+    if (getrlimit(RLIMIT_NOFILE, &rl) != 0) {
+	fprintf(stderr,
+		"%s: getrlimit() failed: unable to allocate open flow cache\n",
+		progname);
+	exit(1);
+    }
+    
+    if (rl.rlim_max == RLIM_INFINITY) {
+	open_flow_cache_size = 1024;		/* pretend to be like Linux */
+    } else if (rl.rlim_max > 8) {		/* arbitrary safety margin */
+	open_flow_cache_size = rl.rlim_max - 8;
     } else {
-	open_flow_cache_size = 32;
+	fprintf(stderr, "%s: not enough open file descriptors left\n",
+		progname);
+	exit(1);
     }
 
-    open_flow_cache = malloc(sizeof(snmp_flow_t*) * open_flow_cache_size);
-    memset(open_flow_cache, 0, open_flow_cache_size * sizeof(snmp_flow_t*));
+    fprintf(stderr, "** flow cache size %d\n", open_flow_cache_size);
+
+    open_flow_cache = xmalloc(sizeof(snmp_flow_t*) * open_flow_cache_size);
 }
 
 #if 0
