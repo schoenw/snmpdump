@@ -451,8 +451,6 @@ open_flow_cache_init()
 	exit(1);
     }
 
-    fprintf(stderr, "** flow cache size %d\n", open_flow_cache_size);
-
     open_flow_cache = xmalloc(sizeof(snmp_flow_t*) * open_flow_cache_size);
 }
 
