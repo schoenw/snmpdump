@@ -1000,7 +1000,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	}
 	break;
     default:
-	fprintf(stderr, "unkown xml node type: %d\n",
+	fprintf(stderr, "unknown xml node type: %d\n",
 		xmlTextReaderNodeType(reader));
 	break;
     }
