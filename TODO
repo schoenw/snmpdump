@@ -10,5 +10,3 @@ TODOs:
 - accept gzip'ed input for csv files (libxml does this already)
 - hack pcap to support gzip'ed input and perhaps also mmap for plain
   input
-- speedup the flow extractor by introducing an LRU cache of open flows
-  (which is definately needed once we think about gzip support)

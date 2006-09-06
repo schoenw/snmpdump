@@ -5,10 +5,11 @@ Copyright (c) 2004 Juergen Schoenwaelder, International University Bremen
 See the file "COPYING" for information on usage and redistribution
 of this file, and for a DISCLAIMER OF ALL WARRANTITIES.
 
-= large file support on linux =
+Large file support on linux
+---------------------------
 
 Linux per default seems to use 32bit offsets in file system calls. To
-get support for 64bit files, you can do the following:
+get support for 64bit file offsets, you can do the following:
 
   $ getconf LFS_CFLAGS
   -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64
