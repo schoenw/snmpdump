@@ -16,6 +16,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <regex.h>
+#include <stdio.h>
 
 static anon_tf_t *tf_list = NULL;
 static anon_rule_t *rule_list = NULL;
@@ -30,6 +31,7 @@ struct _anon_tf {
 	anon_int64_t	*an_int64;
 	anon_uint64_t	*an_uint64;
 	anon_octs_t	*an_octs;
+	void		*an_none;
     } u;
     struct _anon_tf *next;
 };
@@ -53,13 +55,14 @@ static struct {
     { "int64",	ANON_TYPE_INT64 },
     { "uint64", ANON_TYPE_UINT64 },
     { "octs",	ANON_TYPE_OCTS },
-    { NULL,	ANON_TYPE_NONE }
+    { "none",	ANON_TYPE_NONE },
+    { NULL,	0xdeadbeef }
 };
 
 
 anon_tf_t*
 anon_tf_new(anon_key_t *key, const char *name, const char *type,
-	    const char *range, const char *option)
+	    const char *param1, const char *param2)
 {
     anon_tf_t *tfp = NULL;
     int i;
@@ -107,7 +110,8 @@ anon_tf_new(anon_key_t *key, const char *name, const char *type,
 	}
 	break;
     case ANON_TYPE_UINT32:
-	tfp->u.an_uint64 = anon_uint64_new(0, UINT32_MAX);
+	tfp->u.an_uint64 = anon_uint64_new(param1 ? atoi(param1) : 0,
+					   param2 ? atoi(param2) : UINT32_MAX);
 	if (tfp->u.an_uint64) {
 	    anon_uint64_set_key(tfp->u.an_uint64, key);
 	}
@@ -129,6 +133,9 @@ anon_tf_new(anon_key_t *key, const char *name, const char *type,
 	if (tfp->u.an_octs) {
 	    anon_octs_set_key(tfp->u.an_octs, key);
 	}
+	break;
+    case ANON_TYPE_NONE:
+	tfp->u.an_none = NULL;
 	break;
     }
 
@@ -273,24 +280,27 @@ anon_init(anon_key_t *key)
     };
 
     const char *tftab[] = {
-	"tr-inet-address-ipv4", "ipv4",
-	"tr-ieee-mac",		"mac",
-	"tr-inet-port-number",	"uint32",
-	NULL, NULL
+	"tr-inet-address-ipv4", "ipv4",	NULL, NULL,
+	"tr-ieee-mac",		"mac", NULL, NULL,
+	"tr-inet-port-number",	"uint32", "0", "65535",
+	"tr-none",		"none", NULL, NULL,
+	NULL, NULL, NULL, NULL
     };
 
     const char *rtab[] = {
 	"ipv4-by-type", "tr-inet-address-ipv4", "IpAddress|InetAddressIPv4",
 	"port-by-type", "tr-inet-port-number", "InetPortNumber",
+	"counter32-by-type", "tr-none", "Counter32",
+	"displaystring-type", "tr-none", "DisplayString",
 	NULL, NULL, NULL
     };
 
-    for (i = 0; tftab[2*i]; i++) {
-	if (0 == anon_tf_new(key, tftab[2*i], tftab[2*i+1], NULL, NULL)) {
+    for (i = 0; tftab[4*i]; i++) {
+	if (0 == anon_tf_new(key, tftab[4*i], tftab[4*i+1], tftab[4*i+2], tftab[4*i+3])) {
 	    fprintf(stderr, "%s: adding transform %s failed\n",
-		    progname, tftab[2*i]);
+		    progname, tftab[4*i]);
 	} else {
-	    fprintf(stderr, "transform: %s\n", tftab[2*i]);
+	    fprintf(stderr, "transform: %s\n", tftab[4*i]);
 	}
     }
 
@@ -299,7 +309,7 @@ anon_init(anon_key_t *key)
 	    fprintf(stderr, "%s: adding rule %s failed\n",
 		    progname, rtab[3*i]);
 	} else {
-	    fprintf(stderr, "rule: %s\n", tftab[2*i]);
+	    fprintf(stderr, "rule: %s\n", rtab[3*i]);
 	}
     }
 
@@ -361,7 +371,11 @@ anon_int32(anon_tf_t *tfp, snmp_int32_t *v)
 	return;
     }
 
-    if (! tfp || tfp->type != ANON_TYPE_INT32
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
+	return;
+    }
+
+     if (! tfp || tfp->type != ANON_TYPE_INT32
 	|| 0 != anon_int64_map(tfp->u.an_int64, v->value, &new_value)) {
 	v->value = 0;
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
@@ -377,6 +391,10 @@ anon_uint32(anon_tf_t *tfp, snmp_uint32_t *v)
     uint64_t new_value;
 
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
 	return;
     }
 
@@ -399,7 +417,11 @@ anon_int64(anon_tf_t *tfp, snmp_uint32_t *v)
 	return;
     }
 
-    if (! tfp || tfp->type != ANON_TYPE_INT32
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
+	return;
+    }
+
+     if (! tfp || tfp->type != ANON_TYPE_INT32
 	|| 0 != anon_int64_map(tfp->u.an_int64, v->value, &new_value)) {
 	v->value = 0;
 	v->attr.flags &= ~SNMP_FLAG_VALUE;
@@ -415,6 +437,10 @@ anon_uint64(anon_tf_t *tfp, snmp_uint64_t *v)
     uint64_t new_value;
 
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
 	return;
     }
 
@@ -434,6 +460,10 @@ anon_octs(anon_tf_t *tfp, snmp_octs_t *v)
     char *new_value = NULL;
 
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
 	return;
     }
 
@@ -465,6 +495,10 @@ anon_ipaddr(anon_tf_t *tfp, snmp_ipaddr_t *v)
 	return;
     }
 
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
+	return;
+    }
+
     if (! tfp || tfp->type != ANON_TYPE_IPV4
 	|| 0 != anon_ipv4_map_pref(tfp->u.an_ipv4, v->value, &new_value)) {
 	memset(&v->value, 0, sizeof(v->value));
@@ -481,6 +515,10 @@ anon_ip6addr(anon_tf_t *tfp, snmp_ip6addr_t *v)
     struct in6_addr new_value;
 
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
 	return;
     }
 
@@ -502,6 +540,10 @@ anon_oid(anon_tf_t *tfp, snmp_oid_t *v)
     int i, valslen;
     
     if (! v->attr.flags & SNMP_FLAG_VALUE) {
+	return;
+    }
+
+    if (tfp && tfp->type == ANON_TYPE_NONE) {
 	return;
     }
 
