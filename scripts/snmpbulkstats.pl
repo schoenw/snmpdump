@@ -4,7 +4,7 @@
 # files.
 #
 # To run this script:
-#    snmpbulkparm.pl [<filename>]
+#    snmpbulkstats.pl [<filename>]
 #
 # (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
 #

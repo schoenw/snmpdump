@@ -5,7 +5,7 @@
 # the -F option. These input files may also be gzipped (.gz or .GZ).
 # Statistics are written to standard output.
 #
-# Example: perl flow-size.pl *.csv
+# Example: perl snmpflowstats.pl *.csv
 #
 # Note: speed on MBP is 75 seconds per GB
 #
@@ -25,29 +25,32 @@ my $current_time = 0;
 
 
 # *********** print functions *************
-sub print_header {
-  printf("%-20s" , "START");
-  printf("%-20s" , "END");
-  printf("% 12s ", "MESSAGES");
-  printf("%s\n" , "FLOW");
-};
+sub print_header
+{
+    printf("%-20s" , "START");
+    printf("%-20s" , "END");
+    printf("% 12s ", "MESSAGES");
+    printf("%s\n" , "FLOW");
+}
 
-sub print_flowinfo {
-  printf("%-20s" , strftime("%FT%T", localtime($start_time)));
-  printf("%-20s" , strftime("%FT%T", localtime($current_time)));
-  printf("%12s ", $number_of_messages); 
-  printf("%s\n" , $infile); 
-};
+sub print_flowinfo 
+{
+    printf("%-20s" , strftime("%FT%T+0000", gmtime($start_time)));
+    printf("%-20s" , strftime("%FT%T+0000", gmtime($current_time)));
+    printf("%12s ", $number_of_messages); 
+    printf("%s\n" , $infile); 
+}
 
 
 # *********** MAIN *************
 print_header;
 while (@ARGV) {
-  $infile = shift @ARGV;
-  if ($infile =~ m/\.g|Gz|Z$/) { 
-      open(infile, "zcat $infile |") or die "Cannot open $infile: $!\n"}
-    else {
-      open(infile, $infile) || die "Cannot open $infile: $!"};  
+  $file = shift @ARGV;
+  if ($file =~ /\.g|Gz|Z$/) { 
+      open(infile, "zcat $file |") or die "Cannot open $file: $!\n"
+  } else {
+      open(infile, $file) || die "Cannot open $file: $!"
+  }
   $start_time = 0;				# reset for every new input (=csv) file
   $current_time = 0;
   $number_of_messages = 0;
@@ -60,4 +63,4 @@ while (@ARGV) {
   print_flowinfo;
   close(infile);
 }; # end while (@ARGV)
-
+exit(0);

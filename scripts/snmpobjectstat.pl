@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #
-# This script computes from snmpstat.pl generated files the list
+# This script computes from snmpoidstat.pl generated files the list
 # of objects seen in varbind lists. The script only becomes useful
 # if MIB information (see -m option) is passed to it.
 #
@@ -17,10 +17,12 @@ use Getopt::Std;
 use strict;
 
 my %oid_name;		# oid to name mapping
+my %oid_module;		# oid to module mapping
 my %oid_count;		# hash (by operation) of hashes (by oid)
 
 #
-# load MIB information from file passed as argument
+# Load MIB information from the file passed as argument. The
+# file has to be in 'smidump -f identifiers' format.
 #
 sub load_mib {
     my $file = shift;
@@ -28,8 +30,8 @@ sub load_mib {
     while(<F>) {
 	my @a = split;
 	if ($a[2] =~ /scalar|column|notification/) {
-	#if ($a[2] =~ /scalar|column/) {
 	    $oid_name{$a[3]} = $a[1];
+	    $oid_module{$a[3]} = $a[0];
 	}
     }
     close(F);
@@ -115,23 +117,23 @@ sub process {
     my $file = shift;
     my $total = 0;
     my $inoids = 0;
-    open(F, "<$file") or die "$0: unable to open $file: $!\n";
-    while (<F>) {
-	if (/^OPERATION *OID *NUMBER$/) {
+    open(infile, "<$file") or die "$0: unable to open $file: $!\n";
+    while (<infile>) {
+	if (/^OPERATION *NUMBER *OID$/) {
 	    $inoids = 1;
 	    next;
 	} elsif ($inoids) {
 	    if (/^$/) {
 		last;
 	    }
-	    my ($op, $oid, $num) = split;
+	    my ($op, $num, $percent, $oid) = split;
 	    $oid_count{$op}{$oid} = $num;
 #	    printf("<%s>\t%s\t%d\n", $op, $oid, $num);
 #	    $stat{$op}[$size] = $num;
 	}
     }
     oid_aggregate($total);
-    close(F);
+    close(infile);
 }
 
 #

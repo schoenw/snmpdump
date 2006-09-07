@@ -1,9 +1,6 @@
 #!/usr/bin/perl
 #
-# This script computes from CSV SNMP packet trace files:
-#
-# o basic statistics
-# o counts oids for each SNMP operaiton
+# This script computes basic statistics from CSV SNMP packet trace files.
 #
 # To run this script:
 #    snmpstats.pl [<filename>]
@@ -14,8 +11,9 @@
 # $Id$
 # 
 
-use Getopt::Std;
 use strict;
+use Getopt::Std;
+use POSIX qw(strftime);
 
 my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
 		"set-request", 
@@ -36,10 +34,9 @@ my %basic_nvbs;
 my %basic_nvbs_max;
 my %basic_size;
 
-my %oid_count;		# hash (by operation) of hashes (by oid)
-my %oid_unidentified;	# varbinds for which we have not found a matching oid
-			# hash (by operation) of hashes (by varbinds) 
-my $oid_total;		# how many varbinds have we seen
+my $total = 0;
+my $start = time();
+
 
 sub meta {
     my $aref = shift;
@@ -80,15 +77,18 @@ sub meta_print {
 	   "# the form of a list of named properties.\n" .
 	   "\n");
     printf("%-18s %s\n", "PROPERTY", "VALUE");
-#    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = gmtime($meta_first);
-    $gmt = gmtime($meta_first);
-    printf("%-18s %s\n", "start:", $gmt);
-    $gmt = gmtime($meta_last);
-    printf("%-18s %s\n", "end:", $gmt);
-    printf("%-18s %s\n", "days:", $duration/60/60/24);
-    printf("%-18s %s\n", "hours:", $duration/60/60);
-    printf("%-18s %s\n", "minutes:", $duration/60);
-    printf("%-18s %s\n", "messages:", $total);
+    $gmt = strftime("%FT%T+0000", gmtime($meta_first));
+    printf("%-18s %s\n", "trace-start:", $gmt);
+    $gmt = strftime("%FT%T+0000", gmtime($meta_last));
+    printf("%-18s %s\n", "trace-end:", $gmt);
+    my $days  = int($duration/60/60/24);
+    my $hours = int($duration/60/60) - $days*24;
+    my $mins  = int($duration/60) - $days*24*60 - $hours*60;
+    printf("%-18s %d days %d hours %d minutes\n", "trace-duration",
+	   $days, $hours, $mins);
+    printf("%-18s %f\n", "trace-first-time:", $meta_first);
+    printf("%-18s %f\n", "trace-last-time:", $meta_last);
+    printf("%-18s %s\n", "trace-messages:", $total);
 
     foreach my $addr (keys %meta_unknowns) {
 	if (exists $meta_managers{$addr} || exists $meta_agents{$addr}) {
@@ -96,9 +96,14 @@ sub meta_print {
 	}
     }
 
-    printf("%-18s %s\n", "managers:", scalar keys(%meta_managers));
-    printf("%-18s %s\n", "agents:", scalar keys(%meta_agents));
-    printf("%-18s %s\n", "unknown:", scalar keys(%meta_unknowns));
+    printf("%-18s %s\n", "trace-managers:", scalar keys(%meta_managers));
+    printf("%-18s %s\n", "trace-agents:", scalar keys(%meta_agents));
+    printf("%-18s %s\n", "trace-unknown:", scalar keys(%meta_unknowns));
+
+    $gmt = strftime("%FT%T+0000", gmtime($start));
+    printf("%-18s %s\n", "script-start:", $gmt);
+    $gmt = strftime("%FT%T+0000", gmtime(time()));
+    printf("%-18s %s\n", "script-end:", $gmt);
 }
 
 sub basic {
@@ -184,12 +189,12 @@ sub basic_print {
 	   "# The following table shows the message size distribution\n" .
 	   "# broken down by operation type.\n" .
 	   "\n");
-    printf("%-18s  %8s  %15s\n",
+    printf("%-18s  %12s  %16s\n",
 	   "OPERATION", "SIZE", "NUMBER");
     foreach my $op (@snmp_ops) {
 	foreach my $size (sort {$a <=> $b}
 			  (keys %{$basic_size{$op}})) {
-	    printf("%-18s  %8d  %10d %5.1f%%\n",
+	    printf("%-18s  %12d  %11d %5.1f%%\n",
 		   "$op:", $size, $basic_size{$op}{$size},
 		   $basic_size{$op}{$size}*100/$total);
 	}
@@ -197,54 +202,40 @@ sub basic_print {
 }
 
 #
-# count varbinds for each operation
+# transmission  1.3.6.1.2.1.10
+# mib-2		1.3.6.1.2.1
+# experimental	1.3.6.1.3
+# enterprises	1.3.6.1.4.1
+# snmpV2	1.3.6.1.6
 #
-sub oid {
+sub oid
+{
     my $aref = shift;
-    my $op = ${$aref}[7];	      # snmp operation
+    my $op = ${$aref}[7];             # snmp operation
     my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
     for (my $i = 0; $i < $varbind_count; $i++) {
-	my $oid =  ${$aref}[12 + 3*$i];
-	$oid_count{$op}{$oid}++;
-    }
-    $oid_total += $varbind_count;
-}
-
-sub oid_print {
-    my $total = shift;
-    # dump unknown oids
-    printf("\n" .
-	   "# The following table shows the oid statistics for each\n".
-           "# SNMP operation we have seen in the trace.\n" .
-	   "\n");
-    printf("%-18s %-50s    %13s\n", 
-	   "OPERATION", "OID", "NUMBER");
-    foreach my $op (keys %oid_count) {
-	foreach my $oid (sort {$oid_count{$op}{$b}
-			       <=> $oid_count{$op}{$a}}
-			 (keys %{$oid_count{$op}}) ) {
-	    printf("%-18s %-40s  %10d %5.1f%%\n",
-		   $op, $oid, $oid_count{$op}{$oid},
-		   $oid_count{$op}{$oid}*100/$oid_total);
-	}
+        my $oid =  ${$aref}[12 + 3*$i];
     }
 }
 
+#
+#
+#
 sub process {
     my $file = shift;
-    my $total = 0;
-    open(F, "<$file") or die "$0: unable to open $file: $!\n";
-    while (<F>) {
+    if ($file =~ /\.g|Gz|Z$/) {
+	open(infile, "zcat $file |") or die "$0: Cannot open $file: $!\n"
+    } else {
+	open(infile, "<$file") or die "$0: Cannot open $file: $!\n";
+    }
+    while (<infile>) {
 	my @a = split(/,/, $_);
 	meta(\@a);
 	basic(\@a);
 	oid(\@a);
 	$total++;
     }
-    meta_print($total);
-    basic_print($total);
-    oid_print($total);
-    close(F);
+    close(infile);
 }
 
 #
@@ -273,4 +264,6 @@ usage() if defined $opt{h};
 while ($ARGV = shift) {
     process($ARGV);
 }
+meta_print($total);
+basic_print($total);
 exit(0);
