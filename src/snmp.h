@@ -264,6 +264,7 @@ typedef struct _snmp_write {
     void (*write_pkt) (FILE *stream, snmp_packet_t *pkt);
     void (*write_end) (FILE *stream);
     const char *path;
+    const char *prefix;
     const char *ext;
 } snmp_write_t;
 

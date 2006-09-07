@@ -161,7 +161,7 @@ int
 main(int argc, char **argv)
 {
     int i, c;
-    char *expr = NULL, *path = NULL;
+    char *expr = NULL, *path = NULL, *prefix = NULL;
     output_t output = OUTPUT_XML;
     input_t input = INPUT_PCAP;
     char *errmsg;
@@ -176,7 +176,7 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "FVz:f:w:i:o:c:m:hap:tC:")) != -1) {
+    while ((c = getopt(argc, argv, "FVz:f:w:i:o:c:m:hap:tC:P:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -223,6 +223,9 @@ main(int argc, char **argv)
 	case 'C':
 	    path = optarg;
 	    break;
+	case 'P':
+	    prefix = optarg;
+	    break;
 	case 't':
 	    state->flags |= STATE_FLAG_V1V2;
 	    break;
@@ -247,7 +250,7 @@ main(int argc, char **argv)
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-w file] [-h] [-V] [-F] [-C path] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-w file] [-h] [-V] [-F] [-C path] [-P prefix] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }
@@ -257,6 +260,7 @@ main(int argc, char **argv)
     state->out.write_pkt = NULL;
     state->out.write_end = NULL;
     state->out.path = path;
+    state->out.prefix = prefix;
 
     if (state->do_anon) {
 	anon_init(key);

@@ -13,7 +13,7 @@
 .\" along with this program; see the file COPYING.  If not, write to
 .\" the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
 .\"
-.TH SNMPDUMP 1 "May 02, 2006"
+.TH SNMPDUMP 1 "September 07, 2006"
 .\" Please update the above date whenever this man page is modified.
 .\"
 .\" Some roff macros, for reference:
@@ -98,6 +98,10 @@ cannot be assigned to flows will be written to standard output.
 Write new flow files in \fIpath\fP rather than the current directory.
 This option is only meaningful in combination with the flow option.
 .TP
+\fB-P \fIprefix\fB, --prefix=\fIprefix\fP
+Generate flow file names that begin with the prefix \fIprefix\fP.
+This option is only meaningful in combination with the flow option.
+.TP
 .B \-V, \-\-version
 Show version of program.
 .SH FORMATS
@@ -151,6 +155,14 @@ non-standard port number, you can use the pcap filtering mechanism:
 .RS 
 \f(CWsnmpdump -f 'udp and port 1161 and host 10.20.30.40' trace.pcap\fP
 .RE 
+.PP
+To generate flow files in CSV format that are stored in the directory
+'flows' with the flow file prefix 't01', use the following
+command:
+.PP
+.RS
+\f(CWsnmpdump -o csv -F -C flows -P t01 trace.pcap > flows/t01-unknown.csv\fP
+.RE
 .PP
 .SH SEE ALSO
 tcpdump(1)

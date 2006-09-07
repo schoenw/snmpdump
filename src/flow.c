@@ -379,9 +379,13 @@ snmp_flow_open_stream(snmp_flow_t *flow, snmp_write_t *out, const char *mode)
     char filename[MAX_FILENAME_SIZE];
     FILE *stream;
 
-    snprintf(filename, MAX_FILENAME_SIZE, "%s%s%s.%s",
-	     out->path ? out->path : "", out->path ? "/" : "",
-	     flow->name, out->ext);
+    snprintf(filename, MAX_FILENAME_SIZE, "%s%s%s%s%s.%s",
+	     out->path ? out->path : "",
+	     out->path ? "/" : "",
+	     out->prefix ? out->prefix : "",
+	     out->prefix ? "-" : "",
+	     flow->name,
+	     out->ext ? out->ext : "");
     stream = fopen(filename, mode);
     if (! stream) {
 	fprintf(stderr, "%s: failed to open flow file %s: %s\n",
