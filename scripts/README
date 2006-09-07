@@ -1,0 +1,57 @@
+This README gives an overview over the scripts that analyze trace
+files and which are part of the software distribution. Note that most
+scripts expect CSV format as input. Many scripts also accept gzip
+compressed input files.
+
+* snmpstats.pl
+
+  Reads CSV input files and produces various basic statistics for the
+  whole data set as output. The output format contains comment lines
+  explaining the meaning of the data.
+
+* snmpflowstats.pl
+
+  Reads CSV input files representing individual flows. Flow files are
+  typically generated using snmpdump's -F option. The script produces
+  a table indicating the duration of the flows as well as the number
+  of messages and bytes exchanged in the various flows.
+
+* snmpbulkstats.pl
+
+  Reads CSV input files and computes the get-bulk parameters. This
+  script perhaps should be merged with snmpstats.pl. [xxx]
+
+* snmpwalks.pl
+
+  Reads CSV input files and extracts information about walks found
+  in the traces. We distinguish different types of walks. [xxx]
+
+* snmpoidstats.pl
+
+  [xxx]
+
+* snmpobjectstat.pl
+
+  [xxx]
+
+The following scripts post-process the output of the basic scripts
+described above:
+
+* snmpsizes.pl
+
+  [xxx rename snmpsizes.pl to snmpplotsizes.pl? xxx]
+
+How the scripts may play together:
+
+  foo.csv --> snmpstats.pl --> "summary data"
+
+  foo.csv --> snmpoidstats.pld --> snmpobjectstat.pl --> "object/module usage data"
+
+  [xxx]
+
+
+=========
+
+- Should there be a script to "normalize" time stamps?
+
+- How to provide SMI information in a convenient way?
