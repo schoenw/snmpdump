@@ -77,6 +77,12 @@ sub meta_print {
 	   "# the form of a list of named properties.\n" .
 	   "\n");
     printf("%-18s %s\n", "PROPERTY", "VALUE");
+
+    $gmt = strftime("%FT%T+0000", gmtime($start));
+    printf("%-18s %s\n", "script-start:", $gmt);
+    $gmt = strftime("%FT%T+0000", gmtime(time()));
+    printf("%-18s %s\n", "script-end:", $gmt);
+
     $gmt = strftime("%FT%T+0000", gmtime($meta_first));
     printf("%-18s %s\n", "trace-start:", $gmt);
     $gmt = strftime("%FT%T+0000", gmtime($meta_last));
@@ -99,11 +105,6 @@ sub meta_print {
     printf("%-18s %s\n", "trace-managers:", scalar keys(%meta_managers));
     printf("%-18s %s\n", "trace-agents:", scalar keys(%meta_agents));
     printf("%-18s %s\n", "trace-unknown:", scalar keys(%meta_unknowns));
-
-    $gmt = strftime("%FT%T+0000", gmtime($start));
-    printf("%-18s %s\n", "script-start:", $gmt);
-    $gmt = strftime("%FT%T+0000", gmtime(time()));
-    printf("%-18s %s\n", "script-end:", $gmt);
 }
 
 sub basic {

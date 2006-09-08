@@ -17,50 +17,80 @@
 
 use strict;
 use POSIX qw(strftime);
+use File::Basename;
 
-my $infile = '';
-my $number_of_messages = 0;
-my $start_time = 0;
-my $current_time = 0;
+my %flow_bytes;
+my %flow_msgs;
+my %flow_start;
+my %flow_end;
 
+my $start = time();
 
 # *********** print functions *************
-sub print_header
+
+sub meta_print
 {
-    printf("%-20s" , "START");
-    printf("%-20s" , "END");
-    printf("% 12s ", "MESSAGES");
-    printf("%s\n" , "FLOW");
+    printf("# The following table shows some overall meta information in\n" .
+	   "# the form of a list of named properties.\n" .
+	   "\n");
+    printf("%-18s %s\n", "PROPERTY", "VALUE");
+
+    printf("%-18s %s\n", "script-start:",
+	   strftime("%FT%T+0000", gmtime($start)));
+    printf("%-18s %s\n", "script-end:",
+	   strftime("%FT%T+0000", gmtime(time())));
 }
 
-sub print_flowinfo 
+
+sub flow_print
 {
-    printf("%-20s" , strftime("%FT%T+0000", gmtime($start_time)));
-    printf("%-20s" , strftime("%FT%T+0000", gmtime($current_time)));
-    printf("%12s ", $number_of_messages); 
-    printf("%s\n" , $infile); 
+    printf("\n" .
+	   "# The following table shows basic statistics for the flows." .
+	   "\n");
+    printf("%-25s %-25s %10s %12s %s\n",
+	   "START", "END", "MESSAGES", "BYTES", "FLOW");
+    foreach my $flow (keys %flow_msgs) {
+	printf("%-25s %-25s %10d %12d %s\n",
+	       strftime("%FT%T+0000", gmtime($flow_start{$flow})),
+	       strftime("%FT%T+0000", gmtime($flow_end{$flow})),
+	       $flow_msgs{$flow},
+	       $flow_bytes{$flow},
+	       $flow);
+    }
+}
+
+
+sub process
+{
+    my $file = shift;
+    my $number_of_messages = 0;
+    my $start_time = 0;
+    my $current_time = 0;
+    my $name = basename($file);
+    if ($file =~ /\.g|Gz|Z$/) { 
+	open(infile, "zcat $file |") or die "$0: Cannot open $file: $!\n";
+    } else {
+	open(infile, $file) || die "$0: Cannot open $file: $!";
+    }
+    while (<infile>) {
+	my @a = split(/,/, $_);
+	$flow_msgs{$name}++;
+	$flow_bytes{$name} += $a[5];
+	$flow_end{$name} = $a[0];
+	if ($flow_start{$name} == 0) {
+	    $flow_start{$name} = $a[0];
+	}
+    }
+    close(infile);
 }
 
 
 # *********** MAIN *************
-print_header;
-while (@ARGV) {
-  $file = shift @ARGV;
-  if ($file =~ /\.g|Gz|Z$/) { 
-      open(infile, "zcat $file |") or die "Cannot open $file: $!\n"
-  } else {
-      open(infile, $file) || die "Cannot open $file: $!"
-  }
-  $start_time = 0;				# reset for every new input (=csv) file
-  $current_time = 0;
-  $number_of_messages = 0;
-  while (<infile>) {
-    ++$number_of_messages;
-    m|^\d*\.\d*|;				# regular expression to find the time
-    $current_time = $&; 		# assign matched pattern
-    if ($start_time == 0) {$start_time = $current_time};
-  }; # end while (<infile>)
-  print_flowinfo;
-  close(infile);
-}; # end while (@ARGV)
+
+@ARGV = ('-') unless @ARGV;
+while ($ARGV = shift) {
+    process($ARGV)
+}
+meta_print();
+flow_print();
 exit(0);
