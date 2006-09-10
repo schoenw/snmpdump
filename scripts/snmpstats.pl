@@ -37,6 +37,53 @@ my %basic_size;
 my $total = 0;
 my $start = time();
 
+# Below is the list of well-known subtrees. Note that the order is
+# important - longer prefixes must be matched before shorter onces.
+
+my %oid_stats;
+my @oid_subtrees = (
+	'transmission/dot3'		=> '^1\.3\.6\.1\.2\.1\.10\.7\.',
+	'transmission/isdnMib'		=> '^1\.3\.6\.1\.2\.1\.10\.20\.',
+	'transmission/etherMIB'		=> '^1\.3\.6\.1\.2\.1\.10\.35\.',
+	'transmission/rs232'		=> '^1\.3\.6\.1\.2\.1\.10\.33\.',
+	'transmission/sonetMIB'		=> '^1\.3\.6\.1\.2\.1\.10\.39\.',
+	'transmission/tunnelMIB'	=> '^1\.3\.6\.1\.2\.1\.10\.131\.',
+	'transmission/*'		=> '^1\.3\.6\.1\.2\.1\.10\.',
+
+	'mib-2/system'			=> '^1\.3\.6\.1\.2\.1\.1\.',
+        'mib-2/interfaces'		=> '^1\.3\.6\.1\.2\.1\.2\.',
+	'mib-2/ip'			=> '^1\.3\.6\.1\.2\.1\.4\.',
+	'mib-2/tcp'			=> '^1\.3\.6\.1\.2\.1\.6\.',
+	'mib-2/udp'			=> '^1\.3\.6\.1\.2\.1\.7\.',
+	'mib-2/snmp'			=> '^1\.3\.6\.1\.2\.1\.11\.',
+	'mib-2/ospf'			=> '^1\.3\.6\.1\.2\.1\.14\.',
+	'mib-2/dot1dBridge'		=> '^1\.3\.6\.1\.2\.1\.17\.',
+	'mib-2/ipForward'		=> '^1\.3\.6\.1\.2\.1\.24\.',
+	'mib-2/host'			=> '^1\.3\.6\.1\.2\.1\.25\.',
+	'mib-2/snmpDot3MauMgt'		=> '^1\.3\.6\.1\.2\.1\.26\.',
+	'mib-2/ifMIB'			=> '^1\.3\.6\.1\.2\.1\.31\.',
+	'mib-2/atmMIB'			=> '^1\.3\.6\.1\.2\.1\.37\.',
+	'mib-2/printmib'		=> '^1\.3\.6\.1\.2\.1\.43\.',
+	'mib-2/entityMIB'		=> '^1\.3\.6\.1\.2\.1\.47\.',
+	'mib-2/ipv6MIB'			=> '^1\.3\.6\.1\.2\.1\.55\.',
+	'mib-2/schedMIB'		=> '^1\.3\.6\.1\.2\.1\.63\.',
+	'mib-2/scriptMIB'		=> '^1\.3\.6\.1\.2\.1\.64\.',
+	'mib-2/*'			=> '^1\.3\.6\.1\.2\.1\.',
+
+	'experimental/*'		=> '^1\.3\.6\.1\.3\.',
+
+	'enterprises/cisco'		=> '^1\.3\.6\.1\.4\.1\.9\.',
+	'enterprises/hp'		=> '^1\.3\.6\.1\.4\.1\.11\.',
+	'enterprises/3com'		=> '^1\.3\.6\.1\.4\.1\.43\.',
+	'enterprises/dlink'		=> '^1\.3\.6\.1\.4\.1\.171\.',
+	'enterprises/ucd-snmp'		=> '^1\.3\.6\.1\.4\.1\.2021\.',
+	'enterprises/nortel'		=> '^1\.3\.6\.1\.4\.1\.2272\.',
+	'enterprises/net-snmp'		=> '^1\.3\.6\.1\.4\.1\.8072\.',
+	'enterprises/*'			=> '^1\.3\.6\.1\.4\.1\.',
+
+	'ietf/snmpv2'			=> '^1\.3\.6\.1\.6\.'
+);
+
 
 sub meta {
     my $aref = shift;
@@ -203,11 +250,7 @@ sub basic_print {
 }
 
 #
-# transmission  1.3.6.1.2.1.10
-# mib-2		1.3.6.1.2.1
-# experimental	1.3.6.1.3
-# enterprises	1.3.6.1.4.1
-# snmpV2	1.3.6.1.6
+#
 #
 sub oid
 {
@@ -216,7 +259,46 @@ sub oid
     my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
     for (my $i = 0; $i < $varbind_count; $i++) {
         my $oid =  ${$aref}[12 + 3*$i];
+        my $b = 0; my $last;
+        foreach my $name (@oid_subtrees) {
+            if ($b % 2) {
+		if ($oid =~ /$name/) {
+		    # printf("oid %s belongs to %s\n", $oid, $last);
+		    if ($last =~ /\*$/) {
+			$oid =~ s/$name//;
+			my @a = split('\.', $oid);
+			$last =~ s/\*/$a[0]/;
+		    }
+		    $oid_stats{$last}++;
+		    return;
+		}
+            }
+	    $last = $name;
+            $b++;
+        }
     }
+}
+
+#
+#
+#
+sub oid_print
+{
+    my $total = shift;
+    my $sum = 0;
+    printf("\n" .
+	   "# The following table shows a rough classification of the OIDs\n" .
+	   "# according to their prefix.\n" .
+	   "\n");
+    printf("%-22s %15s\n", "SUBTREE", "NUMBER");
+    foreach my $name (sort {$oid_stats{$b} <=> $oid_stats{$a}}
+			    (keys %oid_stats)) {
+	printf("%-22s %11d %5.1f%%\n", $name, $oid_stats{$name},
+	       $oid_stats{$name}*100/$total);
+	$sum += $oid_stats{$name};
+    }
+    printf("%-22s %11d %5.1f%%\n", "unknown", $total-$sum, 
+	   ($total-$sum)*100/$total);
 }
 
 #
@@ -267,4 +349,5 @@ while ($ARGV = shift) {
 }
 meta_print($total);
 basic_print($total);
+oid_print($total);
 exit(0);
