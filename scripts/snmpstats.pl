@@ -41,56 +41,70 @@ my $start = time();
 # important - longer prefixes must be matched before shorter onces.
 
 my %oid_stats;
+my $oid_total = 0;
 my @oid_subtrees = (
-	'transmission/dot3'		=> '^1\.3\.6\.1\.2\.1\.10\.7\.',
-	'transmission/isdnMib'		=> '^1\.3\.6\.1\.2\.1\.10\.20\.',
-	'transmission/etherMIB'		=> '^1\.3\.6\.1\.2\.1\.10\.35\.',
-	'transmission/rs232'		=> '^1\.3\.6\.1\.2\.1\.10\.33\.',
-	'transmission/sonetMIB'		=> '^1\.3\.6\.1\.2\.1\.10\.39\.',
-	'transmission/tunnelMIB'	=> '^1\.3\.6\.1\.2\.1\.10\.131\.',
-	'transmission/*'		=> '^1\.3\.6\.1\.2\.1\.10\.',
+);
 
-	'mib-2/system'			=> '^1\.3\.6\.1\.2\.1\.1\.',
-        'mib-2/interfaces'		=> '^1\.3\.6\.1\.2\.1\.2\.',
-	'mib-2/at'			=> '^1\.3\.6\.1\.2\.1\.3\.',
-	'mib-2/ip'			=> '^1\.3\.6\.1\.2\.1\.4\.',
-	'mib-2/tcp'			=> '^1\.3\.6\.1\.2\.1\.6\.',
-	'mib-2/udp'			=> '^1\.3\.6\.1\.2\.1\.7\.',
-	'mib-2/snmp'			=> '^1\.3\.6\.1\.2\.1\.11\.',
-	'mib-2/ospf'			=> '^1\.3\.6\.1\.2\.1\.14\.',
-	'mib-2/bgp'			=> '^1\.3\.6\.1\.2\.1\.15\.',
-	'mib-2/dot1dBridge'		=> '^1\.3\.6\.1\.2\.1\.17\.',
-	'mib-2/ipForward'		=> '^1\.3\.6\.1\.2\.1\.24\.',
-	'mib-2/host'			=> '^1\.3\.6\.1\.2\.1\.25\.',
-	'mib-2/snmpDot3MauMgt'		=> '^1\.3\.6\.1\.2\.1\.26\.',
-	'mib-2/ifMIB'			=> '^1\.3\.6\.1\.2\.1\.31\.',
-	'mib-2/upsMIB'			=> '^1\.3\.6\.1\.2\.1\.33\.',
-	'mib-2/atmMIB'			=> '^1\.3\.6\.1\.2\.1\.37\.',
-	'mib-2/printmib'		=> '^1\.3\.6\.1\.2\.1\.43\.',
-	'mib-2/entityMIB'		=> '^1\.3\.6\.1\.2\.1\.47\.',
-	'mib-2/ipv6MIB'			=> '^1\.3\.6\.1\.2\.1\.55\.',
-	'mib-2/schedMIB'		=> '^1\.3\.6\.1\.2\.1\.63\.',
-	'mib-2/scriptMIB'		=> '^1\.3\.6\.1\.2\.1\.64\.',
-	'mib-2/radiusMIB'		=> '^1\.3\.6\.1\.2\.1\.67\.',
-	'mib-2/*'			=> '^1\.3\.6\.1\.2\.1\.',
+my %oid_transmission = (			# 1.3.6.1.2.1.10
+        '7'	=> 'transmission/dot3',
+       '20'	=> 'transmission/isdnMib',
+       '35'	=> 'transmission/etherMIB',
+       '33'	=> 'transmission/rs232',
+       '39'	=> 'transmission/sonetMIB',
+      '131'	=> 'transmission/tunnelMIB'
+);
 
-	'experimental/ipMRouteMIB'	=> '^1\.3\.6\.1\.3\.60\.',
-	'experimental/*'		=> '^1\.3\.6\.1\.3\.',
+my %oid_mib2 = (				# 1.3.6.1.2.1
+        1	=> 'mib-2/system',
+        2       => 'mib-2/interfaces',
+        3	=> 'mib-2/at',
+        4	=> 'mib-2/ip',
+        6	=> 'mib-2/tcp',
+        7	=> 'mib-2/udp',
+       11	=> 'mib-2/snmp',
+       14	=> 'mib-2/ospf',
+       15	=> 'mib-2/bgp',
+       17	=> 'mib-2/dot1dBridge',
+       24	=> 'mib-2/ipForward',
+       25	=> 'mib-2/host',
+       26	=> 'mib-2/snmpDot3MauMgt',
+       31	=> 'mib-2/ifMIB',
+       33	=> 'mib-2/upsMIB',
+       37	=> 'mib-2/atmMIB',
+       43	=> 'mib-2/printmib',
+       47	=> 'mib-2/entityMIB',
+       55	=> 'mib-2/ipv6MIB',
+       63	=> 'mib-2/schedMIB',
+       64	=> 'mib-2/scriptMIB',
+       67	=> 'mib-2/radiusMIB'
+);
 
-	'enterprises/cisco'		=> '^1\.3\.6\.1\.4\.1\.9\.',
-	'enterprises/hp'		=> '^1\.3\.6\.1\.4\.1\.11\.',
-	'enterprises/3com'		=> '^1\.3\.6\.1\.4\.1\.43\.',
-	'enterprises/dlink'		=> '^1\.3\.6\.1\.4\.1\.171\.',
-	'enterprises/ucd-snmp'		=> '^1\.3\.6\.1\.4\.1\.2021\.',
-	'enterprises/nortel'		=> '^1\.3\.6\.1\.4\.1\.2272\.',
-	'enterprises/osicom'		=> '^1\.3\.6\.1\.4\.1\.2522\.',
-	'enterprises/kpc'		=> '^1\.3\.6\.1\.4\.1\.3854\.',
-	'enterprises/centerpoint'	=> '^1\.3\.6\.1\.4\.1\.4714\.',
-	'enterprises/net-snmp'		=> '^1\.3\.6\.1\.4\.1\.8072\.',
-	'enterprises/alvarion'		=> '^1\.3\.6\.1\.4\.1\.12394\.',
-	'enterprises/*'			=> '^1\.3\.6\.1\.4\.1\.',
+my %oid_experimental = (			# 1.3.6.1.3
+       60	=> 'experimental/ipMRouteMIB'
+);
 
-	'ietf/snmpv2'			=> '^1\.3\.6\.1\.6\.'
+my %oid_enterprises = (				# 1.3.6.1.4.1
+        9	=> 'enterprises/cisco',
+       11	=> 'enterprises/hp',
+       43	=> 'enterprises/3com',
+      171	=> 'enterprises/dlink',
+     2021	=> 'enterprises/ucd-snmp',
+     2272	=> 'enterprises/nortel',
+     2522	=> 'enterprises/osicom',
+     3854	=> 'enterprises/kpc',
+     4714	=> 'enterprises/centerpoint',
+     8072	=> 'enterprises/net-snmp',
+    12394	=> 'enterprises/alvarion'
+);
+
+my %oid_snmpModules = (				# 1.3.6.1.6.3
+       10	=> 'snmpModules/snmpFrameworkMIB',
+       11	=> 'snmpModules/snmpMPDMIB',
+       12	=> 'snmpModules/snmpTargetMIB',
+       13	=> 'snmpModules/snmpNotificationMIB',
+       14	=> 'snmpModules/snmpProxyMIB',
+       15	=> 'snmpModules/snmpUsmMIB',
+       16       => 'snmpModules/snmpVacmMIB'
 );
 
 
@@ -266,25 +280,50 @@ sub oid
     my $aref = shift;
     my $op = ${$aref}[7];             # snmp operation
     my $varbind_count = ${$aref}[11]; # number of varbinds in this packet
+    my $name;
     for (my $i = 0; $i < $varbind_count; $i++) {
-        my $oid =  ${$aref}[12 + 3*$i];
-        my $b = 0; my $last;
-        foreach my $name (@oid_subtrees) {
-            if ($b % 2) {
-		if ($oid =~ /$name/) {
-		    # printf("oid %s belongs to %s\n", $oid, $last);
-		    if ($last =~ /\*$/) {
-			$oid =~ s/$name//;
-			my @a = split('\.', $oid);
-			$last =~ s/\*/$a[0]/;
-		    }
-		    $oid_stats{$last}++;
-		    return;
-		}
-            }
-	    $last = $name;
-            $b++;
-        }
+        my $oid = ${$aref}[12 + 3*$i];
+        my @o = split('\.', $oid);
+        if ($oid =~ /^1\.3\.6\.1\.2\.1\.10\./) {
+            my $subid = $o[7];
+            if (exists($oid_transmission{$subid})) {
+		$name = $oid_transmission{$subid};
+	    } else {
+		$name = "transmission/$subid";
+	    }
+        } elsif ($oid =~ /^1\.3\.6\.1\.2\.1\./) {
+            my $subid = $o[6];
+            if (exists($oid_mib2{$subid})) {
+		$name = $oid_mib2{$subid};
+	    } else {
+		$name = "mib-2/$subid";
+	    }
+        } elsif ($oid =~ /^1\.3\.6\.1\.3\./) {
+            my $subid = $o[5];
+            if (exists($oid_experimental{$subid})) {
+		$name = $oid_experimental{$subid};
+	    } else {
+		$name = "experimental/$subid";
+	    }
+	} elsif ($oid =~ /^1\.3\.6\.1\.4\.1\./) {
+            my $subid = $o[6];
+            if (exists($oid_enterprises{$subid})) {
+		$name = $oid_enterprises{$subid};
+	    } else {
+		$name = "enterprises/$subid";
+	    }
+	} elsif ($oid =~ /^1\.3\.6\.1\.6\.3\./) {
+            my $subid = $o[6];
+            if (exists($oid_snmpModules{$subid})) {
+		$name = $oid_snmpModules{$subid};
+	    } else {
+		$name = "snmpModules/$subid";
+	    }
+	} else {
+            $name = "unknown";
+	}
+        $oid_stats{$op}{$name}++;
+        $oid_total++;
     }
 }
 
@@ -293,21 +332,25 @@ sub oid
 #
 sub oid_print
 {
-    my $total = shift;
-    my $sum = 0;
+    return unless $oid_total;
     printf("\n" .
-	   "# The following table shows a rough classification of the OIDs\n" .
+	   "# The following table shows a rough classification of OIDs\n" .
 	   "# according to their prefix.\n" .
 	   "\n");
-    printf("%-22s %15s\n", "SUBTREE", "NUMBER");
-    foreach my $name (sort {$oid_stats{$b} <=> $oid_stats{$a}}
-			    (keys %oid_stats)) {
-	printf("%-22s %11d %5.1f%%\n", $name, $oid_stats{$name},
-	       $oid_stats{$name}*100/$total);
-	$sum += $oid_stats{$name};
+    printf("%-18s  %-32s %15s\n", "OPERATIONS", "SUBTREE", "NUMBER");
+    foreach my $op (@snmp_ops) {
+	foreach my $name (sort {$oid_stats{$op}{$b} <=> $oid_stats{$op}{$a}}
+			  (keys %{$oid_stats{$op}})) {
+	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", $name, 
+		   $oid_stats{$op}{$name},
+		   $oid_stats{$op}{$name}*100/$oid_total);
+	}
+	if ($oid_stats{$op}{"unknown"}) {
+	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", "unknown", 
+		   $oid_stats{$op}{"unknown"},
+		   $oid_stats{$op}{"unknown"}*100/$oid_total);
+	}
     }
-    printf("%-22s %11d %5.1f%%\n", "unknown", $total-$sum, 
-	   ($total-$sum)*100/$total);
 }
 
 #
