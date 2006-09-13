@@ -16,11 +16,6 @@ compressed input files.
   a table indicating the duration of the flows as well as the number
   of messages and bytes exchanged in the various flows.
 
-* snmpbulkstats.pl
-
-  Reads CSV input files and computes the get-bulk parameters. This
-  script perhaps should be merged with snmpstats.pl. [xxx]
-
 * snmpwalks.pl
 
   Reads CSV input files and extracts information about walks found
@@ -28,11 +23,9 @@ compressed input files.
 
 * snmpoidstats.pl
 
-  [xxx]
-
-* snmpobjectstat.pl
-
-  [xxx]
+  Reads CSV input files and extracts information about the objects
+  used in the traces. This scripts requires access to SMI object
+  which are passed via the -m option in smidump -f identifiers format.
 
 The following scripts post-process the output of the basic scripts
 described above:
@@ -45,7 +38,7 @@ How the scripts may play together:
 
   foo.csv --> snmpstats.pl --> "summary data"
 
-  foo.csv --> snmpoidstats.pld --> snmpobjectstat.pl --> "object/module usage data"
+  foo.csv --> snmpoidstats.pld --> "object/module usage data"
 
   [xxx]
 
