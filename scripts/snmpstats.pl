@@ -33,6 +33,8 @@ my %basic_errs_max;
 my %basic_nvbs;
 my %basic_nvbs_max;
 my %basic_size;
+my %basic_bulk;
+my $basic_bulk_total = 0;
 
 my $total = 0;
 my $start = time();
@@ -84,6 +86,8 @@ my %oid_experimental = (			# 1.3.6.1.3
 );
 
 my %oid_enterprises = (				# 1.3.6.1.4.1
+        2	=> 'enterprises/ibm',
+        4	=> 'enterprises/unix',
         9	=> 'enterprises/cisco',
        11	=> 'enterprises/hp',
        43	=> 'enterprises/3com',
@@ -136,7 +140,6 @@ sub meta {
 	    printf("oouch\n");
         }
     }
-
 }
 
 sub meta_print {
@@ -183,6 +186,7 @@ sub basic {
     my $version = ${$aref}[6];
     my $op = ${$aref}[7];
     my $err = ${$aref}[9];
+    my $ind = ${$aref}[10];
     if ($err > $basic_errs_max{$op}) {
 	$basic_errs_max{$op} = $err;
     }
@@ -195,6 +199,10 @@ sub basic {
     $basic_errs{"$op,$err"}++;
     $basic_nvbs{"$op,$nvbs"}++;
     $basic_size{$op}{$size}++;
+    if ($op eq "get-bulk-request") {
+	$basic_bulk{"$err,$ind,$nvbs"}++;
+	$basic_bulk_total++;
+    }
 }
 
 sub basic_print {
@@ -254,6 +262,19 @@ sub basic_print {
 		       $basic_errs{"$op,$i"}*100/$total);
 	    }
 	}
+    }
+
+    printf("\n" .
+	   "# The following table shows the distribution of the parameters\n" .
+	   "# of getbulk requests.\n" .
+	   "\n");
+    printf("%-18s  %8s %8s %8s %16s\n", 
+	   "OPERATION", "NON-REP", "MAX-REP", "VARBINDS", "NUMBER");
+    foreach my $name (keys %basic_bulk) {
+	my ($nonrep, $maxrep, $nvbs) = split(/,/, $name);
+	printf("%-18s  %8d %8d %8d %12d %5.1f%%\n", 
+	       "getbulk:", $nonrep, $maxrep, $nvbs, 
+	       $basic_bulk{$name}, $basic_bulk{$name}*100/$basic_bulk_total);
     }
 
     printf("\n" .
