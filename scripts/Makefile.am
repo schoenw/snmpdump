@@ -8,15 +8,21 @@ EXTRA_DIST		= mib-identifiers.txt \
 			  snmpwalks.pl 
 
 MIBS = RFC1213-MIB \
-	SNMPv2-MIB IF-MIB IP-MIB IP-FORWARD-MIB UDP-MIB TCP-MIB \
+	SNMPv2-MIB IF-MIB IP-MIB IP-FORWARD-MIB UDP-MIB TCP-MIB TUNNEL-MIB \
 	SNMP-FRAMEWORK-MIB SNMP-VIEW-BASED-ACM-MIB \
 	SNMP-TARGET-MIB SNMP-NOTIFICATION-MIB \
 	SNMP-COMMUNITY-MIB SNMP-USER-BASED-SM-MIB \
 	HOST-RESOURCES-MIB Printer-MIB \
 	ENTITY-MIB \
-	EtherLike-MIB MAU-MIB BRIDGE-MIB
+	EtherLike-MIB MAU-MIB BRIDGE-MIB Q-BRIDGE-MIB \
+	IPV6-MIB \
+	RADIUS-ACC-CLIENT-MIB RADIUS-ACC-SERVER-MIB \
+	RADIUS-AUTH-CLIENT-MIB RADIUS-AUTH-SERVER-MIB \
+	ATM-MIB ATM2-MIB ATM-ACCOUNTING-INFORMATION-MIB \
+	UCD-SNMP-MIB NET-SNMP-MIB \
+	ALVR-BA-LB
 
 mib-identifiers.txt:	
-	@for f in "$(MIBS)" ; do \
-	    smidump -f identifiers $$f | egrep -v "(group)|(compliance)" >> mib-identifiers.txt
+	@for f in $(MIBS) ; do \
+	    smidump -k -f identifiers $$f | egrep -v "(group)|(compliance)" >> mib-identifiers.txt; \
 	done

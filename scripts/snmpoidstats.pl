@@ -81,11 +81,12 @@ sub oid_aggregate {
 		(sort {$oid_pref_count{$op}{$b} <=> $oid_pref_count{$op}{$a}}
 		 (keys %{$oid_pref_count{$op}}) )
 	    {
-		printf("%-18s %-30s %8d %5.1f\% (%s)\n", 
+		printf("%-18s %-30s %8d %5.1f\% (%s::%s)\n", 
 		       $op,
 		       $oid, 
 		       $oid_pref_count{$op}{$oid},
 		       $oid_pref_count{$op}{$oid} / $oid_total * 100,
+		       $oid_module{$oid},
 		       $oid_name{$oid});
 	    }
 	}
@@ -107,8 +108,10 @@ sub oid_aggregate {
 				   <=> $oid_unidentified{$op}{$a}}
 			     (keys %{$oid_unidentified{$op}}) ) {
 		printf("%-18s %-50s  %10d %5.1f\%\n",
-		       $op, $oid, $oid_unidentified{$op}{$oid},
-		       $oid_count{$op}{$oid}*100/$oid_total);
+		       $op,
+		       $oid,
+		       $oid_unidentified{$op}{$oid},
+		       $oid_unidentified{$op}{$oid} / $oid_total * 100);
 	    }
 	}
     }
