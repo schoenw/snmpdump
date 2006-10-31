@@ -192,7 +192,30 @@ sub process_line {
 			$k++;
 			my $walk = $walks_open->{$key}[$j];
 			# determine if this walk is OK:
-			if ((($p_type eq "req" && $walk->{'op'} eq $op && $walk->{'request_id'} eq "") || ($p_type eq "res" && $walk->{'request_id'} eq $request_id)) && $walk->{'vbc'} eq $vbc) {
+			if ((($p_type eq "req" && $walk->{'op'} eq $op) || ($p_type eq "res" && $walk->{'request_id'} eq $request_id)) && $walk->{'vbc'} eq $vbc) {
+				# if this is a request packet and the walk we are looking at now 
+				# is a match, but we are actually waiting for a response packet in
+				# this walk, maybe this is a retransmission (it must have all OIDs
+				# equal to the last OIDs seen in this walk):
+				if ($p_type eq "req" && $walk->{'request_id'} ne "") {
+					my $all_equal = 1;
+					for (my $i = 0; $i < $vbc; $i++) {
+						my $oid = $line[12 + 3*$i];
+						my $last_oid_req = $walk->{'last_oids_req'}[$i];
+						$oid =~ s/\.0$//;
+						if (oidcmp($oid, $last_oid_req)) {
+							#print "\nRequest packet seemed like retransmission...\n";
+							$all_equal = 0;
+							next WALKS;
+						}
+					}
+					# we got a retransmission:
+					if ($all_equal) {
+						print "\nWe got a retransmission...\n";
+						return;
+					}
+				}
+
 				my $strict = 0;
 				my $prefix_constrained = 0;
 
@@ -410,7 +433,6 @@ sub process_file {
 	close_walks(1);
 	print "\n";
 	print scalar localtime(), "\n";
-	print $total_walks, "\n";
 }
 
 #
