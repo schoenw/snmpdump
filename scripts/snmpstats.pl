@@ -66,6 +66,7 @@ my %oid_mib2 = (				# 1.3.6.1.2.1
        11	=> 'mib-2/snmp',
        14	=> 'mib-2/ospf',
        15	=> 'mib-2/bgp',
+       16	=> 'mib-2/bgp',
        17	=> 'mib-2/dot1dBridge',
        24	=> 'mib-2/ipForward',
        25	=> 'mib-2/host',
