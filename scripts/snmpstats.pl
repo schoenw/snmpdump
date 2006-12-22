@@ -49,9 +49,13 @@ my @oid_subtrees = (
 
 my %oid_transmission = (			# 1.3.6.1.2.1.10
         '7'	=> 'transmission/dot3',
+       '15'	=> 'transmission/fddi',
+       '18'	=> 'transmission/ds1',
        '20'	=> 'transmission/isdnMib',
-       '35'	=> 'transmission/etherMIB',
+       '21'	=> 'transmission/dialControlMib',
+       '32'	=> 'frameRelayDTE',
        '33'	=> 'transmission/rs232',
+       '35'	=> 'transmission/etherMIB',
        '39'	=> 'transmission/sonetMIB',
       '131'	=> 'transmission/tunnelMIB'
 );
@@ -61,12 +65,13 @@ my %oid_mib2 = (				# 1.3.6.1.2.1
         2       => 'mib-2/interfaces',
         3	=> 'mib-2/at',
         4	=> 'mib-2/ip',
+        5	=> 'mib-2/icmp',
         6	=> 'mib-2/tcp',
         7	=> 'mib-2/udp',
        11	=> 'mib-2/snmp',
        14	=> 'mib-2/ospf',
        15	=> 'mib-2/bgp',
-       16	=> 'mib-2/bgp',
+       16	=> 'mib-2/rmon',
        17	=> 'mib-2/dot1dBridge',
        24	=> 'mib-2/ipForward',
        25	=> 'mib-2/host',
@@ -76,6 +81,7 @@ my %oid_mib2 = (				# 1.3.6.1.2.1
        37	=> 'mib-2/atmMIB',
        43	=> 'mib-2/printmib',
        47	=> 'mib-2/entityMIB',
+       51	=> 'mib-2/rsvp',
        55	=> 'mib-2/ipv6MIB',
        63	=> 'mib-2/schedMIB',
        64	=> 'mib-2/scriptMIB',
@@ -91,11 +97,15 @@ my %oid_enterprises = (				# 1.3.6.1.4.1
         4	=> 'enterprises/unix',
         9	=> 'enterprises/cisco',
        11	=> 'enterprises/hp',
+       32	=> 'enterprises/novell',
        43	=> 'enterprises/3com',
       171	=> 'enterprises/dlink',
+      522	=> 'enterprises/telesystems',
      2021	=> 'enterprises/ucd-snmp',
      2272	=> 'enterprises/nortel',
      2522	=> 'enterprises/osicom',
+     2606	=> 'enterprises/rittal',
+     3076	=> 'enterprises/altiga',
      3854	=> 'enterprises/kpc',
      4714	=> 'enterprises/centerpoint',
      8072	=> 'enterprises/net-snmp',
@@ -381,7 +391,9 @@ sub oid_print
 sub process {
     my $file = shift;
     if ($file =~ /\.g|Gz|Z$/) {
-	open(infile, "zcat $file |") or die "$0: Cannot open $file: $!\n"
+	open(infile, "zcat $file |") or die "$0: Cannot open $file: $!\n";
+    } elsif ($file =~ /\.bz2$/) {
+	open(infile, "bzcat $file |") or die "$0: Cannot open $file: $!\n";
     } else {
 	open(infile, "<$file") or die "$0: Cannot open $file: $!\n";
     }
