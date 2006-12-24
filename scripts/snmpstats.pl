@@ -57,6 +57,7 @@ my %oid_transmission = (			# 1.3.6.1.2.1.10
        '33'	=> 'transmission/rs232',
        '35'	=> 'transmission/etherMIB',
        '39'	=> 'transmission/sonetMIB',
+       '94'	=> 'transmission/adslMIB',
       '131'	=> 'transmission/tunnelMIB'
 );
 
@@ -79,13 +80,20 @@ my %oid_mib2 = (				# 1.3.6.1.2.1
        31	=> 'mib-2/ifMIB',
        33	=> 'mib-2/upsMIB',
        37	=> 'mib-2/atmMIB',
+       39	=> 'mib-2/rdbmsMIB',
        43	=> 'mib-2/printmib',
+       44	=> 'mib-2/mipMIB',
+       46	=> 'mib-2/dlsw',
        47	=> 'mib-2/entityMIB',
        51	=> 'mib-2/rsvp',
        55	=> 'mib-2/ipv6MIB',
+       60	=> 'mib-2/accountingControlMIB',
+       62	=> 'mib-2/applicationMib',
        63	=> 'mib-2/schedMIB',
        64	=> 'mib-2/scriptMIB',
-       67	=> 'mib-2/radiusMIB'
+       67	=> 'mib-2/radiusMIB',
+       68	=> 'mib-2/vrrpMIB',
+       80	=> 'mib-2/pingMIB'
 );
 
 my %oid_experimental = (			# 1.3.6.1.3

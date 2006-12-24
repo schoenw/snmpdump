@@ -2,7 +2,7 @@
 #
 # This script identifies regular intervals at which packets are sent. It is
 # useful to consider logical operations rather than single packets to get an
-# overview of when regula polling intervals. Hence, it makes sense to use as
+# overview of regular polling intervals. Hence, it makes sense to use as
 # input a CSV SNMP packet trace files containing only packets starting
 # interactions (produces with snmpwalks.pl -s).
 #
