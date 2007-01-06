@@ -121,13 +121,16 @@ my %oid_enterprises = (				# 1.3.6.1.4.1
 );
 
 my %oid_snmpModules = (				# 1.3.6.1.6.3
+        1	=> 'snmpModules/snmpMIB',
        10	=> 'snmpModules/snmpFrameworkMIB',
        11	=> 'snmpModules/snmpMPDMIB',
        12	=> 'snmpModules/snmpTargetMIB',
        13	=> 'snmpModules/snmpNotificationMIB',
        14	=> 'snmpModules/snmpProxyMIB',
        15	=> 'snmpModules/snmpUsmMIB',
-       16       => 'snmpModules/snmpVacmMIB'
+       16       => 'snmpModules/snmpVacmMIB',
+       18	=> 'snmpModules/snmpCommunityMIB',
+       19	=> 'snmpModules/snmpv2tm'
 );
 
 
@@ -221,6 +224,11 @@ sub basic {
     if ($op eq "get-bulk-request") {
 	$basic_bulk{"$err,$ind,$nvbs"}++;
 	$basic_bulk_total++;
+    }
+    if ($op ~= /inform|trap|trap2/) {
+	$uptime = ${$aref}[14];
+	$trap = ${$aref}[17];
+	printf("** %s: uptime: %s trap: %s\n", $op, $uptime, $trap);
     }
 }
 
