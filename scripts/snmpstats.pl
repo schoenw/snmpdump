@@ -114,6 +114,7 @@ my %oid_enterprises = (				# 1.3.6.1.4.1
        43	=> 'enterprises/3com',
       171	=> 'enterprises/dlink',
       522	=> 'enterprises/telesystems',
+      588	=> 'enterprises/xircom',
      2021	=> 'enterprises/ucd-snmp',
      2272	=> 'enterprises/nortel',
      2522	=> 'enterprises/osicom',
@@ -137,6 +138,10 @@ my %oid_snmpModules = (				# 1.3.6.1.6.3
        16       => 'snmpModules/snmpVacmMIB',
        18	=> 'snmpModules/snmpCommunityMIB',
        19	=> 'snmpModules/snmpv2tm'
+);
+
+my %oid_ieee802dot1mibs = (			# 1.0.8802.1.1
+        1       => 'ieee802dot1mibs/ieee8021paeMIB'
 );
 
 
@@ -178,6 +183,13 @@ sub subtree {
 	    $name = $oid_snmpModules{$subid};
 	} else {
 	    $name = "snmpModules/$subid";
+	}
+    } elsif ($oid =~ /^1.0.8802.1.1/) {
+	my $subid = $o[5];
+	if (exists($oid_ieee802dot1mibs{$subid})) {
+	    $name = $oid_ieee802dot1mibs{$subid};
+	} else {
+	    $name = "ieee802dot1mibs/$subid";
 	}
     } else {
 	$name = "unknown";
