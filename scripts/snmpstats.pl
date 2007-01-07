@@ -37,6 +37,7 @@ my %basic_bulk;
 my $basic_bulk_total = 0;
 my %basic_notifications;
 my $basic_notifications_total = 0;
+my %basic_notification_classes;
 
 my $total = 0;
 my $start = time();
@@ -139,6 +140,52 @@ my %oid_snmpModules = (				# 1.3.6.1.6.3
 );
 
 
+sub subtree {
+    my $oid = shift;
+    my $name = "";
+    my @o = split('\.', $oid);
+    if ($oid =~ /^1\.3\.6\.1\.2\.1\.10\./) {
+	my $subid = $o[7];
+	if (exists($oid_transmission{$subid})) {
+	    $name = $oid_transmission{$subid};
+	} else {
+	    $name = "transmission/$subid";
+	}
+    } elsif ($oid =~ /^1\.3\.6\.1\.2\.1\./) {
+	my $subid = $o[6];
+	if (exists($oid_mib2{$subid})) {
+	    $name = $oid_mib2{$subid};
+	} else {
+	    $name = "mib-2/$subid";
+	}
+    } elsif ($oid =~ /^1\.3\.6\.1\.3\./) {
+	my $subid = $o[5];
+	if (exists($oid_experimental{$subid})) {
+	    $name = $oid_experimental{$subid};
+	} else {
+	    $name = "experimental/$subid";
+	}
+    } elsif ($oid =~ /^1\.3\.6\.1\.4\.1\./) {
+	my $subid = $o[6];
+	if (exists($oid_enterprises{$subid})) {
+	    $name = $oid_enterprises{$subid};
+	} else {
+	    $name = "enterprises/$subid";
+	}
+    } elsif ($oid =~ /^1\.3\.6\.1\.6\.3\./) {
+	my $subid = $o[6];
+	if (exists($oid_snmpModules{$subid})) {
+	    $name = $oid_snmpModules{$subid};
+	} else {
+	    $name = "snmpModules/$subid";
+	}
+    } else {
+	$name = "unknown";
+    }
+    return $name;
+}
+
+
 sub meta {
     my $aref = shift;
     my $secs = ${$aref}[0];
@@ -236,7 +283,9 @@ sub basic {
             && ${$aref}[15] eq "1.3.6.1.6.3.1.1.4.1.0") {
     	    my $uptime = ${$aref}[14];
 	    my $trap = ${$aref}[17];
+            my $name = subtree($trap);
             $basic_notifications{$op}{$trap}++;
+            $basic_notification_classes{$op}{$name}++
         } else {
             $basic_notifications{$op}{""}++;
         }
@@ -317,8 +366,8 @@ sub basic_print {
     }
 
     printf("\n" .
-	   "# The following table shows the distribution of the types of\n" .
-	   "# notifications.\n" .
+	   "# The following table shows the distribution of notifications\n" .
+	   "# types.\n" .
 	   "\n");
     printf("%-12s  %-36s %16s\n", 
 	   "NOTIFICATION", "OID", "NUMBER");
@@ -328,6 +377,21 @@ sub basic_print {
 		   "$op:", $oid,
 		   $basic_notifications{$op}{$oid}, 
 		   $basic_notifications{$op}{$oid}*100/$basic_notifications_total);
+	}
+    }
+    
+    printf("\n" .
+	   "# The following table shows the distribution of notification\n" .
+	   "# types.\n" .
+	   "\n");
+    printf("%-12s  %-32s %16s\n", 
+	   "NOTIFICATION", "SUBTREE", "NUMBER");
+    foreach my $op (@snmp_ops) {
+	foreach my $oid (sort {$a <=> $b} (keys %{$basic_notification_classes{$op}})) {
+	    printf("%-12s  %-32s %12d %5.1f%%\n", 
+		   "$op:", $oid,
+		   $basic_notification_classes{$op}{$oid}, 
+		   $basic_notification_classes{$op}{$oid}*100/$basic_notifications_total);
 	}
     }
     
@@ -358,45 +422,7 @@ sub oid
     my $name;
     for (my $i = 0; $i < $varbind_count; $i++) {
         my $oid = ${$aref}[12 + 3*$i];
-        my @o = split('\.', $oid);
-        if ($oid =~ /^1\.3\.6\.1\.2\.1\.10\./) {
-            my $subid = $o[7];
-            if (exists($oid_transmission{$subid})) {
-		$name = $oid_transmission{$subid};
-	    } else {
-		$name = "transmission/$subid";
-	    }
-        } elsif ($oid =~ /^1\.3\.6\.1\.2\.1\./) {
-            my $subid = $o[6];
-            if (exists($oid_mib2{$subid})) {
-		$name = $oid_mib2{$subid};
-	    } else {
-		$name = "mib-2/$subid";
-	    }
-        } elsif ($oid =~ /^1\.3\.6\.1\.3\./) {
-            my $subid = $o[5];
-            if (exists($oid_experimental{$subid})) {
-		$name = $oid_experimental{$subid};
-	    } else {
-		$name = "experimental/$subid";
-	    }
-	} elsif ($oid =~ /^1\.3\.6\.1\.4\.1\./) {
-            my $subid = $o[6];
-            if (exists($oid_enterprises{$subid})) {
-		$name = $oid_enterprises{$subid};
-	    } else {
-		$name = "enterprises/$subid";
-	    }
-	} elsif ($oid =~ /^1\.3\.6\.1\.6\.3\./) {
-            my $subid = $o[6];
-            if (exists($oid_snmpModules{$subid})) {
-		$name = $oid_snmpModules{$subid};
-	    } else {
-		$name = "snmpModules/$subid";
-	    }
-	} else {
-            $name = "unknown";
-	}
+        my $name = subtree($oid);
         $oid_stats{$op}{$name}++;
         $oid_total++;
     }
