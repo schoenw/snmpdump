@@ -35,6 +35,8 @@ my %basic_nvbs_max;
 my %basic_size;
 my %basic_bulk;
 my $basic_bulk_total = 0;
+my %basic_notifications;
+my $basic_notifications_total = 0;
 
 my $total = 0;
 my $start = time();
@@ -97,7 +99,9 @@ my %oid_mib2 = (				# 1.3.6.1.2.1
 );
 
 my %oid_experimental = (			# 1.3.6.1.3
-       60	=> 'experimental/ipMRouteMIB'
+       60	=> 'experimental/ipMRouteMIB',
+       61	=> 'experimental/pimMIB',
+       92	=> 'experimental/msdpMIB'
 );
 
 my %oid_enterprises = (				# 1.3.6.1.4.1
@@ -117,7 +121,8 @@ my %oid_enterprises = (				# 1.3.6.1.4.1
      3854	=> 'enterprises/kpc',
      4714	=> 'enterprises/centerpoint',
      8072	=> 'enterprises/net-snmp',
-    12394	=> 'enterprises/alvarion'
+    12394	=> 'enterprises/alvarion',
+    18070	=> 'enterprises/btiphotonics'
 );
 
 my %oid_snmpModules = (				# 1.3.6.1.6.3
@@ -225,10 +230,17 @@ sub basic {
 	$basic_bulk{"$err,$ind,$nvbs"}++;
 	$basic_bulk_total++;
     }
-    if ($op ~= /inform|trap|trap2/) {
-	$uptime = ${$aref}[14];
-	$trap = ${$aref}[17];
-	printf("** %s: uptime: %s trap: %s\n", $op, $uptime, $trap);
+    if ($op =~ /inform|trap|trap2/) {
+        if ($nvbs > 1 
+            && ${$aref}[12] eq "1.3.6.1.2.1.1.3.0"
+            && ${$aref}[15] eq "1.3.6.1.6.3.1.1.4.1.0") {
+    	    my $uptime = ${$aref}[14];
+	    my $trap = ${$aref}[17];
+            $basic_notifications{$op}{$trap}++;
+        } else {
+            $basic_notifications{$op}{""}++;
+        }
+        $basic_notifications_total++;
     }
 }
 
@@ -304,6 +316,21 @@ sub basic_print {
 	       $basic_bulk{$name}, $basic_bulk{$name}*100/$basic_bulk_total);
     }
 
+    printf("\n" .
+	   "# The following table shows the distribution of the types of\n" .
+	   "# notifications.\n" .
+	   "\n");
+    printf("%-12s  %-36s %16s\n", 
+	   "NOTIFICATION", "OID", "NUMBER");
+    foreach my $op (@snmp_ops) {
+	foreach my $oid (sort {$a <=> $b} (keys %{$basic_notifications{$op}})) {
+	    printf("%-12s  %-36s %12d %5.1f%%\n", 
+		   "$op:", $oid,
+		   $basic_notifications{$op}{$oid}, 
+		   $basic_notifications{$op}{$oid}*100/$basic_notifications_total);
+	}
+    }
+    
     printf("\n" .
 	   "# The following table shows the message size distribution\n" .
 	   "# broken down by operation type.\n" .
