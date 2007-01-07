@@ -141,7 +141,9 @@ my %oid_snmpModules = (				# 1.3.6.1.6.3
 );
 
 my %oid_ieee802dot1mibs = (			# 1.0.8802.1.1
-        1       => 'ieee802dot1mibs/ieee8021paeMIB'
+        1       => 'ieee802dot1mibs/ieee8021paeMIB',
+        2	=> 'ieee802dot1mibs/ieee8021lldp',
+        3	=> 'ieee802dot1mibs/ieee8021Secy'
 );
 
 
