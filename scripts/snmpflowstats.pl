@@ -23,6 +23,9 @@ my %flow_bytes;
 my %flow_msgs;
 my %flow_start;
 my %flow_end;
+my %flow_duration;
+my %flow_mpm;
+my %flow_bpm;
 
 my $start = time();
 
@@ -44,18 +47,22 @@ sub meta_print
 
 sub flow_print
 {
+    my $num = 0;
     printf("\n" .
-	   "# The following table shows basic statistics for the flows." .
+	   "# The following table shows basic statistics for the flows.\n" .
 	   "\n");
-    printf("%-25s %-25s %10s %12s %s\n",
-	   "START", "END", "MESSAGES", "BYTES", "FLOW");
-    foreach my $flow (keys %flow_msgs) {
-	printf("%-25s %-25s %10d %12d %s\n",
-	       strftime("%FT%T+0000", gmtime($flow_start{$flow})),
-	       strftime("%FT%T+0000", gmtime($flow_end{$flow})),
+    printf("%6s %10s %12s %12s %12s %12s %s\n",
+	   "NUMBER", "DURATION", "MESSAGES", "BYTES", "MSGS/MIN", "BYTES/MIN", "FLOW");
+    foreach my $flow (sort {$a cmp $b} (keys %flow_msgs)) {
+	printf("%5d  %10d %12d %12d %12f %12f %s\n",
+	       $num,
+	       $flow_duration{$flow},
 	       $flow_msgs{$flow},
 	       $flow_bytes{$flow},
+	       $flow_mpm{$flow},
+	       $flow_bpm{$flow},
 	       $flow);
+	$num++;
     }
 }
 
@@ -73,6 +80,7 @@ sub process
 	open(infile, $file) || die "$0: Cannot open $file: $!";
     }
     while (<infile>) {
+	if ($_ =~ /^(\s)*$/) { next; }
 	my @a = split(/,/, $_);
 	$flow_msgs{$name}++;
 	$flow_bytes{$name} += $a[5];
@@ -80,6 +88,11 @@ sub process
 	if ($flow_start{$name} == 0) {
 	    $flow_start{$name} = $a[0];
 	}
+    }
+    $flow_duration{$name} = $flow_end{$name}-$flow_start{$name};
+    if ($flow_duration{$name} > 120) {
+	$flow_mpm{$name} = $flow_msgs{$name}/$flow_duration{$name}*60;
+	$flow_bpm{$name} = $flow_bytes{$name}/$flow_duration{$name}*60;
     }
     close(infile);
 }
