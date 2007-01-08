@@ -40,8 +40,10 @@ typedef struct _snmp_flow {
     char		*name;
     snmp_ipaddr_t       src_addr;
     snmp_ip6addr_t      src_addr6;
+    snmp_uint32_t	src_port;
     snmp_ipaddr_t       dst_addr;
     snmp_ip6addr_t      dst_addr6;
+    snmp_uint32_t	dst_port;
     uint64_t		cnt;
     FILE		*stream;
     snmp_flow_elem	*list;
@@ -156,6 +158,18 @@ snmp_int32_equal(snmp_int32_t *a, snmp_int32_t *b)
 }
 
 /*
+ * Helper function to test whether two uint32 values are equal.
+ */
+
+static inline int
+snmp_uint32_equal(snmp_uint32_t *a, snmp_uint32_t *b)
+{
+    return (a->attr.flags & SNMP_FLAG_VALUE
+	    && b->attr.flags & SNMP_FLAG_VALUE
+	    && a->value == b->value);
+}
+
+/*
  * Compare two time stamps. This function returns a value less than 0
  * if a < b, the value 0 if a == b, and a value > 0 if a > b.
  */
@@ -250,7 +264,17 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
     for (p = list; p; p = p->next) {
 	if (snmp_int32_equal(&p->pkt->snmp.scoped_pdu.pdu.req_id,
 			     &pkt->snmp.scoped_pdu.pdu.req_id)
+	    
+	    /* xxx what about ipv6 addresses ??? */
+
+	    /* xxx if I comment out the first ip address check, things
+	     * behave very strange; we loose packets in unknown (kind
+	     * of expected, but they do not show up elsewhere and in
+	     * addition I saw an empty line in the unknown file and I
+	     * have no clue where this is coming from xxx */
+	     
 	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
+	    && snmp_uint32_equal(&p->pkt->src_port, &pkt->dst_port)
 	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)) {
 	    return p;
 	}
@@ -361,6 +385,8 @@ snmp_flow_find(snmp_packet_t *pkt)
 	    memcpy(&p->src_addr6, &pkt->src_addr6, sizeof(p->src_addr6));
 	    memcpy(&p->dst_addr6, &pkt->dst_addr6, sizeof(p->dst_addr6));
 	}
+	memcpy(&p->src_port, &pkt->src_port, sizeof(p->src_port));
+	memcpy(&p->dst_port, &pkt->dst_port, sizeof(p->dst_port));
 	p->name = snmp_flow_name(p);
 	p->next = flow_list;
 	flow_list = p;
@@ -551,7 +577,9 @@ snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt)
 	    }
 	    flow->cnt++;
 	    if (pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_RESPONSE
-		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1) {
+		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP1
+		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_TRAP2
+		&& pkt->snmp.scoped_pdu.pdu.type != SNMP_PDU_RESPONSE) {
 		snmp_cache_list = snmp_cache_add(snmp_cache_list, pkt);
 	    }
 	    open_flow_cache_add(flow);
