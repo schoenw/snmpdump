@@ -51,13 +51,21 @@ sub dot_print
 {
     printf("digraph %s {\n" .
 	   "\n" .
-	   "  label=\"%s\";\n" .
+	   "  label=\"SNMP flow graph for trace %s\";\n" .
+	   "  splines=true;\n" .
+	   "  overlap=false;\n" .
 	   "\n",
 	   $dot_name, $dot_name);
 
+    printf("  node [shape=point];\n");
+    foreach my $ip (keys %node_m) {
+	printf("  m%s [shape=circle, style=bold];\n", $node_m{$ip});
+    }
+    printf("\n");
+
     printf("  subgraph m {\n" .
 	   "\n" .
-	   "    edge [color=\"green\"];\n" .
+	   "    edge [color=\"green\", arrowsize=0.5];\n" .
 	   "\n");
     foreach my $edge (keys %edges_m) {
 	printf("    %s;\n", $edge);
@@ -66,7 +74,7 @@ sub dot_print
 
     printf("  subgraph m {\n" .
 	   "\n" .
-	   "    edge[color=\"red\",style=\"dashed\"];\n" .
+	   "    edge[color=\"red\", style=\"dashed\", arrowsize=0.5];\n" .
 	   "\n");
     foreach my $edge (keys %edges_a) {
 	printf("    %s;\n", $edge);
