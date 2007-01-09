@@ -51,9 +51,9 @@ sub dot_print
 {
     printf("digraph %s {\n" .
 	   "\n" .
-	   "  label=\"SNMP flow graph for trace %s\";\n" .
-	   "  splines=true;\n" .
-	   "  overlap=false;\n" .
+	   "  // label=\"SNMP flow graph for trace %s\";\n" .
+	   "  // splines=true;\n" .
+	   "  // overlap=false;\n" .
 	   "\n",
 	   $dot_name, $dot_name);
 
