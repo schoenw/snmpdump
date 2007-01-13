@@ -16,8 +16,6 @@ use strict;
 use POSIX qw(strftime);
 
 my $interval = 60;	# 60 seconds = 1 minute
-# my $interval = 30*60;	# 30*60=1800 seconds = 30 minutes
-# my $interval = 60*60;	# 60*60=3600 seconds = 60 minutes
 my $last = 0;
 my $bytes = 0;
 my $msgs = 0;
@@ -75,8 +73,8 @@ sub process {
 	my $x = $t - $t0;
 	if ($x >= $last + $interval) {
 	    $last = $last + $interval;
-	    $time_mpm{$last} = $msgs / $interval * 60;
-	    $time_bpm{$last} = $bytes / $interval * 60;
+	    $time_mpm{$last} = $msgs / $interval;
+	    $time_bpm{$last} = $bytes / $interval;
 	    $bytes = 0;
 	    $msgs = 0;
 	}
