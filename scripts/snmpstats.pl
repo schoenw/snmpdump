@@ -46,6 +46,7 @@ my $start = time();
 # important - longer prefixes must be matched before shorter onces.
 
 my %oid_stats;
+my %oid_types;
 my $oid_total = 0;
 my @oid_subtrees = (
 );
@@ -436,8 +437,10 @@ sub oid
     my $name;
     for (my $i = 0; $i < $varbind_count; $i++) {
         my $oid = ${$aref}[12 + 3*$i];
+        my $type = ${$aref}[13 + 3*$i];
         my $name = subtree($oid);
         $oid_stats{$op}{$name}++;
+        $oid_types{$op}{$type}++;
         $oid_total++;
     }
 }
@@ -452,7 +455,7 @@ sub oid_print
 	   "# The following table shows a rough classification of OIDs\n" .
 	   "# according to their prefix.\n" .
 	   "\n");
-    printf("%-18s  %-32s %15s\n", "OPERATIONS", "SUBTREE", "NUMBER");
+    printf("%-18s %-32s %15s\n", "OPERATIONS", "SUBTREE", "NUMBER");
     foreach my $op (@snmp_ops) {
 	foreach my $name (sort {$oid_stats{$op}{$b} <=> $oid_stats{$op}{$a}}
 			  (keys %{$oid_stats{$op}})) {
@@ -464,6 +467,25 @@ sub oid_print
 	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", "unknown", 
 		   $oid_stats{$op}{"unknown"},
 		   $oid_stats{$op}{"unknown"}*100/$oid_total);
+	}
+    }
+
+    printf("\n" .
+	   "# The following table shows a the data types used in SNMP\n" .
+	   "# operations.\n" .
+	   "\n");
+    printf("%-18s %-32s %15s\n", "OPERATIONS", "TYPE", "NUMBER");
+    foreach my $op (@snmp_ops) {
+	foreach my $type (sort {$oid_types{$op}{$b} <=> $oid_types{$op}{$a}}
+			  (keys %{$oid_types{$op}})) {
+	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", $type, 
+		   $oid_types{$op}{$type},
+		   $oid_types{$op}{$type}*100/$oid_total);
+	}
+	if ($oid_types{$op}{"unknown"}) {
+	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", "unknown", 
+		   $oid_types{$op}{"unknown"},
+		   $oid_types{$op}{"unknown"}*100/$oid_total);
 	}
     }
 }
