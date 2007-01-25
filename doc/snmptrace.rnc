@@ -1,10 +1,12 @@
 # Relax NG grammar for the XML SNMP trace format.
 #
-# Puhlished as part of RFC XXXX.
+# Published as part of RFC XXXX.
 #
 # Note that we do not use the IANA namespace registry since RFC 3688
 # seems to restrict it to IETF documents (and this specification is
 # originating from the IRTF).
+#
+# $Id$
 
 default namespace = "http://www.nosuchname.net/nmrg/snmptrace"
 
