@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<snmptrace xmlns='http://www.nosuchname.net/nmrg/snmptrace'>
+<snmptrace xmlns="http://www.nosuchname.net/nmrg/snmptrace">
   <packet>
     <time-sec>1086871533</time-sec>
     <time-usec>344045</time-usec>

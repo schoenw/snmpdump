@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<snmptrace xmlns='http://www.nosuchname.net/nmrg/snmptrace'>
+<snmptrace xmlns="http://www.nosuchname.net/nmrg/snmptrace">
   <packet>
     <time-sec>1147212206</time-sec>
     <time-usec>739609</time-usec>
@@ -40242,6 +40242,7 @@
           </varbind>
           <varbind blen="24" vlen="22">
             <name blen="13" vlen="11">1.3.6.1.4.1.2021.10.1.6.1</name>
+            <opaque blen="9" vlen="7">9f78043de147ae</opaque>
           </varbind>
           <varbind blen="17" vlen="15">
             <name blen="12" vlen="10">1.3.6.1.4.1.2021.11.1.0</name>
