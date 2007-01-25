@@ -98,6 +98,7 @@ value.elem =
   element ipaddress         { length.attrs, ipv4address.type } |
   element octet-string      { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
+  element opaque            { length.attrs, xsd:hexBinary } |
   element no-such-object    { length.attrs, empty } |
   element no-such-instance  { length.attrs, empty } |
   element end-of-mib-view   { length.attrs, empty }
