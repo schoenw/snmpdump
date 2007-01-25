@@ -397,7 +397,9 @@ snmp_xml_write_stream_pkt(FILE *stream, snmp_packet_t *pkt)
 void
 snmp_xml_write_stream_new(FILE *stream)
 {
-    fprintf(stream, "<?xml version=\"1.0\"?>\n<snmptrace>\n");
+    fprintf(stream,
+	    "<?xml version=\"1.0\"?>\n<snmptrace xmlns='%s'>\n",
+	    "http://www.irtf.org/nmrg/snmptrace");
 }
 
 
