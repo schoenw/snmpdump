@@ -182,6 +182,9 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	case SNMP_TYPE_OID:
 	    xml_write_oid(stream, "object-identifier", &varbind->value.oid);
 	    break;
+	case SNMP_TYPE_OPAQUE:
+	    xml_write_octs(stream, "opaque", &varbind->value.octs);
+	    break;
 	case SNMP_TYPE_NO_SUCH_OBJ:
 	    xml_write_null(stream, "no-such-object", &varbind->value.null);
 	    break;
@@ -399,7 +402,7 @@ snmp_xml_write_stream_new(FILE *stream)
 {
     fprintf(stream,
 	    "<?xml version=\"1.0\"?>\n<snmptrace xmlns='%s'>\n",
-	    "http://www.irtf.org/nmrg/snmptrace");
+	    "http://www.nosuchname.net/nmrg/snmptrace");
 }
 
 

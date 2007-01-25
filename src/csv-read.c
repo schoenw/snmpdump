@@ -84,6 +84,11 @@ snmp_free(snmp_packet_t *pkt)
 		free(varbind->value.octs.value);
 	    }
 	    break;
+	case SNMP_TYPE_OPAQUE:
+	    if (varbind->value.octs.value) {
+		free(varbind->value.octs.value);
+	    }
+	    break;
 	default:
 	    break;
 	}
@@ -324,6 +329,10 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
 	v->type = SNMP_TYPE_OID;
 	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_oid(value, &v->value.oid);
+    } else if (strcmp(type, "opaque") == 0) {
+	v->type = SNMP_TYPE_OPAQUE;
+	v->attr.flags |= SNMP_FLAG_VALUE;
+	csv_read_octs(value, &v->value.octs);
     } else if (strcmp(type, "no-such-object") == 0) {
 	v->type = SNMP_TYPE_NO_SUCH_OBJ;
 	v->attr.flags |= SNMP_FLAG_VALUE;

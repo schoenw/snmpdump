@@ -524,9 +524,13 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 				break;
 			}
 
-			default:
+			case OPAQUE: {
 				elem->type = BE_OCTET;
-				elem->data.raw = (caddr_t)p;
+				elem->data.str = p;
+				break;
+			}
+
+			default:
 				fprintf(stderr, "[P/A/%s]\n",
 					Class[class].Id[id]);
 				break;
@@ -955,6 +959,11 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		    vb->type = SNMP_TYPE_OID;
 		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_oid(&vb->value.oid, count, &elem);
+		    break;
+		case BE_OCTET:
+		    vb->type = SNMP_TYPE_OPAQUE;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
+		    set_octs(&vb->value.octs, count, &elem);
 		    break;
 		case BE_NOSUCHOBJECT:
 		    vb->type = SNMP_TYPE_NO_SUCH_OBJ;

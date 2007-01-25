@@ -271,7 +271,8 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
 	     * behave very strange; we loose packets in unknown (kind
 	     * of expected, but they do not show up elsewhere and in
 	     * addition I saw an empty line in the unknown file and I
-	     * have no clue where this is coming from xxx */
+	     * have no clue where this is coming from; furthermore
+	     * runtime seems to increase significantly xxx */
 	     
 	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
 	    && snmp_uint32_equal(&p->pkt->src_port, &pkt->dst_port)

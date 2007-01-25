@@ -89,6 +89,7 @@ static enum {
 	IN_IPADDRESS,
 	IN_OCTET_STRING,
 	IN_OBJECT_IDENTIFIER,
+	IN_OPAQUE,
 	IN_NO_SUCH_OBJECT,
 	IN_NO_SUCH_INSTANCE,
 	IN_END_OF_MIB_VIEW,
@@ -133,6 +134,11 @@ snmp_packet_free(snmp_packet_t* packet) {
 	case SNMP_TYPE_OID:
 	    if (varbind->value.oid.value) {
 		free(varbind->value.oid.value);
+	    }
+	    break;
+	case SNMP_TYPE_OPAQUE:
+	    if (varbind->value.octs.value) {
+		free(varbind->value.octs.value);
 	    }
 	    break;
 	default:
@@ -685,6 +691,17 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.oid.attr));
+	} else if (name && xmlStrcmp(name, BAD_CAST("opaque")) == 0) {
+	    DEBUG("in OPAQUE\n");
+	    assert(state == IN_NAME); /* maybe not needed/wanted */
+	    /* we should also check if parrent is varbind */
+	    set_state(IN_OPAQUE); 
+	    assert(*varbind);
+	    (*varbind)->type = SNMP_TYPE_OPAQUE;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.octs.attr));
 	/* varbind (- value) - no-such-object */
 	} else if (name && xmlStrcmp(name, BAD_CAST("no-such-object")) == 0) {
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
@@ -936,6 +953,11 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert(*varbind);
 	    assert((*varbind)->type == SNMP_TYPE_OID);
 	    process_snmp_oid(reader, &((*varbind)->value.oid));
+	    break;
+	case IN_OPAQUE:
+	    assert(*varbind);
+	    assert((*varbind)->type == SNMP_TYPE_OPAQUE);
+	    process_snmp_octs(reader, &((*varbind)->value.octs));
 	    break;
 	/* snmpv3 */
 	case IN_MSG_ID:

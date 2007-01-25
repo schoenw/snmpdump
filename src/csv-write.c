@@ -203,6 +203,11 @@ csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	    fprintf(stream, "%c%s", sep, show ? "object-identifier" : "");
 	    csv_write_oid(stream, &varbind->value.oid);
 	    break;
+	case SNMP_TYPE_OPAQUE:
+	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "opaque" : "");
+	    csv_write_octs(stream, &varbind->value.octs);
+	    break;
 	case SNMP_TYPE_NO_SUCH_OBJ:
 	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
 	    fprintf(stream, "%c%s", sep, show ? "no-such-object" : "");
