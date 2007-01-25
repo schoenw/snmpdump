@@ -14,3 +14,8 @@ SUFFIXES = .pcap .xml .csv
 
 convert: $(PCAP_FILES:.pcap=.csv) $(PCAP_FILES:.pcap=.xml)
 
+validate:
+	for f in $(PCAP_FILES:.pcap=.xml) ; do \
+		echo $$f; \
+		xmllint --relaxng ../doc/snmptrace.rng $$f > /dev/null; \
+	done
