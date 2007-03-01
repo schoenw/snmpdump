@@ -103,7 +103,7 @@ sub close_walks {
 				}
 
 				# add the information of this walk to the output file:
-				print $outputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'vbc'}, "\n";
+				print $outputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'retransmissions'}, ",", $w->{'total_vbc'}, ",", $w->{'vbc'}, ",", join("|", @{$w->{'prefix_oids'}}), "\n";
 
 				# put this walk into closed walks array and remove it from from the open walks array:
 				push(@{$walks_closed->{$key}}, $w);
@@ -137,12 +137,13 @@ sub process_line {
 	my $found = 0;
 	my $w;
 
+	my $packet_vbc = $vbc;
+
 	$total_lines++;
 
-	# print some statistics:
-	print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2\r";
-
-	#if ($total_lines > 5000) {
+	#if ($total_lines > 5) {
+	#	close_walks(1);
+	#	print "\n\n";
 	#	exit;
 	#}
 
@@ -162,7 +163,7 @@ sub process_line {
 	}
 
 	# determine $m_ip and $a_ip or exit if the operation is "uninteresting":
-	if ($op =~ /get-next-request/) {
+	if ($op =~ /get-next-request|get-bulk-request/) {
 		$m_ip = $s_ip;
 		$m_port = $s_port;
 		$a_ip = $d_ip;
@@ -183,6 +184,9 @@ sub process_line {
 	# create the walk key:
 	my $key = "$m_ip|$a_ip";
 
+	# print some statistics:
+	print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2\r";
+
 	# check if we already have a walk for this packet:
 	if (defined($walks_open->{$key})) {
 		#print STDERR "Found key on line $total_lines...\n";
@@ -191,8 +195,29 @@ sub process_line {
 		WALKS: for (my $j = scalar(@{$walks_open->{$key}}) - 1; $j >= 0; $j--) {
 			$k++;
 			my $walk = $walks_open->{$key}[$j];
+			
+			# we modify the "global" variable $vbc in this loop, so reset it here:
+			$vbc = $packet_vbc;
+
 			# determine if this walk is OK:
-			if ((($p_type eq "req" && $walk->{'op'} eq $op) || ($p_type eq "res" && $walk->{'request_id'} eq $request_id)) && $walk->{'vbc'} eq $vbc) {
+			if (($p_type eq "req" && $walk->{'op'} eq $op) || ($p_type eq "res" && $walk->{'request_id'} eq $request_id)) {
+				# we have to make sure that this packet has the same number of OIDs
+				# as the current walk:
+				my $offset = 0;
+				if ($walk->{'op'} eq "get-bulk-request") {
+					if ($p_type eq "req") {
+						$vbc = $vbc - $err_status;
+						$offset = $err_status * 3;
+					}
+					else {
+						$vbc = ($vbc - $walk->{'non-rep'}) / $walk->{'max-rep'};
+						$offset = $walk->{'non-rep'} * 3;
+					}
+				}
+				if ($walk->{'vbc'} ne $vbc) {
+					next WALKS;
+				}
+
 				# if this is a request packet and the walk we are looking at now 
 				# is a match, but we are actually waiting for a response packet in
 				# this walk, maybe this is a retransmission (it must have all OIDs
@@ -200,7 +225,7 @@ sub process_line {
 				if ($p_type eq "req" && $walk->{'request_id'} ne "") {
 					my $all_equal = 1;
 					for (my $i = 0; $i < $vbc; $i++) {
-						my $oid = $line[12 + 3*$i];
+						my $oid = $line[$offset + 12 + 3*$i];
 						my $last_oid_req = $walk->{'last_oids_req'}[$i];
 						$oid =~ s/\.0$//;
 						if (oidcmp($oid, $last_oid_req)) {
@@ -212,6 +237,7 @@ sub process_line {
 					# we got a retransmission:
 					if ($all_equal) {
 						print "\nWe got a retransmission...\n";
+						$walk->{'retransmissions'}++;
 						return;
 					}
 				}
@@ -225,9 +251,9 @@ sub process_line {
 				my $all_equal = 1;
 				my $one_equal = 0;
 
-				# go through all varbinds of this packet:
+				# go through all OIDs of this packet:
 				for (my $i = 0; $i < $vbc; $i++) {
-					my $oid = $line[12 + 3*$i];
+					my $oid = $line[$offset + 12 + 3*$i];
 					my $prefix = $walk->{'prefix_oids'}[$i];
 					
 					# check for all prefix constrained:
@@ -295,6 +321,11 @@ sub process_line {
 					# packet.
 					$found = 1;
 
+					# if this is a bulk request, go through all repetitions
+					# and see if the properties hold:
+					if ($walk->{'op'} eq "get-bulk-request") {
+					}
+
 					# prefix constrained walk:
 					if ($all_prefix_constrained) {
 						$prefix_constrained = 1;
@@ -352,7 +383,7 @@ sub process_line {
 	}
 	# if this is a new walk and a get next/bulk packet, add it to the list:
 	elsif ($p_type eq "req") {
-		#print STDERR "New walk found on line $total_lines...\n";
+		#print STDERR "\nNew walk found on line $total_lines...\n";
 		$found = 1;
 		$total_walks++;
 		$w = {};
@@ -362,16 +393,26 @@ sub process_line {
 		$w->{'op'} = $op;
 		$w->{'vbc'} = $vbc;
 		$w->{'request_id'} = $request_id;
-		for (my $i = 0; $i < $vbc; $i++) {
-			my $oid = $line[12 + 3*$i];
-			# remove trailling .0 from OIDs:
-			$oid =~ s/\.0$//;
-			push(@{$w->{'prefix_oids'}}, $oid);
-		}
 		$w->{'strict'} = 1;
 		$w->{'prefix_constrained'} = 1;
 		$w->{'packets'} = 0;
 		$w->{'prefix_broke_at'} = 0;
+		$w->{'retransmissions'} = 0;
+		$w->{'non-rep'} = $err_status;
+		$w->{'max-rep'} = $err_index;
+		$w->{'total_vbc'} = 0;
+		
+		# set the prefix of this walk:
+		my $offset = 0;
+		if ($w->{'op'} eq "get-bulk-request") {
+			$offset = $err_status * 3;
+		}
+		for (my $i = 0; $i < $vbc; $i++) {
+			my $oid = $line[$offset + 12 + 3*$i];
+			# remove trailling .0 from OIDs:
+			$oid =~ s/\.0$//;
+			push(@{$w->{'prefix_oids'}}, $oid);
+		}
 
 		# create a file for this walk:
 		if ($dirout ne "") {
@@ -393,9 +434,33 @@ sub process_line {
 
 	#print "[", $w->{'id'}, "]: strict: ", $w->{'strict'}, "\n";
 
+	# how many OIDs do we have so far:
+	if ($p_type eq "res") {
+		$w->{'total_vbc'} += $packet_vbc;
+	}
+		
+	# if this is a bulk request, reset non repeaters, max repetitions and
+	# vbc values:
+	if ($p_type eq "req" && $w->{'op'} eq "get-bulk-request") {
+		$w->{'non-rep'} = $err_status;
+		$w->{'max-rep'} = $err_index;
+		$w->{'vbc'} = $packet_vbc - $w->{'non-rep'};	# I'm not sure we need this updated!!!
+	}
+
+	# determine how many repetitions we have in this packet (it will be 1
+	# by default, the case of get-next-requests:
+	my $repetitions = 1;
+
+	if ($p_type eq "res" && $w->{'op'} eq "get-bulk-request") {
+		$repetitions = ($packet_vbc - $w->{'non-rep'}) / $w->{'vbc'};
+	}
+
 	# set the latest OIDs:
-	for (my $i = 0; $i < $vbc; $i++) {
-		my $oid = $line[12 + 3*$i];
+	# we need an offset, that will take us straight to the last OIDs in
+	# this packet, which is calculated below:
+	my $offset = (($repetitions - 1) * $w->{'vbc'} + $w->{'non-rep'}) * 3;
+	for (my $i = 0; $i < $w->{'vbc'}; $i++) {
+		my $oid = $line[$offset + 12 + 3*$i];
 		# remove trailling .0 from OIDs:
 		$oid =~ s/\.0$//;
 		$w->{"last_oids_$p_type"}[$i] = $oid;
@@ -456,7 +521,8 @@ EOF
 #
 # Install a signal handler for SIGINT:
 #
-$SIG{INT} = sub { $interrupted = 1;
+$SIG{INT} = sub {
+	$interrupted = 1;
 	print STDERR "got SIGINT, stopping input parsing...\n";
 };
 
