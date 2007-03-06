@@ -23,9 +23,12 @@ my $total_strict_walks = 0;
 my $total_prefix_walks1 = 0;
 my $total_prefix_walks2 = 0;	# prefix property broke on last packet
 
-my $outputfile;
+my $csvoutputfile;
+my $sqloutputfile;
 my $dirout = "";
 my $file;
+my $csvfile = '';
+my $sqlfile = '';
 my $timeout = 0;		# timeout for walk inactivity
 my $elapsed_t = 0;		# elapsed file time
 my $last_t = 0;			# last recorded file time
@@ -60,6 +63,33 @@ sub oidcmp {
 }
 
 #
+# Given a key and an array index export the walk
+# to SQL.
+#
+sub walk_to_sql {
+	my ($key, $i) = @_;
+	my $w = $walks_open->{$key}[$i];
+
+	my $source_file = basename($file);
+	my $flow_str = '';
+
+	my $sql = '';
+
+	# insert the walk information:
+	$sql .= sprintf("INSERT INTO snmp_walk (source_file, file_pos, flow_str, g_ip, g_port, r_ip, r_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, start_timestamp, end_timestamp, duration, packets, retransmissions, vbc, retrieved_oids, retrieved_bytes, sent_bytes, is_strict, is_prefix_constrained, broken_prefix_pos) VALUES ('%s', '%d', '%s', '%s', '%d', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%d', '%f', '%f', '%f', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d');\n", $source_file, $w->{'id'}, $flow_str, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'packets'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'total_vbc'}, $w->{'retrieved_size'}, $w->{'sent_size'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'prefix_broke_at'});
+
+	# insert the prefixes for this walk into another table:
+	my @values_arr;
+	foreach my $oid (@{$w->{'prefix_oids'}}) {
+		push(@values_arr, "(LAST_INSERT_ID(), '$source_file', '$oid')");
+	}
+	my $values_str = join(", ", @values_arr);
+	$sql .= "INSERT INTO snmp_walk_oid (walk_id, source_file, oid) VALUES $values_str;\n";
+
+	return $sql;
+}
+
+#
 # Try to close walks (either expired or all).
 # close_walks() - close all expired walks
 # close_walks(1) - close all walks
@@ -84,26 +114,29 @@ sub close_walks {
 				if ($w->{'strict'} eq "1") {
 					$total_strict_walks++;
 				}
+
 				if ($w->{'prefix_constrained'} eq "1") {
 					$total_prefix_walks1++;
 				}
 				elsif ($w->{'prefix_broke_at'} == $w->{'packets'}) {
 					$total_prefix_walks2++;
 				}
-				else {
-					#print "\n\n", $w->{'id'}, "\n\n";
-				}
+
 				$closed_walks++;
 
 				# if we dumped walk information to a file, close that:
 				if ($dirout ne "") {
-					#print {$w->{'f'}} $w->{'packets'}, "/", $w->{'prefix_broke_at'}, "\n";
-					#print {$w->{'f'}} "Prefix constrained: ", $w->{'prefix_constrained'}, "; Prefix broke at: ", $w->{'prefix_broke_at'}, "\n";
 					close($w->{'f'});
 				}
 
-				# add the information of this walk to the output file:
-				print $outputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'retransmissions'}, ",", $w->{'total_vbc'}, ",", $w->{'vbc'}, ",", join("|", @{$w->{'prefix_oids'}}), "\n";
+				# add the information of this walk to the output files:
+				if ($csvfile ne "") {
+					print $csvoutputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'retransmissions'}, ",", $w->{'total_vbc'}, ",", $w->{'vbc'}, ",", join("|", @{$w->{'prefix_oids'}}), "\n";
+				}
+
+				if ($sqlfile ne "") {
+					print $sqloutputfile walk_to_sql($key, $i), "\n";
+				}
 
 				# put this walk into closed walks array and remove it from from the open walks array:
 				push(@{$walks_closed->{$key}}, $w);
@@ -123,6 +156,7 @@ sub process_line {
 	my $s_port = $line[2];		# source port
 	my $d_ip = $line[3];		# destination IP
 	my $d_port = $line[4];		# destination port
+	my $size = $line[5];		# message size
 	my $version = $line[6];		# SNMP version
 	my $op = $line[7];		# SNMP operation
 	my $request_id = $line[8];
@@ -140,12 +174,6 @@ sub process_line {
 	my $packet_vbc = $vbc;
 
 	$total_lines++;
-
-	#if ($total_lines > 5) {
-	#	close_walks(1);
-	#	print "\n\n";
-	#	exit;
-	#}
 
 	# calculate elapsed file time:
 	if ($total_lines > 1) {
@@ -191,7 +219,6 @@ sub process_line {
 	if (defined($walks_open->{$key})) {
 		#print STDERR "Found key on line $total_lines...\n";
 		my $k = 0;
-		#print scalar(@{$walks_open->{$key}}), "\n";
 		WALKS: for (my $j = scalar(@{$walks_open->{$key}}) - 1; $j >= 0; $j--) {
 			$k++;
 			my $walk = $walks_open->{$key}[$j];
@@ -322,8 +349,41 @@ sub process_line {
 					$found = 1;
 
 					# if this is a bulk request, go through all repetitions
-					# and see if the properties hold:
+					# and see if the "prefix" and "non-decreasing" properties hold:
 					if ($walk->{'op'} eq "get-bulk-request") {
+						my $repetitions = ($packet_vbc - $walk->{'non-rep'}) / $vbc;
+						my $offset = $walk->{'non-rep'} * 3;
+						my @last_oids;
+						for (my $k = 0; $k < $vbc; $k++) {
+							push(@last_oids, $walk->{'last_oids_req'}[$k]);
+						}
+
+						for (my $k = 0; $k < $repetitions; $k++) {
+							for (my $j = 0; $j < $vbc; $j++) {
+								my $oid = $line[$offset + 12 + $j*3];
+								my $last_oid = $last_oids[$j];
+								my $prefix = $walk->{'prefix_oids'}[$j];
+
+								# check if prefix is OK for the OIDs in all
+								# repetitions:
+								if (!($oid =~ /^$prefix/)) {
+									$all_prefix_constrained = 0;
+								}
+
+								# check if this OID is greater than the one
+								# in the previous repetition:
+								if (oidcmp($oid, $last_oid) < 0) {
+									$all_non_decreasing = 0;
+								}
+
+								# set this OID as the "last" OID, for the next
+								# time we execute this loop:
+								$last_oids[$j] = $oid;
+							}
+
+							# we increase the offset for each new repetition:
+							$offset += $vbc * 3;
+						}
 					}
 
 					# prefix constrained walk:
@@ -387,9 +447,13 @@ sub process_line {
 		$found = 1;
 		$total_walks++;
 		$w = {};
+		$w->{'start_timestamp'} = $t;
 		$w->{'id'} = $total_walks;
 		$w->{'m_ip'} = $m_ip;
+		$w->{'m_port'} = $m_port;
 		$w->{'a_ip'} = $a_ip;
+		$w->{'a_port'} = $a_port;
+		$w->{'version'} = $version;
 		$w->{'op'} = $op;
 		$w->{'vbc'} = $vbc;
 		$w->{'request_id'} = $request_id;
@@ -398,15 +462,26 @@ sub process_line {
 		$w->{'packets'} = 0;
 		$w->{'prefix_broke_at'} = 0;
 		$w->{'retransmissions'} = 0;
+		$w->{'err-status'} = $err_status;
+		$w->{'err-index'} = $err_index;
 		$w->{'non-rep'} = $err_status;
 		$w->{'max-rep'} = $err_index;
 		$w->{'total_vbc'} = 0;
-		
+		$w->{'sent_size'} = 0;
+		$w->{'retrieved_size'} = 0;
+
 		# set the prefix of this walk:
 		my $offset = 0;
 		if ($w->{'op'} eq "get-bulk-request") {
 			$offset = $err_status * 3;
+			$w->{'err-status'} = 0;
+			$w->{'err-index'} = 0;
 		}
+		else {
+			$w->{'non-rep'} = 0;
+			$w->{'max-rep'} = 0;
+		}
+
 		for (my $i = 0; $i < $vbc; $i++) {
 			my $oid = $line[$offset + 12 + 3*$i];
 			# remove trailling .0 from OIDs:
@@ -416,7 +491,7 @@ sub process_line {
 
 		# create a file for this walk:
 		if ($dirout ne "") {
-			my $f_name = "$dirout/" . basename($file) . "-$total_walks.txt";
+			my $f_name = "$dirout/" . basename($file) . "-$total_walks.csv";
 			open(my $f, ">$f_name") or die "$0: unable to open $f_name: $!\n";
 			$w->{'f'} = \*$f;
 		}
@@ -432,11 +507,15 @@ sub process_line {
 		return;
 	}
 
-	#print "[", $w->{'id'}, "]: strict: ", $w->{'strict'}, "\n";
+	$w->{'end_timestamp'} = $t;
 
 	# how many OIDs do we have so far:
 	if ($p_type eq "res") {
 		$w->{'total_vbc'} += $packet_vbc;
+		$w->{'retrieved_size'} += $size;
+	}
+	else {
+		$w->{'sent_size'} += $size;
 	}
 		
 	# if this is a bulk request, reset non repeaters, max repetitions and
@@ -473,11 +552,6 @@ sub process_line {
 	# add this packet to the walk file:
 	if ($dirout ne "") {
 		print {$w->{'f'}} $packet;
-
-		#for (my $i = 0; $i < $vbc; $i++) {
-		#	print {$w->{'f'}} $w->{"last_oids_$p_type"}[$i], "\t";
-		#}
-		#print {$w->{'f'}} "\n";
 	}
 }
 
@@ -486,6 +560,15 @@ sub process_line {
 #
 sub process_file {
 	$file = shift;
+
+	# in case we need to export to SQL, delete all previous records generated
+	# from this file:
+	if ($sqlfile ne '') {
+		my $source_file = basename($file);
+		print $sqloutputfile "DELETE FROM snmp_walk WHERE source_file = '$source_file';\n";
+		print $sqloutputfile "DELETE FROM snmp_walk_oid WHERE source_file = '$source_file';\n\n";
+	}
+
 	print scalar localtime(), "\n";
 	open(F, "<$file") or die "$0: unable to open $file: $!\n";
 	while (<F>) {
@@ -505,14 +588,15 @@ sub process_file {
 #
 sub usage() {
 	print STDERR << "EOF";
-Usage: $0 [-h] [-d output directory] [files|-]
+Usage: $0 [-h] [-t timeout] [-d output directory] [-o file] [-O file] [files|-]
       
 This program tries to detect table walks in SNMP trace files in CSV format.
 	
   -h            display this (help) message
-  -d directory	if used, walks will be dumped into sepaprate files in directory
   -t seconds    timeout in seconds for discarding a walk       
-  -o filename   output walk information to filename
+  -d directory	if used, walks will be dumped into separate files in directory
+  -o filename   output walk information to CSV filename
+  -O filename   output walk information to SQL filename
 
 EOF
 	exit;
@@ -531,7 +615,7 @@ $SIG{INT} = sub {
 # arguments and then process all files on the command line in turn.
 #
 my %opt;
-getopts("d:t:hWs:", \%opt ) or usage();
+getopts("ht:d:o:O:", \%opt ) or usage();
 usage() if defined $opt{h};
 $timeout = $opt{t} if defined $opt{t};
 if (defined $opt{d}) {
@@ -545,17 +629,27 @@ if (defined $opt{d}) {
 	}
 }
 
-my $filename = "output.csv";
 if (defined $opt{o}) {
-	$filename = $opt{o};
+	$csvfile = $opt{o};
+	open($csvoutputfile, ">$csvfile") or die "$0: unable to open $csvfile: $!\n";
 }
-open(my $f, ">$filename") or die "$0: unable to open $filename: $!\n";
-$outputfile = \*$f;
+
+if (defined $opt{O}) {
+	$sqlfile = $opt{O};
+	open($sqloutputfile, ">$sqlfile") or die "$0: unable to open $sqlfile: $!\n";
+}
 
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
 	process_file($ARGV);
 }
 
-close($outputfile);
+if ($csvfile ne "") {
+	close($csvoutputfile);
+}
+
+if ($sqlfile ne "") {
+	close($sqloutputfile);
+}
+
 exit(0);
