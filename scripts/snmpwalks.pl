@@ -139,7 +139,7 @@ sub close_walks {
 				}
 
 				# put this walk into closed walks array and remove it from from the open walks array:
-				push(@{$walks_closed->{$key}}, $w);
+				#push(@{$walks_closed->{$key}}, $w);
 				splice(@{$walks}, $i, 1);
 			}
 		}
@@ -213,10 +213,11 @@ sub process_line {
 	my $key = "$m_ip|$a_ip";
 
 	# print some statistics:
-	print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2\r";
+	print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2;\r";
 
 	# check if we already have a walk for this packet:
 	if (defined($walks_open->{$key})) {
+		#print "Array length: ", scalar(@{$walks_open->{$key}}), ";";
 		#print STDERR "Found key on line $total_lines...\n";
 		my $k = 0;
 		WALKS: for (my $j = scalar(@{$walks_open->{$key}}) - 1; $j >= 0; $j--) {
@@ -429,7 +430,6 @@ sub process_line {
 		}
 	}
 	
-
 	# if we found a walk, update its information:
 	if ($found) {
 		# updates made for request packets:
@@ -553,6 +553,7 @@ sub process_line {
 	if ($dirout ne "") {
 		print {$w->{'f'}} $packet;
 	}
+
 }
 
 #
