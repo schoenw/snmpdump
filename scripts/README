@@ -48,3 +48,28 @@ How the scripts may play together:
 - Should there be a script to "normalize" time stamps?
 
 - How to provide SMI information in a convenient way?
+
+
+=========
+
+How to setup and use the SQL database:
+
+1) mysqladmin create snmptrace
+
+2) mysql snmptrace < sql/snmp_walk.sql
+   mysql snmptrace < sql/snmp_walk_oid.sql
+
+3) run the snmpwalks.pl script which produces an sql file 
+
+   perl snmpwalks.pl -O foo.sql [-t window] foo.csv
+
+   the scripts can create csv files for each walk if you
+   specify an output directory using the -d option
+
+4) mysql snmptrace < foo.sql
+
+To access the database, you most likely need to pass -u <user> and
+-p<password> to get prompted for the password. See the mysql
+documentation for creating users and dealing with passwords and
+access control.
+

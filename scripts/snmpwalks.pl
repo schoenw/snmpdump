@@ -23,6 +23,8 @@ my $total_strict_walks = 0;
 my $total_prefix_walks1 = 0;
 my $total_prefix_walks2 = 0;	# prefix property broke on last packet
 
+my $source_file;
+my $trace_name;
 my $csvoutputfile;
 my $sqloutputfile;
 my $dirout = "";
@@ -70,21 +72,18 @@ sub walk_to_sql {
 	my ($key, $i) = @_;
 	my $w = $walks_open->{$key}[$i];
 
-	my $source_file = basename($file);
-	my $flow_str = '';
-
 	my $sql = '';
 
 	# insert the walk information:
-	$sql .= sprintf("INSERT INTO snmp_walk (source_file, file_pos, flow_str, g_ip, g_port, r_ip, r_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, start_timestamp, end_timestamp, duration, packets, retransmissions, vbc, retrieved_oids, retrieved_bytes, sent_bytes, is_strict, is_prefix_constrained, broken_prefix_pos) VALUES ('%s', '%d', '%s', '%s', '%d', '%s', '%d', '%d', '%s', '%d', '%d', '%d', '%d', '%f', '%f', '%f', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d', '%d');\n", $source_file, $w->{'id'}, $flow_str, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'packets'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'total_vbc'}, $w->{'retrieved_size'}, $w->{'sent_size'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'prefix_broke_at'});
+	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, source_file, cg_ip, cg_port, cr_ip, cr_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $source_file, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'});
 
 	# insert the prefixes for this walk into another table:
 	my @values_arr;
 	foreach my $oid (@{$w->{'prefix_oids'}}) {
-		push(@values_arr, "(LAST_INSERT_ID(), '$source_file', '$oid')");
+		push(@values_arr, "(LAST_INSERT_ID(), '$oid')");
 	}
 	my $values_str = join(", ", @values_arr);
-	$sql .= "INSERT INTO snmp_walk_oid (walk_id, source_file, oid) VALUES $values_str;\n";
+	$sql .= "INSERT INTO snmp_walk_oid (walk_id, oid) VALUES $values_str;\n";
 
 	return $sql;
 }
@@ -119,6 +118,7 @@ sub close_walks {
 					$total_prefix_walks1++;
 				}
 				elsif ($w->{'prefix_broke_at'} == $w->{'packets'}) {
+					$w->{'prefix_constrained'} = 1;
 					$total_prefix_walks2++;
 				}
 
@@ -131,7 +131,7 @@ sub close_walks {
 
 				# add the information of this walk to the output files:
 				if ($csvfile ne "") {
-					print $csvoutputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'retransmissions'}, ",", $w->{'total_vbc'}, ",", $w->{'vbc'}, ",", join("|", @{$w->{'prefix_oids'}}), "\n";
+					print $csvoutputfile $w->{'id'}, ",", $w->{'strict'}, ",", $w->{'prefix_constrained'}, ",", $w->{'prefix_broke_at'}, ",", $w->{'packets'}, ",", $w->{'retransmissions'}, ",", $w->{'response_oids'}, ",", $w->{'vbc'}, ",", join("|", @{$w->{'prefix_oids'}}), "\n";
 				}
 
 				if ($sqlfile ne "") {
@@ -406,6 +406,7 @@ sub process_line {
 					# if we lost the prefix constrained property now, record the packet number:
 					if ($w->{'prefix_constrained'} == 1 && !$prefix_constrained) {
 						$w->{'prefix_constrained'} = 0;
+						$w->{'strict_prefix_constrained'} = 0;
 						$w->{'prefix_broke_at'} = $w->{'packets'} + 1;
 					}
 
@@ -459,16 +460,23 @@ sub process_line {
 		$w->{'request_id'} = $request_id;
 		$w->{'strict'} = 1;
 		$w->{'prefix_constrained'} = 1;
+		$w->{'strict_prefix_constrained'} = 1;
 		$w->{'packets'} = 0;
 		$w->{'prefix_broke_at'} = 0;
 		$w->{'retransmissions'} = 0;
-		$w->{'err-status'} = $err_status;
-		$w->{'err-index'} = $err_index;
+		$w->{'err-status'} = 0;
+		$w->{'err-index'} = 0;
 		$w->{'non-rep'} = $err_status;
 		$w->{'max-rep'} = $err_index;
-		$w->{'total_vbc'} = 0;
-		$w->{'sent_size'} = 0;
-		$w->{'retrieved_size'} = 0;
+
+		$w->{'response_bytes'} = 0;
+		$w->{'response_packets'} = 0;
+		$w->{'response_oids'} = 0;
+
+		$w->{'request_packets'} = 0;
+		$w->{'request_bytes'} = 0;
+
+		$w->{'max_rep_changed'} = 0;
 
 		# set the prefix of this walk:
 		my $offset = 0;
@@ -511,17 +519,24 @@ sub process_line {
 
 	# how many OIDs do we have so far:
 	if ($p_type eq "res") {
-		$w->{'total_vbc'} += $packet_vbc;
-		$w->{'retrieved_size'} += $size;
+		$w->{'response_packets'}++;
+		$w->{'response_bytes'} += $size;
+		$w->{'response_oids'} += $packet_vbc;
+		$w->{'err-status'} = $err_status;
+		$w->{'err-index'} = $err_index;
 	}
 	else {
-		$w->{'sent_size'} += $size;
+		$w->{'request_packets'}++;
+		$w->{'request_bytes'} += $size;
 	}
 		
 	# if this is a bulk request, reset non repeaters, max repetitions and
 	# vbc values:
 	if ($p_type eq "req" && $w->{'op'} eq "get-bulk-request") {
 		$w->{'non-rep'} = $err_status;
+		if ($w->{'max-rep'} ne $err_index) {
+			$w->{'max_rep_changed'} = 1;
+		}
 		$w->{'max-rep'} = $err_index;
 		$w->{'vbc'} = $packet_vbc - $w->{'non-rep'};	# I'm not sure we need this updated!!!
 	}
@@ -562,16 +577,25 @@ sub process_line {
 sub process_file {
 	$file = shift;
 
+	$source_file = basename($file);
+
 	# in case we need to export to SQL, delete all previous records generated
 	# from this file:
 	if ($sqlfile ne '') {
-		my $source_file = basename($file);
-		print $sqloutputfile "DELETE FROM snmp_walk WHERE source_file = '$source_file';\n";
-		print $sqloutputfile "DELETE FROM snmp_walk_oid WHERE source_file = '$source_file';\n\n";
+		print $sqloutputfile "DELETE t1, t2 FROM snmp_walk AS t1, snmp_walk_oid AS t2 WHERE t1.source_file = '$source_file' AND t2.walk_id = t1.id;\n\n";
 	}
 
 	print scalar localtime(), "\n";
-	open(F, "<$file") or die "$0: unable to open $file: $!\n";
+
+    	if ($file =~ /\.g|Gz|Z$/) {
+		open(F, "zcat $file |") or die "$0: Cannot open $file: $!\n";
+	}
+	elsif ($file =~ /\.bz2$/) {
+		open(F, "bzcat $file |") or die "$0: Cannot open $file: $!\n";
+	}
+	else {
+		open(F, "<$file") or die "$0: Cannot open $file: $!\n";
+	}
 	while (<F>) {
 		$packet = $_;
 		my @line = split(/,/);
@@ -580,6 +604,7 @@ sub process_file {
 	}
 	close(F);
 	close_walks(1);
+
 	print "\n";
 	print scalar localtime(), "\n";
 }
@@ -589,15 +614,16 @@ sub process_file {
 #
 sub usage() {
 	print STDERR << "EOF";
-Usage: $0 [-h] [-t timeout] [-d output directory] [-o file] [-O file] [files|-]
+Usage: $0 -t trace name [-t timeout] [-d output directory] [-o file] [-O file] [-h] [files|-]
       
 This program tries to detect table walks in SNMP trace files in CSV format.
 	
-  -h            display this (help) message
+  -n trace name name of the trace processed
   -t seconds    timeout in seconds for discarding a walk       
   -d directory	if used, walks will be dumped into separate files in directory
   -o filename   output walk information to CSV filename
   -O filename   output walk information to SQL filename
+  -h            display this (help) message
 
 EOF
 	exit;
@@ -616,9 +642,16 @@ $SIG{INT} = sub {
 # arguments and then process all files on the command line in turn.
 #
 my %opt;
-getopts("ht:d:o:O:", \%opt ) or usage();
+getopts("ht:d:o:O:n:", \%opt ) or usage();
+
 usage() if defined $opt{h};
+usage() unless defined $opt{n};
+
+$trace_name = $opt{n};
+
+$timeout = 20;
 $timeout = $opt{t} if defined $opt{t};
+
 if (defined $opt{d}) {
 	$dirout = $opt{d};
 	if (! -e $dirout) {
