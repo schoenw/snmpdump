@@ -213,7 +213,7 @@ sub process_line {
 	my $key = "$m_ip|$a_ip";
 
 	# print some statistics:
-	print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2;\r";
+	# print "Total lines: $total_lines; Walks: $total_walks; Closed: $closed_walks; Strict: $total_strict_walks; Prefix: $total_prefix_walks1; Prefix*: $total_prefix_walks2;\r";
 
 	# check if we already have a walk for this packet:
 	if (defined($walks_open->{$key})) {
@@ -630,11 +630,16 @@ EOF
 }
 
 #
-# Install a signal handler for SIGINT:
+# Install a signal handlers for properly terminating the
+# script and printing some status information.
 #
 $SIG{INT} = sub {
 	$interrupted = 1;
 	print STDERR "got SIGINT, stopping input parsing...\n";
+};
+
+$SIG{HUP} = sub {
+    print STDERR "processing line $total_lines\n";
 };
 
 #
