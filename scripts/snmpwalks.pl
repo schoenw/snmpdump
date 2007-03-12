@@ -639,7 +639,7 @@ $SIG{INT} = sub {
 };
 
 $SIG{HUP} = sub {
-    print STDERR "processing line $total_lines\n";
+    print STDERR "lines: $total_lines; walks: $total_walks; closed: $closed_walks; strict: $total_strict_walks; prefix: $total_prefix_walks1; prefix*: $total_prefix_walks2;\n";
 };
 
 #
