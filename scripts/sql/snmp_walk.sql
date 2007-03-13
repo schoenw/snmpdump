@@ -3,7 +3,7 @@ CREATE TABLE snmp_walk (
 	id bigint unsigned not null auto_increment,
 	
 	trace_name varchar(32) not null default '',
-	source_file varchar(128) not null default '',
+	flow_name varchar(64) not null default '',
 
 	cg_ip varchar(128) not null default '',
 	cg_port int unsigned not null default 0,

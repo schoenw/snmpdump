@@ -23,8 +23,8 @@ my $total_strict_walks = 0;
 my $total_prefix_walks1 = 0;
 my $total_prefix_walks2 = 0;	# prefix property broke on last packet
 
-my $source_file;
-my $trace_name;
+my $trace_name = '';
+my $flow_name = '';
 my $csvoutputfile;
 my $sqloutputfile;
 my $dirout = "";
@@ -75,7 +75,7 @@ sub walk_to_sql {
 	my $sql = '';
 
 	# insert the walk information:
-	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, source_file, cg_ip, cg_port, cr_ip, cr_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $source_file, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'});
+	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, flow_name, cg_ip, cg_port, cr_ip, cr_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $flow_name, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'});
 
 	# insert the prefixes for this walk into another table:
 	my @values_arr;
@@ -577,12 +577,10 @@ sub process_line {
 sub process_file {
 	$file = shift;
 
-	$source_file = basename($file);
-
 	# in case we need to export to SQL, delete all previous records generated
 	# from this file:
 	if ($sqlfile ne '') {
-		print $sqloutputfile "DELETE t1, t2 FROM snmp_walk AS t1, snmp_walk_oid AS t2 WHERE t1.source_file = '$source_file' AND t2.walk_id = t1.id;\n\n";
+		print $sqloutputfile "DELETE t1, t2 FROM snmp_walk AS t1, snmp_walk_oid AS t2 WHERE t1.trace_name = '$trace_name' AND t1.flow_name = '$flow_name' AND t2.walk_id = t1.id;\n\n";
 	}
 
 	print scalar localtime(), "\n";
@@ -614,11 +612,12 @@ sub process_file {
 #
 sub usage() {
 	print STDERR << "EOF";
-Usage: $0 -t trace name [-t timeout] [-d output directory] [-o file] [-O file] [-h] [files|-]
+Usage: $0 -n trace name -f flow name [-t timeout] [-d output directory] [-o file] [-O file] [-h] [files|-]
       
 This program tries to detect table walks in SNMP trace files in CSV format.
 	
   -n trace name name of the trace processed
+  -f flow name	name of the flow being processed (use '' for whole trace files)
   -t seconds    timeout in seconds for discarding a walk       
   -d directory	if used, walks will be dumped into separate files in directory
   -o filename   output walk information to CSV filename
@@ -647,12 +646,14 @@ $SIG{HUP} = sub {
 # arguments and then process all files on the command line in turn.
 #
 my %opt;
-getopts("ht:d:o:O:n:", \%opt ) or usage();
+getopts("ht:d:o:O:n:f:", \%opt ) or usage();
 
 usage() if defined $opt{h};
 usage() unless defined $opt{n};
+usage() unless defined $opt{f};
 
 $trace_name = $opt{n};
+$flow_name = $opt{f};
 
 $timeout = 20;
 $timeout = $opt{t} if defined $opt{t};
