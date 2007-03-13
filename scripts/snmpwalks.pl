@@ -616,7 +616,7 @@ Usage: $0 -n trace name -f flow name [-t timeout] [-d output directory] [-o file
       
 This program tries to detect table walks in SNMP trace files in CSV format.
 	
-  -n trace name name of the trace processed
+  -n trace name name of the trace being processed
   -f flow name	name of the flow being processed (use '' for whole trace files)
   -t seconds    timeout in seconds for discarding a walk       
   -d directory	if used, walks will be dumped into separate files in directory

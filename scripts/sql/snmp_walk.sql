@@ -35,5 +35,5 @@ CREATE TABLE snmp_walk (
 	is_strict_prefix_constr tinyint unsigned not null default 0,
 
 	primary key (id),
-	key (source_file)
+	key (trace_name, flow_name)
 );

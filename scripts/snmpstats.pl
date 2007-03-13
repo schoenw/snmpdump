@@ -42,6 +42,11 @@ my %basic_notification_classes;
 my $total = 0;
 my $start = time();
 
+my $trace_name = '';
+my $flow_name = '';
+my $sqlfile = '';
+my $sqloutputfile;
+
 # Below is the list of well-known subtrees. Note that the order is
 # important - longer prefixes must be matched before shorter onces.
 
@@ -234,6 +239,7 @@ sub meta {
 sub meta_print {
     my $total = shift;
     my $gmt;
+    my $sql = '';
     my $duration = $meta_last - $meta_first;
     printf("# The following table shows some overall meta information in\n" .
 	   "# the form of a list of named properties.\n" .
@@ -242,21 +248,29 @@ sub meta_print {
 
     $gmt = strftime("%FT%T+0000", gmtime($start));
     printf("%-18s %s\n", "script-start:", $gmt);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'script-start', '$gmt');\n";
     $gmt = strftime("%FT%T+0000", gmtime(time()));
     printf("%-18s %s\n", "script-end:", $gmt);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'script-end', '$gmt');\n";
 
     $gmt = strftime("%FT%T+0000", gmtime($meta_first));
     printf("%-18s %s\n", "trace-start:", $gmt);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-start', '$gmt');\n";
     $gmt = strftime("%FT%T+0000", gmtime($meta_last));
     printf("%-18s %s\n", "trace-end:", $gmt);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-end', '$gmt');\n";
     my $days  = int($duration/60/60/24);
     my $hours = int($duration/60/60) - $days*24;
     my $mins  = int($duration/60) - $days*24*60 - $hours*60;
     printf("%-18s %d days %d hours %d minutes\n", "trace-duration",
 	   $days, $hours, $mins);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-duration', '$days days $hours hours $mins minutes');\n";
     printf("%-18s %f\n", "trace-first-time:", $meta_first);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-first-time', '$meta_first');\n";
     printf("%-18s %f\n", "trace-last-time:", $meta_last);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-last-time', '$meta_last');\n";
     printf("%-18s %s\n", "trace-messages:", $total);
+    $sql .= "INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-messages', '$total');\n";
 
     foreach my $addr (keys %meta_unknowns) {
 	if (exists $meta_managers{$addr} || exists $meta_agents{$addr}) {
@@ -265,8 +279,18 @@ sub meta_print {
     }
 
     printf("%-18s %s\n", "trace-managers:", scalar keys(%meta_managers));
+    $sql .= sprintf("INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-managers', '%s');\n", scalar keys(%meta_managers));
     printf("%-18s %s\n", "trace-agents:", scalar keys(%meta_agents));
+    $sql .= sprintf("INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-agents', '%s');\n", scalar keys(%meta_agents));
     printf("%-18s %s\n", "trace-unknown:", scalar keys(%meta_unknowns));
+    $sql .= sprintf("INSERT INTO snmp_stats_meta (trace_name, flow_name, prop_name, prop_value) VALUES ('$trace_name', '$flow_name', 'trace-unknown', '%s');\n", scalar keys(%meta_unknowns));
+
+    # generate an SQL file, if requested:
+    if ($sqlfile ne '') {
+	    # delete old records (that were generated for this trace/flow name):
+	    print $sqloutputfile "DELETE FROM snmp_stats_meta WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
 }
 
 sub basic {
@@ -310,6 +334,7 @@ sub basic {
 
 sub basic_print {
     my $total = shift;
+    my $sql = '';
     printf("\n" .
 	   "# The following table shows the protocol operations statistics\n" .
 	   "# broken down by SNMP protocol version plus the overall sums.\n" .
@@ -321,6 +346,7 @@ sub basic_print {
 	foreach my $version (0, 1, 3) {
 	    my $val = $basic_ops{"$version,$op"};
 	    printf(" %8d %5.1f%%", $val, $basic_ops{"$version,$op"}*100/$total);
+	    $sql .= "INSERT INTO snmp_stats_version (trace_name, flow_name, op, snmp_ver, count) VALUES ('$trace_name', '$flow_name', '$op', '$version', '$val');\n";
 	    $basic_ops{"total,$op"} += $val;
 	}
 	printf(" %8d %5.1f\%\n", $basic_ops{"total,$op"}, 
@@ -334,6 +360,13 @@ sub basic_print {
 	$sum += $basic_vers[$version];
     }
     printf(" %8d %5.1f\%\n", $sum, $sum*100/$total);
+
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_version WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
     
     printf("\n" .
 	   "# The following table shows the distribution of the number of\n" .
@@ -347,9 +380,17 @@ sub basic_print {
 		printf("%-18s  %12d %12d %5.1f%%\n", "$op:", $i, 
 		       $basic_nvbs{"$op,$i"},
 		       $basic_nvbs{"$op,$i"}*100/$total);
+	    	$sql .= "INSERT INTO snmp_stats_varbind (trace_name, flow_name, op, varbinds, count) VALUES ('$trace_name', '$flow_name', '$op', '$i', '" . $basic_nvbs{"$op,$i"} . "');\n";
 	    }
 	}
     }
+
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_varbind WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 
     printf("\n" .
 	   "# The following table shows the distribution of the status\n" .
@@ -363,9 +404,17 @@ sub basic_print {
 		printf("%-18s  %12d %12d %5.1f%%\n", "$op:", $i, 
 		       $basic_errs{"$op,$i"},
 		       $basic_errs{"$op,$i"}*100/$total);
+	    	$sql .= "INSERT INTO snmp_stats_status (trace_name, flow_name, op, status, count) VALUES ('$trace_name', '$flow_name', '$op', '$i', '" . $basic_errs{"$op,$i"} . "');\n";
 	    }
 	}
     }
+
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_status WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 
     printf("\n" .
 	   "# The following table shows the distribution of the parameters\n" .
@@ -378,7 +427,15 @@ sub basic_print {
 	printf("%-18s  %8d %8d %8d %12d %5.1f%%\n", 
 	       "getbulk:", $nonrep, $maxrep, $nvbs, 
 	       $basic_bulk{$name}, $basic_bulk{$name}*100/$basic_bulk_total);
+	$sql .= "INSERT INTO snmp_stats_getbulk (trace_name, flow_name, op, non_rep, max_rep, varbinds, count) VALUES ('$trace_name', '$flow_name', 'getbulk', '$nonrep', '$maxrep', '$nvbs', '" . $basic_bulk{$name} . "');\n";
     }
+
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_getbulk WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 
     printf("\n" .
 	   "# The following table shows the distribution of notifications\n" .
@@ -392,9 +449,17 @@ sub basic_print {
 		   "$op:", $oid,
 		   $basic_notifications{$op}{$oid}, 
 		   $basic_notifications{$op}{$oid}*100/$basic_notifications_total);
+	    $sql .= "INSERT INTO snmp_stats_notification (trace_name, flow_name, op, oid, count) VALUES ('$trace_name', '$flow_name', '$op', '$oid', '" . $basic_notifications{$op}{$oid} . "');\n";
 	}
     }
     
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_notification WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
+
     printf("\n" .
 	   "# The following table shows the distribution of notification\n" .
 	   "# types.\n" .
@@ -422,8 +487,16 @@ sub basic_print {
 	    printf("%-18s  %12d  %11d %5.1f%%\n",
 		   "$op:", $size, $basic_size{$op}{$size},
 		   $basic_size{$op}{$size}*100/$total);
+	    $sql .= "INSERT INTO snmp_stats_size (trace_name, flow_name, op, size, count) VALUES ('$trace_name', '$flow_name', '$op', '$size', '" . $basic_size{$op}{$size} . "');\n";
 	}
     }
+    
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_size WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 }
 
 #
@@ -451,6 +524,7 @@ sub oid
 sub oid_print
 {
     return unless $oid_total;
+    my $sql = '';
     printf("\n" .
 	   "# The following table shows a rough classification of OIDs\n" .
 	   "# according to their prefix.\n" .
@@ -462,13 +536,22 @@ sub oid_print
 	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", $name, 
 		   $oid_stats{$op}{$name},
 		   $oid_stats{$op}{$name}*100/$oid_total);
+	    $sql .= "INSERT INTO snmp_stats_oid (trace_name, flow_name, op, subtree, count) VALUES ('$trace_name', '$flow_name', '$op', '$name', '" . $oid_stats{$op}{$name} . "');\n";
 	}
 	if ($oid_stats{$op}{"unknown"}) {
 	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", "unknown", 
 		   $oid_stats{$op}{"unknown"},
 		   $oid_stats{$op}{"unknown"}*100/$oid_total);
+	    $sql .= "INSERT INTO snmp_stats_oid (trace_name, flow_name, op, subtree, count) VALUES ('$trace_name', '$flow_name', '$op', 'unknown', '" . $oid_stats{$op}{"unknown"} . "');\n";
 	}
     }
+
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_oid WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 
     printf("\n" .
 	   "# The following table shows a the data types used in SNMP\n" .
@@ -481,13 +564,22 @@ sub oid_print
 	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", $type, 
 		   $oid_types{$op}{$type},
 		   $oid_types{$op}{$type}*100/$oid_total);
+	    $sql .= "INSERT INTO snmp_stats_type (trace_name, flow_name, op, type, count) VALUES ('$trace_name', '$flow_name', '$op', '$type', '" . $oid_types{$op}{$type} . "');\n";
 	}
 	if ($oid_types{$op}{"unknown"}) {
 	    printf("%-18s %-32s %11d %5.1f%%\n", "$op:", "unknown", 
 		   $oid_types{$op}{"unknown"},
 		   $oid_types{$op}{"unknown"}*100/$oid_total);
+	    $sql .= "INSERT INTO snmp_stats_type (trace_name, flow_name, op, type, count) VALUES ('$trace_name', '$flow_name', '$op', 'unknown', '" . $oid_types{$op}{"unknown"} . "');\n";
 	}
     }
+    
+    # output sql for the above table:
+    if ($sqlfile ne '') {
+	    print $sqloutputfile "DELETE FROM snmp_stats_type WHERE trace_name = '$trace_name' AND flow_name = '$flow_name';\n\n";
+	    print $sqloutputfile $sql, "\n\n";
+    }
+    $sql = '';
 }
 
 #
@@ -518,11 +610,13 @@ sub process {
 sub usage()
 {
      print STDERR << "EOF";
-Usage: $0 [-h] [files|-]
+Usage: $0 -n trace name -f flow name [-O file name] [-h] [files|-]
       
 This program computes statistics from SNMP trace files in CSV format.
-	
-  -h         display this (help) message
+  -n trace name	name of the trace being processed
+  -f flow name	name of the flow being processed (use '' for whole trace files)
+  -O filename	output information to SQL filename
+  -h		display this (help) message
 EOF
      exit;
 }
@@ -531,8 +625,19 @@ EOF
 # arguments and then process all files on the commandline in turn.
 
 my %opt;
-getopts( "h", \%opt ) or usage();
+getopts( "hO:n:f:", \%opt ) or usage();
 usage() if defined $opt{h};
+
+usage() unless defined $opt{n};
+usage() unless defined $opt{f};
+
+$trace_name = $opt{n};
+$flow_name = $opt{f};
+
+if (defined $opt{O}) {
+	$sqlfile = $opt{O};
+	open($sqloutputfile, ">$sqlfile") or die "$0: unable to open $sqlfile: $!\n";
+}
 
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
@@ -541,4 +646,9 @@ while ($ARGV = shift) {
 meta_print($total);
 basic_print($total);
 oid_print($total);
+
+if ($sqlfile ne '') {
+	close($sqloutputfile);
+}
+
 exit(0);
