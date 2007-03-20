@@ -264,7 +264,8 @@ sub process_line {
 					}
 					# we got a retransmission:
 					if ($all_equal) {
-						print "\nWe got a retransmission...\n";
+						print "\nRETRANSMISSION: on line ", $total_lines, " for packet on line ", $walk->{'last_request_line'}, " after ", $t - $walk->{'last_request_t'}, " seconds\n";
+						print "$packet\n";
 						$walk->{'retransmissions'}++;
 						return;
 					}
@@ -448,6 +449,8 @@ sub process_line {
 		$found = 1;
 		$total_walks++;
 		$w = {};
+		$w->{'last_request_line'} = $total_lines;
+		$w->{'last_request_t'} = $t;
 		$w->{'start_timestamp'} = $t;
 		$w->{'id'} = $total_walks;
 		$w->{'m_ip'} = $m_ip;
@@ -526,6 +529,8 @@ sub process_line {
 		$w->{'err-index'} = $err_index;
 	}
 	else {
+		$w->{'last_request_line'} = $total_lines;
+		$w->{'last_request_t'} = $t;
 		$w->{'request_packets'}++;
 		$w->{'request_bytes'} += $size;
 	}
@@ -681,6 +686,7 @@ if (defined $opt{O}) {
 
 @ARGV = ('-') unless @ARGV;
 while ($ARGV = shift) {
+	$total_lines = 0;
 	process_file($ARGV);
 }
 
