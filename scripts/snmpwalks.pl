@@ -283,6 +283,7 @@ sub process_line {
 				# go through all OIDs of this packet:
 				for (my $i = 0; $i < $vbc; $i++) {
 					my $oid = $line[$offset + 12 + 3*$i];
+					$oid =~ s/\.0$//;
 					my $prefix = $walk->{'prefix_oids'}[$i];
 					
 					# check for all prefix constrained:
