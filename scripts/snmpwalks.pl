@@ -238,7 +238,8 @@ sub process_line {
 						$offset = $err_status * 3;
 					}
 					else {
-						$vbc = ($vbc - $walk->{'non-rep'}) / $walk->{'max-rep'};
+						#$vbc = ($vbc - $walk->{'non-rep'}) / $walk->{'max-rep'};
+						$vbc = $walk->{'vbc'};
 						$offset = $walk->{'non-rep'} * 3;
 					}
 				}
