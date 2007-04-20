@@ -14,8 +14,6 @@ MODE		= o-rx
 # --- site specific definitions --
 
 SNMPDUMP	= snmpdump
-TCPDUMP		= tcpdump
-SNMPPCAPFLAGS	= 'udp and (port 161 or port 162)'
 DOT		= twopi
 
 SCRIPTS		= /home/schoenw/src/snmpdump/scripts
@@ -29,16 +27,10 @@ SNMPWALKS	= $(SCRIPTS)/snmpwalks.pl
 
 # --- snmp targets ---
 
-all:	$(SNMPBASE).csv.gz $(SNMPBASE)-stats.txt $(SNMPBASE)-flowstats.txt $(SNMPBASE).pdf
-
-$(SNMPBASE).pcap: # $(ALLBASE).pcap
-	tcpdump -r $< -w $@ $(SNMPPCAPFLAGS)
-
-$(SNMPBASE).csv.gz: $(SNMPBASE).pcap.gz
-	zcat $< | $(SNMPDUMP) -t -i pcap -o csv | gzip -9 > $@ 
+all:	$(SNMPBASE).csv.gz $(SNMPBASE)-stats.txt $(SNMPBASE)-flowstats.txt $(SNMPBASE).pdf $(SNMPBASE)-walks.txt
 
 $(SNMPBASE)-stats.txt: $(SNMPBASE).csv.gz
-	perl $(SNMPSTATS) $< > $@
+	perl $(SNMPSTATS) -n $(BASE) -f "" -O $(SNMPBASE)-stats.sql $< > $@
 
 $(SNMPBASE)-flows: $(SNMPBASE).csv.gz
 	-mkdir $(SNMPBASE)-flows
@@ -75,8 +67,8 @@ $(SNMPBASE)-flows.pdf: $(SNMPBASE)-flows.ps
 $(SNMPBASE)-series.txt: $(SNMPBASE).csv.gz
 	perl $(SNMPSERIES) $< > $@
 
-$(SNMPBASE)-walks.sql: $(SNMPBASE).csv.gz
-	perl $(SNMPWALKS) -O $@ -n $(SNMPBASE) -f "" $<
+$(SNMPBASE)-walks.txt: $(SNMPBASE).csv.gz
+	perl $(SNMPWALKS) -n $(BASE) -f "" -O $(SNMPBASE)-walks.sql $< > $@
 
 # --- maintenance targets ---
 
