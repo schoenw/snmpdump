@@ -74,8 +74,13 @@ sub walk_to_sql {
 
 	my $sql = '';
 
+	my $local_flow_name = "$trace_name-cg-" . $w->{'m_ip'} . "-" . $w->{'a_ip'};
+	if ($flow_name ne '') {
+		$local_flow_name = $flow_name;
+	}
+
 	# insert the walk information:
-	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, flow_name, cg_ip, cg_port, cr_ip, cr_port, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $flow_name, $w->{'m_ip'}, $w->{'m_port'}, $w->{'a_ip'}, $w->{'a_port'}, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'});
+	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, flow_name, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr, overshoot) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $local_flow_name, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'}, $w->{'overshoot'});
 
 	# insert the prefixes for this walk into another table:
 	my @values_arr;
@@ -354,28 +359,36 @@ sub process_line {
 
 					# if this is a bulk request, go through all repetitions
 					# and see if the "prefix" and "non-decreasing" properties hold:
+					# also, calculate the overshoot:
+					
 					if ($walk->{'op'} eq "get-bulk-request") {
 						my $repetitions = ($packet_vbc - $walk->{'non-rep'}) / $vbc;
-						my $offset = $walk->{'non-rep'} * 3;
+						my $offset1 = $walk->{'non-rep'} * 3;
 						my @last_oids;
-						for (my $k = 0; $k < $vbc; $k++) {
+						for (my $k = 0; $k < $walk->{'vbc'}; $k++) {
 							push(@last_oids, $walk->{'last_oids_req'}[$k]);
 						}
-
 						for (my $k = 0; $k < $repetitions; $k++) {
-							for (my $j = 0; $j < $vbc; $j++) {
-								my $oid = $line[$offset + 12 + $j*3];
+							for (my $j = 0; $j < $walk->{'vbc'}; $j++) {
+								my $oid = $line[$offset1 + 12 + $j*3];
 								my $last_oid = $last_oids[$j];
 								my $prefix = $walk->{'prefix_oids'}[$j];
+
+								if ($oid eq '') {
+									print 'non-rep = ' . $walk->{'non-rep'} . "\n";
+									print 'offset1 = ' . $offset1 . "\n";
+								}
 
 								# check if prefix is OK for the OIDs in all
 								# repetitions:
 								if (!($oid =~ /^$prefix/)) {
 									$all_prefix_constrained = 0;
+									$walk->{'overshoot'}++;
 								}
 
 								# check if this OID is greater than the one
 								# in the previous repetition:
+								#print "$oid - $last_oid\n";
 								if (oidcmp($oid, $last_oid) < 0) {
 									$all_non_decreasing = 0;
 								}
@@ -482,6 +495,8 @@ sub process_line {
 		$w->{'request_bytes'} = 0;
 
 		$w->{'max_rep_changed'} = 0;
+
+		$w->{'overshoot'} = 0;
 
 		# set the prefix of this walk:
 		my $offset = 0;

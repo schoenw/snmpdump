@@ -5,11 +5,6 @@ CREATE TABLE snmp_walk (
 	trace_name varchar(32) not null default '',
 	flow_name varchar(64) not null default '',
 
-	cg_ip varchar(128) not null default '',
-	cg_port int unsigned not null default 0,
-	cr_ip varchar(128) not null default '',
-	cr_port int unsigned not null default 0,
-
 	snmp_version tinyint unsigned not null default 0,
 	snmp_operation varchar(32) not null default '',
 	err_status int not null default 0,
@@ -33,6 +28,8 @@ CREATE TABLE snmp_walk (
 	is_strict tinyint unsigned not null default 0,
 	is_prefix_constrained tinyint unsigned not null default 0,
 	is_strict_prefix_constr tinyint unsigned not null default 0,
+
+	overshoot int unsigned not null default 0,
 
 	primary key (id),
 	key (trace_name, flow_name)
