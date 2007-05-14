@@ -19,6 +19,9 @@ my $closed_walks = 0;		# number of closed walks
 my $walks_open = {};		# all open walks
 my $walks_closed = {};		# all closed walks
 
+my $total_dump = 0;
+my $total_smart = 0;
+
 my $total_strict_walks = 0;
 my $total_prefix_walks1 = 0;
 my $total_prefix_walks2 = 0;	# prefix property broke on last packet
@@ -64,6 +67,40 @@ sub oidcmp {
 	}
 }
 
+sub gap {
+	my $a = shift;
+	my $b = shift;
+
+	my $a1 = '';
+	my $a2 = '';
+	my $b1 = '';
+	my $b2 = '';
+
+	if ($a =~ m/^(.*)\.([0-9]+)$/) {
+		$a1 = $1;
+		$a2 = $2;
+	}
+	
+	if ($b =~ m/^(.*)\.([0-9]+)$/) {
+		$b1 = $1;
+		$b2 = $2;
+	}
+
+	if ($a1 eq $b1) {
+		if (abs($a2 - $b2) > 1) {
+			return 1;
+		}
+	}
+
+	return 0;
+
+	#print "$a - $b\n";
+	#print "$a1 - $b1\n";
+	#print "$a2 - $b2\n";
+
+	#exit(0);
+}
+
 #
 # Given a key and an array index export the walk
 # to SQL.
@@ -79,8 +116,17 @@ sub walk_to_sql {
 		$local_flow_name = $flow_name;
 	}
 
+	# is this manager able to detect holes:
+	my $hole_detection = 0;
+	if ($w->{'dump'} == 1) {
+		$hole_detection = -1;
+	}
+	elsif ($w->{'smart'} == 1) {
+		$hole_detection = 1;
+	}
+
 	# insert the walk information:
-	$sql .= sprintf("INSERT INTO snmp_walk (trace_name, flow_name, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr, overshoot) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $trace_name, $local_flow_name, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'}, $w->{'overshoot'});
+	$sql .= sprintf("INSERT INTO snmp_walk (hole_detection, trace_name, flow_name, snmp_version, snmp_operation, err_status, err_index, non_rep, max_rep, max_rep_changed, start_timestamp, end_timestamp, duration, retransmissions, vbc, response_packets, response_oids, response_bytes, request_packets, request_bytes, is_strict, is_prefix_constrained, is_strict_prefix_constr, overshoot) VALUES ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%f', '%f', '%f', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');\n", $hole_detection, $trace_name, $local_flow_name, $w->{'version'}, $w->{'op'}, $w->{'err-status'}, $w->{'err-index'}, $w->{'non-rep'}, $w->{'max-rep'}, $w->{'max_rep_changed'}, $w->{'start_timestamp'}, $w->{'end_timestamp'}, $w->{'end_timestamp'} - $w->{'start_timestamp'}, $w->{'retransmissions'}, $w->{'vbc'}, $w->{'response_packets'}, $w->{'response_oids'}, $w->{'response_bytes'}, $w->{'request_packets'}, $w->{'request_bytes'}, $w->{'strict'}, $w->{'prefix_constrained'}, $w->{'strict_prefix_constrained'}, $w->{'overshoot'});
 
 	# insert the prefixes for this walk into another table:
 	my @values_arr;
@@ -128,6 +174,15 @@ sub close_walks {
 				}
 
 				$closed_walks++;
+
+				if ($w->{'dump'} == 1) {
+					$total_dump++;
+				}
+				if ($w->{'smart'} == 1) {
+					$total_smart++;
+				}
+
+				print "Closed: $closed_walks; Dump: $total_dump; Smart: $total_smart;\r";
 
 				# if we dumped walk information to a file, close that:
 				if ($dirout ne "") {
@@ -286,6 +341,11 @@ sub process_line {
 				my $all_equal = 1;
 				my $one_equal = 0;
 
+				my $a = '';
+				my $b = '';
+				my $c = '';
+				my $d = 0;
+
 				# go through all OIDs of this packet:
 				for (my $i = 0; $i < $vbc; $i++) {
 					my $oid = $line[$offset + 12 + 3*$i];
@@ -318,10 +378,20 @@ sub process_line {
 						else {
 							$all_equal = 0;
 						}
+
+						# check if the request is somewhere between the last request and
+						# the last response:
+						if ($cmp_req > 0 && $cmp_res < 0) {
+							$a = $last_oid_req;
+							$b = $last_oid_res;
+							$c = $oid;
+							$d = 1;
+						}
 					}
 					# checks done for response packets:
 					elsif ($p_type eq "res") {
 						my $last_oid_req = $walk->{'last_oids_req'}[$i];
+						my $last_oid_res = $walk->{'last_oids_res'}[$i];
 						my $cmp_req = oidcmp($oid, $last_oid_req);
 
 						if ($cmp_req < 0) {
@@ -418,12 +488,31 @@ sub process_line {
 				# we also make some updates on the walk here, otherwise we
 				# will loose the loop-local variables:
 				if ($found) {
+					if ($d == 1) {
+						#print "Operation:\t", $walk->{'op'}, "\n";
+						#print "Last Request:\t$a\n";
+						#print "Last Response:\t$b\n";
+						#print "This request:\t$c\n";
+						#print "\n\n";
+						$walk->{'smart'} = 1;
+					}
+					elsif ($walk->{'gap'} && $p_type eq "req") {
+						#print "\n\nXXXXXXX\n\n";
+						#print join(', ', @{$walk->{'last_oids_req'}}), "\n";
+						#print join(', ', @{$walk->{'last_oids_res'}}), "\n";
+						#print $packet, "\n";
+						$walk->{'dump'} = 1;
+					}
+
 					$w = $walk;
 					# if we lost the prefix constrained property now, record the packet number:
 					if ($w->{'prefix_constrained'} == 1 && !$prefix_constrained) {
 						$w->{'prefix_constrained'} = 0;
 						$w->{'strict_prefix_constrained'} = 0;
 						$w->{'prefix_broke_at'} = $w->{'packets'} + 1;
+						if ($w->{'prefix_broke_at'} <= 2 && $w->{'op'} eq 'get-next-request') {
+							#print $w->{'id'}, "\n\n\n";
+						}
 					}
 
 					# strict property can only be lost on request packets:
@@ -497,6 +586,9 @@ sub process_line {
 		$w->{'max_rep_changed'} = 0;
 
 		$w->{'overshoot'} = 0;
+		$w->{'gap'} = 0;
+		$w->{'dump'} = 0;
+		$w->{'smart'} = 0;
 
 		# set the prefix of this walk:
 		my $offset = 0;
@@ -536,6 +628,7 @@ sub process_line {
 	}
 
 	$w->{'end_timestamp'} = $t;
+	$w->{'gap'} = 0;
 
 	# how many OIDs do we have so far:
 	if ($p_type eq "res") {
@@ -551,7 +644,7 @@ sub process_line {
 		$w->{'request_packets'}++;
 		$w->{'request_bytes'} += $size;
 	}
-		
+
 	# if this is a bulk request, reset non repeaters, max repetitions and
 	# vbc values:
 	if ($p_type eq "req" && $w->{'op'} eq "get-bulk-request") {
@@ -577,6 +670,18 @@ sub process_line {
 	my $offset = (($repetitions - 1) * $w->{'vbc'} + $w->{'non-rep'}) * 3;
 	for (my $i = 0; $i < $w->{'vbc'}; $i++) {
 		my $oid = $line[$offset + 12 + 3*$i];
+	
+		# in case of response packets check to see if there's a gap between
+		# this response and the associated request:
+		if ($p_type eq "res" && $w->{'op'} ne 'get-bulk-request') {
+			if (gap($w->{'last_oids_req'}[$i], $oid)) {
+				#print "Last req:\t", $w->{'last_oids_req'}[$i], "\n";
+				#print "This res:\t", $oid, "\n";
+				#print "\n\n";
+				$w->{'gap'} = 1;
+			}
+		}
+		
 		# remove trailling .0 from OIDs:
 		$oid =~ s/\.0$//;
 		$w->{"last_oids_$p_type"}[$i] = $oid;
