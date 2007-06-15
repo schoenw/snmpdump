@@ -3,7 +3,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?> 
 <rfc ipr='full3978'
-     docName="draft-irtf-nmrg-snmp-measure-01.txt"
+     docName="draft-irtf-nmrg-snmp-measure-02.txt"
      category="info">
 
   <!--
@@ -36,7 +36,7 @@
       </address>
     </author>
 
-    <date month="January" year="2007"/>
+    <date month="June" year="2007"/>
 
       <area>Operations and Management</area>
 
@@ -53,13 +53,19 @@
 	  Even though the SNMP technology is well documented, it
 	  remains relatively unclear how SNMP is used in practice and
 	  what typical SNMP usage patterns are.
-	  
+	</t>
+	<t>
 	  This document proposes to carry out large scale SNMP traffic
 	  measurements in order to develop a better understanding how
 	  SNMP is used in real world production networks. It describes
 	  the motivation, the measurement approach, and the tools and
 	  data formats needed to carry out such a study.
         </t>
+	<t>
+	  This document was produced within the IRTF's Network
+	  Management Research Group (NMRG) and represents the
+	  consensus of all of the active contributors to this group.
+	</t>
       </abstract>
 
   </front>
@@ -134,37 +140,40 @@
 	measurements and analysis. The process consists of the
 	following five basic steps:
       </t>
-      <list style="numbers">
-	<t>
-	  Capture raw SNMP traffic traces in pcap capture files.
-	</t>
-	<t>
-	  Convert the raw traffic traces into a structured machine and
-	  human readable format. A suitable XML schema has been
-	  developed for this purpose which captures all SNMP message
-	  details. In addition, another more compact comma separated
-	  values (CSV) format has been developed which only keeps key
-	  information about SNMP messages.
-	</t>
-	<t>
-	  Filter the converted traffic traces to hide or anonymize
-	  sensitive information. While the filtering is conceptually a
-	  separate step, filtering may actually be implemented as part
-	  of the previous data conversion step for efficiency reasons.
-	</t>
-	<t>
-	  Submit the filtered traffic traces to a repository from
-	  where they can be retrieved and analyzed. Such a repository
-	  may be public, it may be under the control of a research
-	  group, or it may be under the control of a network operator
-	  who commits to run analysis scripts on the repository on
-	  behalf of researchers.
-	</t>
-	<t>
-	  Analyze the traces by creating and executing analysis
-	  scripts which extract and aggregate information.
-	</t>
-      </list>
+      <t>
+	<list style="numbers">
+	  <t>
+	    Capture raw SNMP traffic traces in pcap capture files.
+	  </t>
+	  <t>
+	    Convert the raw traffic traces into a structured machine
+	    and human readable format. A suitable XML schema has been
+	    developed for this purpose which captures all SNMP message
+	    details. In addition, another more compact comma separated
+	    values (CSV) format has been developed which only keeps
+	    key information about SNMP messages.
+	  </t>
+	  <t>
+	    Filter the converted traffic traces to hide or anonymize
+	    sensitive information. While the filtering is conceptually
+	    a separate step, filtering may actually be implemented as
+	    part of the previous data conversion step for efficiency
+	    reasons.
+	  </t>
+	  <t>
+	    Submit the filtered traffic traces to a repository from
+	    where they can be retrieved and analyzed. Such a
+	    repository may be public, it may be under the control of a
+	    research group, or it may be under the control of a
+	    network operator who commits to run analysis scripts on
+	    the repository on behalf of researchers.
+	  </t>
+	  <t>
+	    Analyze the traces by creating and executing analysis
+	    scripts which extract and aggregate information.
+	  </t>
+	</list>
+      </t>
       <t>
         Several of the steps listed above require the involvement of
 	network operators supporting the SNMP measurement projects.
@@ -732,85 +741,87 @@ ipaddress.type = ipv4address.type | ipv6address.type
         capture only the most relevant information about an SNMP
         message. The CSV format uses the following fields:
       </t>
-      <list style="numbers">
-        <t>
-          Time-stamp in the format seconds.microseconds since 1970,
-          for example "1137764769.425484".
-        </t>
-        <t>
-          Source IP address in dotted quad notation (IPv4), for
-          example "127.0.0.1", or compact hexadecimal notation (IPv6),
-          for example "::1".
-        </t>
-        <t>
-          Source port number represented as a decimal number, for
-          example "4242".
-        </t>
-        <t>
-          Destination IP address in dotted quad notation (IPv4), for
-          example "127.0.0.1", or compact hexadecimal notation (IPv6),
-          for example "::1".
-        </t>
-        <t>
-          Destination port number represented as a decimal number, for
-          example "161".
-        </t>
-        <t>
-          Size of the SNMP message (a decimal number) counted in
-          bytes, for example "123". The size excludes all transport,
-          network, and link-layer headers.
-        </t>
-        <t>
-          SNMP message version represented as a decimal number. The
-          version 0 stands for SNMPv1, 1 for SNMPv2c, and 3 for
-          SNMPv3, for example "3".
-        </t>
-        <t>
-          SNMP protocol operation indicated by one of the keywords
-          get-request, get-next-request, get-bulk-request, set-request,
-          trap, trap2, inform, response, report.
-        </t>
-        <t>
-          SNMP request-id in decimal notation, for example "1511411010".
-        </t>
-        <t>
-          SNMP error-status in decimal notation, for example "0".
-        </t>
-        <t>
-          SNMP error-index in decimal notation, for example "0".
-        </t>
-        <t>
-          Number of variable-bindings contained in the varbind-list in
-          decimal notation, for example "5".
-        </t>
-        <t>
-          For each varbind in the varbind list, three output elements
-          are generated
-	  <list>
-            <t>
-              Object names given as object identifiers in dotted decimal
-              notation, for example "1.3.6.1.2.1.1.3.0". Object names are
-              separated by commas.
-            </t>
-            <t>
-              Object base type name or exception names, that is one of
-              the following: null, integer32, unsigned32, unsigned64,
-              ipaddress, octet-string, object-identifier,
-              no-such-object, no-such-instance, and end-of-mib-view.
-            </t>
-            <t>
-              Object values are printed as numbers if the underlying
-              base type is numeric. IPv4 addresses are printed in the
-              usual decimal notation and IPv6 addresses in the usual
-              hexadecimal notation. Octet string values are printed in
-              hexadecimal format while object identifiers are printed
-              in dotted decimal notation. Exceptions are encoded by
-              their name, that is no-such-object, no-such-instance,
-              and end-of-mib-view.
-            </t>
-          </list>
-        </t>
-      </list>
+      <t>
+	<list style="numbers">
+          <t>
+            Time-stamp in the format seconds.microseconds since 1970,
+            for example "1137764769.425484".
+          </t>
+          <t>
+            Source IP address in dotted quad notation (IPv4), for
+            example "127.0.0.1", or compact hexadecimal notation (IPv6),
+            for example "::1".
+          </t>
+          <t>
+            Source port number represented as a decimal number, for
+            example "4242".
+          </t>
+          <t>
+            Destination IP address in dotted quad notation (IPv4), for
+            example "127.0.0.1", or compact hexadecimal notation (IPv6),
+            for example "::1".
+          </t>
+          <t>
+            Destination port number represented as a decimal number, for
+            example "161".
+          </t>
+          <t>
+            Size of the SNMP message (a decimal number) counted in
+            bytes, for example "123". The size excludes all transport,
+            network, and link-layer headers.
+          </t>
+          <t>
+            SNMP message version represented as a decimal number. The
+            version 0 stands for SNMPv1, 1 for SNMPv2c, and 3 for
+            SNMPv3, for example "3".
+          </t>
+          <t>
+            SNMP protocol operation indicated by one of the keywords
+            get-request, get-next-request, get-bulk-request, set-request,
+            trap, trap2, inform, response, report.
+          </t>
+          <t>
+            SNMP request-id in decimal notation, for example "1511411010".
+          </t>
+          <t>
+            SNMP error-status in decimal notation, for example "0".
+          </t>
+          <t>
+            SNMP error-index in decimal notation, for example "0".
+          </t>
+          <t>
+            Number of variable-bindings contained in the varbind-list in
+            decimal notation, for example "5".
+          </t>
+          <t>
+            For each varbind in the varbind list, three output elements
+            are generated
+	    <list>
+              <t>
+		Object names given as object identifiers in dotted decimal
+		notation, for example "1.3.6.1.2.1.1.3.0". Object names are
+		separated by commas.
+              </t>
+              <t>
+		Object base type name or exception names, that is one of
+		the following: null, integer32, unsigned32, unsigned64,
+		ipaddress, octet-string, object-identifier,
+		no-such-object, no-such-instance, and end-of-mib-view.
+              </t>
+              <t>
+		Object values are printed as numbers if the underlying
+		base type is numeric. IPv4 addresses are printed in the
+		usual decimal notation and IPv6 addresses in the usual
+		hexadecimal notation. Octet string values are printed in
+		hexadecimal format while object identifiers are printed
+		in dotted decimal notation. Exceptions are encoded by
+		their name, that is no-such-object, no-such-instance,
+		and end-of-mib-view.
+              </t>
+            </list>
+          </t>
+	</list>
+      </t>
       <t>
 	Note that the format does not preserve the information needed
 	to understand SNMPv1 traps. It is therefore recommended that
