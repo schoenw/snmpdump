@@ -24,7 +24,7 @@
     
     <author initials="J." surname="Schoenwaelder"
             fullname="Juergen Schoenwaelder">
-      <organization>International University Bremen</organization>
+      <organization>Jacobs University Bremen</organization>
       <address>
         <postal>
           <street>Campus Ring 1</street>
@@ -32,7 +32,7 @@
           <country>Germany</country>
         </postal>
         <phone>+49 421 200-3587</phone>
-        <email>j.schoenwaelder@iu-bremen.de</email>
+        <email>j.schoenwaelder@jacobs-university.de</email>
       </address>
     </author>
 
@@ -129,6 +129,11 @@
 	operators to collect traffic traces and to share them with
 	research groups interested in analyzing and modeling network
 	management interactions.
+      </t>
+      <t>
+        This is an informational document, produced within the IRTF's
+        Network Management Research Group (NMRG) and represents the
+        consensus of all of the active contributors to this group.
       </t>
 
     </section>
@@ -301,7 +306,7 @@
 	</t>
 	<t>
 	  The <eref
-	  target="https://subversion.eecs.iu-bremen.de/svn/schoenw/src/snmpdump">snmpdump</eref>
+	  target="https://subversion.eecs.jacobs-university.de/svn/schoenw/src/snmpdump">snmpdump</eref>
 	  package has been developed to convert raw pcap files into
 	  XML and CSV format. The snmpdump program reads either pcap
 	  files or XML files as input and produces XML files or CSV
