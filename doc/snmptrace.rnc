@@ -78,7 +78,7 @@ pdu.elem =
 
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
-           set-request | inform | trap2 | response | report) { 
+           set-request | inform-request | snmpV2-trap | response | report) { 
     length.attrs,
     element request-id        { length.attrs, xsd:int },
     element error-status      { length.attrs, xsd:int },
@@ -96,7 +96,9 @@ value.elem =
   element null              { length.attrs, empty } |
   element integer32         { length.attrs, xsd:int } |
   element unsigned32        { length.attrs, xsd:unsignedInt } |
-  element unsigned64        { length.attrs, xsd:unsignedLong } |
+  element counter32         { length.attrs, xsd:unsignedInt } |
+  element counter64         { length.attrs, xsd:unsignedLong } |
+  element timeticks         { length.attrs, xsd:unsignedInt } |
   element ipaddress         { length.attrs, ipv4address.type } |
   element octet-string      { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |

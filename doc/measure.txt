@@ -3,8 +3,8 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                                  Jacobs University Bremen
-Intended status: Informational                             June 22, 2007
-Expires: December 24, 2007
+Intended status: Informational                             June 28, 2007
+Expires: December 30, 2007
 
 
           SNMP Traffic Measurements and Trace Exchange Formats
@@ -33,7 +33,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on December 24, 2007.
+   This Internet-Draft will expire on December 30, 2007.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 1]
+Schoenwaelder           Expires December 30, 2007               [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -108,7 +108,7 @@ Abstract
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 2]
+Schoenwaelder           Expires December 30, 2007               [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -164,7 +164,7 @@ Table of Contents
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 3]
+Schoenwaelder           Expires December 30, 2007               [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -220,7 +220,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 4]
+Schoenwaelder           Expires December 30, 2007               [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -276,7 +276,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 5]
+Schoenwaelder           Expires December 30, 2007               [Page 5]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -332,7 +332,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 6]
+Schoenwaelder           Expires December 30, 2007               [Page 6]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -388,7 +388,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 7]
+Schoenwaelder           Expires December 30, 2007               [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -444,7 +444,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 8]
+Schoenwaelder           Expires December 30, 2007               [Page 8]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -500,7 +500,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007               [Page 9]
+Schoenwaelder           Expires December 30, 2007               [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -556,7 +556,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 10]
+Schoenwaelder           Expires December 30, 2007              [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -612,7 +612,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 11]
+Schoenwaelder           Expires December 30, 2007              [Page 11]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -668,7 +668,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 12]
+Schoenwaelder           Expires December 30, 2007              [Page 12]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -691,7 +691,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 # seems to restrict it to IETF documents (and this specification is
 # originating from the IRTF).
 #
-# $Id: measure.xml 2343 2007-06-15 08:38:35Z schoenw $
+# $Id: measure.xml 2374 2007-06-28 20:01:18Z schoenw $
 
 default namespace = "http://www.nosuchname.net/nmrg/snmptrace"
 
@@ -724,7 +724,7 @@ message.elem =
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 13]
+Schoenwaelder           Expires December 30, 2007              [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -770,7 +770,7 @@ pdu.elem =
 
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
-           set-request | inform | trap2 | response | report) {
+           set-request | inform-request | snmpV2-trap | response | report) {
     length.attrs,
     element request-id        { length.attrs, xsd:int },
     element error-status      { length.attrs, xsd:int },
@@ -780,7 +780,7 @@ pdu.elem |=
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 14]
+Schoenwaelder           Expires December 30, 2007              [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -795,7 +795,9 @@ value.elem =
   element null              { length.attrs, empty } |
   element integer32         { length.attrs, xsd:int } |
   element unsigned32        { length.attrs, xsd:unsignedInt } |
-  element unsigned64        { length.attrs, xsd:unsignedLong } |
+  element counter32         { length.attrs, xsd:unsignedInt } |
+  element counter64         { length.attrs, xsd:unsignedLong } |
+  element timeticks         { length.attrs, xsd:unsignedInt } |
   element ipaddress         { length.attrs, ipv4address.type } |
   element octet-string      { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
@@ -831,15 +833,16 @@ ipv4address.type =
 ipv6address.type =
   xsd:string {
     pattern =
-      """(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"""
-  }
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 15]
+Schoenwaelder           Expires December 30, 2007              [Page 15]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
+
+      """(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"""
+  }
 
 ipaddress.type = ipv4address.type | ipv6address.type
 
@@ -877,7 +880,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
 
    8.   SNMP protocol operation indicated by one of the keywords get-
         request, get-next-request, get-bulk-request, set-request, trap,
-        trap2, inform, response, report.
+        snmpV2-trap, inform-request, response, report.
 
    9.   SNMP request-id in decimal notation, for example "1511411010".
 
@@ -885,17 +888,17 @@ ipaddress.type = ipv4address.type | ipv6address.type
 
    11.  SNMP error-index in decimal notation, for example "0".
 
-   12.  Number of variable-bindings contained in the varbind-list in
-        decimal notation, for example "5".
 
 
 
 
-
-Schoenwaelder           Expires December 24, 2007              [Page 16]
+Schoenwaelder           Expires December 30, 2007              [Page 16]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
+
+   12.  Number of variable-bindings contained in the varbind-list in
+        decimal notation, for example "5".
 
    13.  For each varbind in the varbind list, three output elements are
         generated
@@ -905,9 +908,10 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
             separated by commas.
 
         2.  Object base type name or exception names, that is one of the
-            following: null, integer32, unsigned32, unsigned64,
-            ipaddress, octet-string, object-identifier, no-such-object,
-            no-such-instance, and end-of-mib-view.
+            following: null, integer32, unsigned32, counter32,
+            counter64, timeticks, ipaddress, octet-string, object-
+            identifier, opaque, no-such-object, no-such-instance, and
+            end-of-mib-view.
 
         3.  Object values are printed as numbers if the underlying base
             type is numeric.  IPv4 addresses are printed in the usual
@@ -944,11 +948,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-
-
-
-
-Schoenwaelder           Expires December 24, 2007              [Page 17]
+Schoenwaelder           Expires December 30, 2007              [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1004,7 +1004,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 18]
+Schoenwaelder           Expires December 30, 2007              [Page 18]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1060,7 +1060,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 19]
+Schoenwaelder           Expires December 30, 2007              [Page 19]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1116,7 +1116,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 20]
+Schoenwaelder           Expires December 30, 2007              [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1172,7 +1172,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2007
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 21]
+Schoenwaelder           Expires December 30, 2007              [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1228,7 +1228,7 @@ URIs
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 22]
+Schoenwaelder           Expires December 30, 2007              [Page 22]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1284,7 +1284,7 @@ Author's Address
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 23]
+Schoenwaelder           Expires December 30, 2007              [Page 23]
 
 Internet-Draft          SNMP Traffic Measurements              June 2007
 
@@ -1340,5 +1340,5 @@ Acknowledgment
 
 
 
-Schoenwaelder           Expires December 24, 2007              [Page 24]
+Schoenwaelder           Expires December 30, 2007              [Page 24]
 
