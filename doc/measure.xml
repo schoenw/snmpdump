@@ -677,7 +677,7 @@ pdu.elem =
 
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
-           set-request | inform | trap2 | response | report) { 
+           set-request | inform-request | snmpV2-trap | response | report) { 
     length.attrs,
     element request-id        { length.attrs, xsd:int },
     element error-status      { length.attrs, xsd:int },
@@ -695,7 +695,9 @@ value.elem =
   element null              { length.attrs, empty } |
   element integer32         { length.attrs, xsd:int } |
   element unsigned32        { length.attrs, xsd:unsignedInt } |
-  element unsigned64        { length.attrs, xsd:unsignedLong } |
+  element counter32         { length.attrs, xsd:unsignedInt } |
+  element counter64         { length.attrs, xsd:unsignedLong } |
+  element timeticks         { length.attrs, xsd:unsignedInt } |
   element ipaddress         { length.attrs, ipv4address.type } |
   element octet-string      { length.attrs, xsd:hexBinary } |
   element object-identifier { length.attrs, oid.type } |
@@ -783,7 +785,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
           <t>
             SNMP protocol operation indicated by one of the keywords
             get-request, get-next-request, get-bulk-request, set-request,
-            trap, trap2, inform, response, report.
+            trap, snmpV2-trap, inform-request, response, report.
           </t>
           <t>
             SNMP request-id in decimal notation, for example "1511411010".
@@ -808,9 +810,10 @@ ipaddress.type = ipv4address.type | ipv6address.type
 		separated by commas.
               </t>
               <t>
-		Object base type name or exception names, that is one of
-		the following: null, integer32, unsigned32, unsigned64,
-		ipaddress, octet-string, object-identifier,
+		Object base type name or exception names, that is one
+		of the following: null, integer32, unsigned32,
+		counter32, counter64, timeticks, ipaddress,
+		octet-string, object-identifier, opaque,
 		no-such-object, no-such-instance, and end-of-mib-view.
               </t>
               <t>
