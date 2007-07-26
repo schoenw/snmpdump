@@ -85,6 +85,11 @@ CPPFLAGS="$save_cppflags"
 AC_SUBST(NIDSINC)
 AC_SUBST(NIDSLIB)
 
+AC_CHECK_MEMBER([struct nids_prm.pcap_desc],
+                [AC_DEFINE([HAVE_LIBNIDS_PCAP_DESC], 1, 
+                  [Define to 1 if libnids supports nids_prm.pcap_desc])],
+		[], [#include <nids.h>])
+
 #----------------------------------------------------------------------------
 #       Checking for the libsmi library.
 #----------------------------------------------------------------------------
