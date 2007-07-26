@@ -1679,11 +1679,11 @@ void
 snmp_pcap_read_file(const char *file, const char *filter,
 		    snmp_callback func, void *data)
 {
+    assert(file);
+
     nids_params.filename = (char *) file;
     nids_params.device = NULL;
     nids_params.pcap_filter = (char *) filter;
-
-    assert(file);
 
     user_callback = func;
     user_data = data;
@@ -1701,6 +1701,7 @@ void
 snmp_pcap_read_stream(FILE *stream, const char *filter,
 		      snmp_callback func, void *data)
 {
+#if 1
     char path[] = "/tmp/snmpdump.XXXXXX";
     pid_t pid;
 
@@ -1750,4 +1751,34 @@ snmp_pcap_read_stream(FILE *stream, const char *filter,
 	snmp_pcap_read_file(path, filter, func, data);
 	unlink(path);
     }
+#else
+
+    /* This code was suggested by Rafal Wojtczuk <nergal@avet.com.pl>
+       but requires libnids 1.21 to compile and run. */
+    
+    char errbuf[PCAP_ERRBUF_SIZE];
+    
+    assert(stream);
+
+    nids_params.filename = NULL;
+    nids_params.device = NULL;
+    nids_params.pcap_filter = (char *) filter;
+    nids_params.pcap_desc = pcap_fopen_offline(stream, errbuf);
+
+    if (! nids_params.pcap_desc) {
+	fprintf(stderr, "opening pcap stream failed: %s\n", errbuf);
+	exit(1);
+    }
+
+    user_callback = func;
+    user_data = data;
+	
+    if (! nids_init()) {
+	fprintf(stderr, "libnids initialization failed: %s\n", nids_errbuf);
+	exit(1);
+    }
+
+    nids_register_udp(udp_callback);
+    nids_run();
+#endif
 }
