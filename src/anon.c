@@ -18,6 +18,9 @@
 #include <regex.h>
 #include <stdio.h>
 
+extern int yylineno;
+extern char *yytext;
+
 static anon_tf_t *tf_list = NULL;
 static anon_rule_t *rule_list = NULL;
 
@@ -59,6 +62,14 @@ static struct {
     { NULL,	0xdeadbeef }
 };
 
+
+void
+yyerror(const char *s)
+{
+    fprintf(stderr, "%s:%d: %s (last token '%s')\n", "", yylineno, s, yytext);
+}
+
+	
 
 anon_tf_t*
 anon_tf_new(anon_key_t *key, const char *name, const char *type,
@@ -312,6 +323,14 @@ anon_init(anon_key_t *key)
 	    fprintf(stderr, "rule: %s\n", rtab[3*i]);
 	}
     }
+
+#if 0
+    fprintf(stderr, "*** parsing...\n");
+    if (yyparse() != 0) {
+	    exit(1);
+    }
+    fprintf(stderr, "*** parsing done...\n");
+#endif
 
     smiSetErrorHandler(smi_error_handler);
     for (i = 0; preloadtab[i]; i++) {

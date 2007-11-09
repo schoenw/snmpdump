@@ -12,8 +12,16 @@ snmpdump_SOURCES	= snmpdump.c \
 			  filter.c \
 			  anon.c \
 			  snmp.c \
-			  flow.c
+			  flow.c \
+			  scanner.c \
+			  parser.c
 snmpdump_LDADD		= ../libanon/libanon.la $(OPENSSL_LIBS) \
-			  $(NIDSLIB) -lpcap $(XML_LIBS)
+			  $(NIDSLIB) -lpcap $(XML_LIBS) -ll
 
 man_MANS		= snmpdump.1
+
+scanner.c: scanner.l parser.h
+	flex --debug -o scanner.c scanner.l
+
+parser.c parser.h: parser.y
+	bison --debug -o parser.c -d parser.y
