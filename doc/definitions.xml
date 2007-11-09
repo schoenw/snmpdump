@@ -1,0 +1,500 @@
+<?xml version="1.0"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd">
+<?rfc toc="yes"?>
+<?rfc symrefs="yes"?> 
+<!-- full3978 -->
+<rfc ipr='full3667' 
+     docName="draft-irtf-nmrg-snmp-trace-definitions-00.txt"
+     category="info">
+
+  <!--
+  $Id: measure.xml 2374 2007-06-28 20:01:18Z schoenw $
+  -->
+
+  <!--
+      TODO:
+  -->
+
+  <front>
+
+    <title abbrev="SNMP Trace Analysis Definitions">
+      SNMP Trace Analysis Definitions
+    </title>
+    
+    <author initials="G." surname="van den Broek"
+            fullname="Gijs van den Broek">
+      <organization>University of Twente</organization>
+      <address>
+        <postal>
+          <street>P.O. BOX 217</street>
+          <city>7500 AE Enschede</city>
+          <country>Netherlands</country>
+        </postal>
+        <phone></phone>
+        <email>j.g.vandenbroek@student.utwente.nl</email>
+      </address>
+    </author>
+
+    <author initials="M." surname="Harvan"
+	    fullname="Matus Harvan">
+      <organization>ETH Zurich</organization>
+      <address>
+	<postal>
+	</postal>
+	<phone></phone>
+	<email>mharvan@inf.ethz.ch</email>
+      </address>
+    </author>
+
+    <author initials="A." surname="Pras"
+            fullname="Aiko Pras">
+      <organization>University of Twente</organization>
+      <address>
+        <postal>
+          <street>P.O. BOX 217</street>
+          <city>7500 AE Enschede</city>
+          <country>Netherlands</country>
+        </postal>
+        <phone>+31 53 4893778</phone>
+        <email>a.pras@cs.utwente.nl</email>
+      </address>
+    </author>
+
+    <author initials="J." surname="Schoenwaelder"
+            fullname="Juergen Schoenwaelder">
+      <organization>Jacobs University Bremen</organization>
+      <address>
+        <postal>
+          <street>Campus Ring 1</street>
+          <city>28725 Bremen</city>
+          <country>Germany</country>
+        </postal>
+        <phone>+49 421 200-3587</phone>
+        <email>j.schoenwaelder@jacobs-university.de</email>
+      </address>
+    </author>
+
+    <date month="November" year="2007"/>
+
+      <area>Operations and Management</area>
+
+      <workgroup>NMRG</workgroup>
+
+      <keyword>Network Management</keyword>
+      <keyword>Simple Network Management Protocol</keyword>
+      <keyword>SNMP</keyword>
+
+      <abstract>
+        <t>
+	  The Network Management Research Group (NMRG) started an
+	  activity to collect traces of the Simple Network Management
+	  Protocol (SNMP) from operational networks. To analyze these
+	  traces, it is necessary to split potentially large traces
+	  into more manageable pieces that also make it easier to deal
+	  with large data sets and simplify the analysis of the data.
+	</t>
+	<t>
+	  This document provides some common definitions that have
+	  been found useful for implementing tools to support trace
+	  analysis. This document mainly serves as a reference for the
+	  the definitions underlying these tools and it is not meant
+	  to explain all the motivation and resoning behind the
+	  definitions. Some of this background information can be
+	  found in other research papers.
+        </t>
+      </abstract>
+
+  </front>
+
+
+
+  <middle>
+
+
+
+    <section anchor="introduction" title="Introduction">
+      <t>
+	The Network Management Research Group (NMRG) started an
+	activity to collect traces of the Simple Network Management
+	Protocol (SNMP) <xref target="RFC3410"/> from operational
+	networks. To analyze these traces, it is necessary to split
+	potentially large traces into more manageable pieces that also
+	make it easier to deal with large data sets and simplify the
+	analysis of the data.
+      </t>
+      <t>
+	This document provides some common definitions that have
+	been found useful for implementing tools to support trace
+	analysis. This document mainly serves as a reference for the
+	the definitions underlying these tools and it is not meant
+	to explain all the motivation and resoning behind the
+	definitions. Some of this background information can be
+	found in other research papers.
+      </t>
+      <t>
+	More information and the motivation for SNMP trace collection
+	and analysis can be found in RFC XXXX <xref
+	target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
+      </t>
+    </section>
+
+    <section anchor="flows" title="Message Flows">
+      <t>
+	Notation: Let M be a message of an SNMP trace T. We denote the
+	properties of M as follows:
+      </t>
+      <artwork><![CDATA[
+   M.type    = operation type of message M (get, getnext, ...)
+   M.class   = class of message M (according RFC 3411)
+   M.tsrc    = transport layer source endpoint of message M
+   M.tdst    = transport layer destination endpoint of message M
+   M.nsrc    = network layer source endpoint of message M
+   M.ndst    = network layer destination endpoint of message M
+   M.reqid   = request identifier of message M
+   M.time    = capture timestamp of message M
+   ]]></artwork>
+
+      <t>
+	Definition (command messages): The set of command messages of
+	an SNMP trace T consists of all messages M in T satisfying the
+	following conditions:
+      </t>
+      <t>
+	<list style='format (C%d) ' counter='command'>
+	  <t>M is a Read class [RFC3411] message or</t>
+	  <t>M is a Write class [RFC3411] messages or</t>
+	  <t>M is a Response class [RFC3411] messages and there exists
+	  a Read class or Write class message R such that the
+	  following holds:
+	  <artwork><![CDATA[
+	  M.reqid = R.reqid
+	  M.tdst  = R.tsrc
+	  M.nsrc  = R.ndst
+	  (M.time - R.time) < t
+	  ]]></artwork>
+	  </t>
+	</list>
+      </t>
+      <t>
+	The parameter t defines a maximum timeout for response messages.
+      </t>
+
+      <t>
+	Definition (notification messages): The set of notification
+	messages of an SNMP trace T consists of all messages M in T
+	satisfying the following conditions:
+      </t>
+      <t>
+	<list style='format (N%d) ' counter='notification'>
+	  <t>M is a Notfication class [RFC3411] message or</t>
+	  <t>M is a Response class [RFC3411] message and there exists
+	  a Notification class [RFC3411] message R such that the
+	  following holds:
+	  <artwork><![CDATA[
+	  M.reqid = R.reqid
+	  M.tdst  = R.tsrc
+	  M.nsrc  = R.ndst
+	  (M.time - R.time) < t
+	  ]]></artwork>
+	  </t>
+	</list>
+      </t>
+      <t>
+	The parameter t defines a maximum timeout for response messages.
+      </t>
+
+      <!--
+   Def: The class of {internal group} messages consists of (I.1) all
+   Internal class messages. /* xxx I am not sure this is the best
+   solution... xxx */
+      -->
+
+      <t><vspace blankLines="100"/></t>
+
+      <t>
+	Definition (flow): A flow F is the set of messages of an SNMP
+	trace T with the following properties:
+      </t>
+      <t>
+	<list style='format (F%d) ' counter='flow'>
+	  <t>
+	    All messages belong to a single source and destination
+	    network address pair.
+	  </t>
+	  <t>
+	    All messages are either command group messages,
+	    notification group messages, or internal group messages.
+	  </t>
+	  <t>
+	    All Response class messages originate from a single
+	    network address.
+	  </t>
+	  <t>
+	    All non-Response class messages originate from a single
+	    network address.
+	  </t>
+	</list>
+      </t>
+      <t>
+	Subsequently, we call flows containing command messages
+	command flows. Similarily, we call flows containing
+	notification messages notification flows.
+      </t>
+      <t>
+	Notation: Let F be a flow as defined above. We denote the
+	properties of F as follows:
+      </t>
+      <artwork><![CDATA[
+   F.type    = type of the flow F (command / notification / internal flow)
+   F.nsrc    = network layer source endpoint of F
+   F.ndst    = network layer destination endpoint of F
+   F.start   = time stamp of the first message in F
+   F.end     = time stamp of the last message in F
+   ]]></artwork>
+      <t>
+	This definition of a flow is consistent with the definition of
+	a flow in the paper <xref target="SPHSM07"/>.
+      </t>
+    </section>
+
+    <section anchor="slices" title="FLow Slices">
+
+      <t>
+	Definition (linked): A Response/GetNext or Response/GetBulk
+	message pair is linked if the following holds:
+      </t>
+      <t>
+	<list style='format (L%d) ' counter='linked'>
+	  <t>
+	    The request message (GetNext or GetBulk) must contain at
+	    least one OID which has been contained in the (repeater)
+	    varbind list of the last response message of a previous
+	    request message.
+	  </t>
+	</list>
+      </t>
+
+      <t>
+	Definition (slice): A slice S is a subset of messages in a
+	flow F for which the following properties hold:
+      </t>
+      <t>
+	<list style='format (S%d) ' counter='slice'>
+	  <t>
+	    All messages are exchanged between two transport endpoints
+	    (a single transport address pair).
+	  </t>
+	  <t>
+	    All request messages must be of the same type.
+	  </t>
+	  <t>
+	    All Get, Set, Trap, Inform messages must contain the same set
+	    of OIDs.
+	  </t>
+	  <t>
+	    All Response messages must follow a previous request
+	    message that is part of the same slice.
+	  </t>
+	  <t>
+	    All GetNext or GetBulk message must either contain the
+	    same set of OIDs or they must be linked to the last
+	    response of the previous request.
+	  </t>
+	  <t>
+	    For a request message Q following the last response
+	    message R to the previous request, the condition
+	    (Q.time - R.time) < e is true.
+	  </t>
+	</list>
+      </t>
+
+      <t>
+	Notation: A slice S has several properties. We introduce the
+	following notation:
+      </t>
+      <artwork><![CDATA[
+   S.type   = type of non-response messages in S
+   S.start  = time stamp of the first message in S
+   S.end    = time stamp of the last message in S
+   S.prefix = set of prefixes of messages in S /* [TODO] */
+   ]]></artwork>
+    </section>
+
+    <section anchor="slice-sets" title="Slice Sets">
+
+   Def: A session type is a type mark identifying sessions
+
+   (1) All messages have been exchanged between the same transport
+       endpoints. (really transport?)
+   (2) All READ, WRITE, NOTIFY messages originate from the same
+       transport endpoint. (really transport???)
+   (3) All non-response messages are of the same type
+
+   Def: A session set is a set of sessions that have the following
+   properties:
+
+   (1) All READ, WRITE, NOTIFY messages originate from the same
+       transport endpoint. (really transport???)
+   (2) 
+   (3) All messages occurred within a specific time frame of each
+       other.
+
+
+    </section>
+
+    <section anchor="walks" title="Walks">
+
+      <t>
+	Definition (walk): A walk W is a slice S with the following
+	properties:
+      </t>
+      <t>
+	<list style='format (W%d) ' counter='walk'>
+	  <t>
+	    The type of the slice S is either get-next-request or
+	    get-bulk-request.
+	  </t>
+	  <t>
+	    ...
+	  </t>
+	</list>
+      </t>
+
+    </section>
+
+
+    <section anchor="security" title="Security Considerations">
+      <t>
+      </t>
+    </section>
+
+    <section title="Acknowledgements">
+      <t>
+        This document was influenced by discussions within the Network
+        Management Research Group (NMRG).
+      </t>
+      <t>
+        Part of this work was funded by the European Commission under
+        grant FP6-2004-IST-4-EMANICS-026854-NOE.
+      </t>
+    </section>
+
+  </middle>
+
+
+
+  <back>
+
+
+    <references title="Normative References">
+
+      <reference anchor="RFC3410">
+        <front>
+          <title>
+            Introduction and Applicability Statements for
+            Internet Standard Management Framework
+          </title>
+          <author initials="J." surname="Case" fullname="J. Case">
+            <organization>SNMP Research, Inc.</organization>
+          </author>
+          <author initials="R." surname="Mundy" fullname="R. Mundy">
+            <organization>Network Associates Laboratories</organization>
+          </author>
+          <author initials="D." surname="Partain" fullname="D. Partain">
+            <organization>Ericsson</organization>
+          </author>
+          <author initials="B." surname="Stewart" fullname="B. Stewart">
+            <organization>Retired</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3410"/>
+      </reference>
+
+      <reference anchor="RFC3411">
+        <front>
+          <title>
+	    An Architecture for Describing Simple Network Management
+	    Protocol (SNMP) Management Frameworks
+          </title>
+          <author initials="D." surname="Harrington" fullname="D. Harrington">
+            <organization>Enterasys Networks</organization>
+          </author>
+          <author initials="R." surname="Presuhn" fullname="R. Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <author initials="B." surname="Wijnen" fullname="B. Wijnen">
+            <organization>Lucent Technologies</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3411"/>
+      </reference>
+
+    </references>
+
+
+    <references title="Informative References">
+
+      <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE-01">
+        <front>
+          <title>
+	    An Architecture for Describing Simple Network Management
+	    Protocol (SNMP) Management Frameworks
+          </title>
+          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
+            <organization>TU Braunschweig</organization>
+          </author>
+          <date month="Janury" year="2007"/>
+        </front>
+        <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure-01.txt"/>
+      </reference>
+
+      <reference anchor="SPHSM07">
+        <front>
+          <title>
+            SNMP Traffic Analysis: Approaches, Tools, and First Results
+          </title>
+          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
+            <organization>TU Braunschweig</organization>
+          </author>
+          <author initials="A." surname="Pras" fullname="A. Pras">
+            <organization>University of Twente</organization>
+          </author>
+          <author initials="M." surname="Harvan" fullname="M. Harvan">
+            <organization>International University Bremen</organization>
+          </author>
+          <author initials="J." surname="Schippers" fullname="J. Schippers">
+            <organization>University of Twente</organization>
+          </author>
+          <author initials="R." surname="van de Meent" fullname="R. van de Meent">
+            <organization>University of Twente</organization>
+          </author>
+          <date month="May" year="2007"/>
+        </front>
+        <seriesInfo name="IFIP/IEEE Integrated Management" value="IM 2007"/>
+      </reference>
+
+    </references>
+
+  </back>
+    
+
+</rfc>
+
+<!-- Local Variables:                                           -->
+<!-- compile-command: "xml2rfc measure.xml"                     -->
+<!-- ispell-local-dictionary: "american"                        -->
+<!-- sgml-declaration: "/usr/lib/sgml/declaration/xml.decl"     -->
+<!-- sgml-omittag:nil                                           -->
+<!-- sgml-shorttag:t                                            -->
+<!-- sgml-namecase-general:t                                    -->
+<!-- sgml-minimize-attributes:nil                               -->
+<!-- sgml-always-quote-attributes:t                             -->
+<!-- sgml-indent-step:2                                         -->
+<!-- sgml-indent-data:t                                         -->
+<!-- sgml-parent-document:nil                                   -->
+<!-- sgml-exposed-tags:nil                                      -->
+<!-- sgml-local-catalogs:nil                                    -->
+<!-- sgml-local-ecat-files:nil                                  -->
+<!-- End:                                                       -->
