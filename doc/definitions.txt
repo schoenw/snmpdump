@@ -1,14 +1,15 @@
 
 
+
 NMRG                                                    G. van den Broek
 Internet-Draft                                      University of Twente
-Expires: May 9, 2008                                           M. Harvan
-                                                              ETH Zurich
+Intended status: Informational                                 M. Harvan
+Expires: May 16, 2008                                         ETH Zurich
                                                                  A. Pras
                                                     University of Twente
                                                         J. Schoenwaelder
                                                 Jacobs University Bremen
-                                                        November 9, 2007
+                                                       November 13, 2007
 
 
                     SNMP Trace Analysis Definitions
@@ -16,17 +17,15 @@ Expires: May 9, 2008                                           M. Harvan
 
 Status of this Memo
 
-   This document is an Internet-Draft and is subject to all provisions
-   of section 3 of RFC 3667.  By submitting this Internet-Draft, each
-   author represents that any applicable patent or other IPR claims of
-   which he or she is aware have been or will be disclosed, and any of
-   which he or she become aware will be disclosed, in accordance with
-   RFC 3668.
+   By submitting this Internet-Draft, each author represents that any
+   applicable patent or other IPR claims of which he or she is aware
+   have been or will be disclosed, and any of which he or she becomes
+   aware will be disclosed, in accordance with Section 6 of BCP 79.
 
    Internet-Drafts are working documents of the Internet Engineering
    Task Force (IETF), its areas, and its working groups.  Note that
-   other groups may also distribute working documents as
-   Internet-Drafts.
+   other groups may also distribute working documents as Internet-
+   Drafts.
 
    Internet-Drafts are draft documents valid for a maximum of six months
    and may be updated, replaced, or obsoleted by other documents at any
@@ -39,24 +38,29 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on May 9, 2008.
+   This Internet-Draft will expire on May 16, 2008.
 
 Copyright Notice
 
-   Copyright (C) The Internet Society (2007).
+   Copyright (C) The IETF Trust (2007).
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires May 16, 2008                  [Page 1]
+
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
+
 
 Abstract
 
    The Network Management Research Group (NMRG) started an activity to
    collect traces of the Simple Network Management Protocol (SNMP) from
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 1]
-
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
-
-
    operational networks.  To analyze these traces, it is necessary to
    split potentially large traces into more manageable pieces that also
    make it easier to deal with large data sets and simplify the analysis
@@ -69,20 +73,21 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    motivation and resoning behind the definitions.  Some of this
    background information can be found in other research papers.
 
+
 Table of Contents
 
    1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
-   2.  Message Flows  . . . . . . . . . . . . . . . . . . . . . . . .  4
-   3.  FLow Slices  . . . . . . . . . . . . . . . . . . . . . . . . .  6
-   4.  Slice Sets . . . . . . . . . . . . . . . . . . . . . . . . . .  7
-   5.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  8
-   6.  Security Considerations  . . . . . . . . . . . . . . . . . . .  9
-   7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 10
-   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 11
-   8.1   Normative References . . . . . . . . . . . . . . . . . . . . 11
-   8.2   Informative References . . . . . . . . . . . . . . . . . . . 11
-       Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . 11
-       Intellectual Property and Copyright Statements . . . . . . . . 13
+   2.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  4
+   3.  Flow Slices  . . . . . . . . . . . . . . . . . . . . . . . . .  7
+   4.  Slice Sets . . . . . . . . . . . . . . . . . . . . . . . . . .  9
+   5.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   6.  Security Considerations  . . . . . . . . . . . . . . . . . . . 11
+   7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 12
+   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 13
+     8.2.  Informative References . . . . . . . . . . . . . . . . . . 13
+   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 14
+   Intellectual Property and Copyright Statements . . . . . . . . . . 15
 
 
 
@@ -103,24 +108,19 @@ Table of Contents
 
 
 
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 2]
+van den Broek, et al.     Expires May 16, 2008                  [Page 2]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 1.  Introduction
 
    The Network Management Research Group (NMRG) started an activity to
    collect traces of the Simple Network Management Protocol (SNMP)
-   [RFC3410] from operational networks.  To analyze these traces, it is
-   necessary to split potentially large traces into more manageable
-   pieces that also make it easier to deal with large data sets and
-   simplify the analysis of the data.
+   [RFC3410] [RFC3411] from operational networks.  To analyze these
+   traces, it is necessary to split potentially large traces into more
+   manageable pieces that also make it easier to deal with large data
+   sets and simplify the analysis of the data.
 
    This document provides some common definitions that have been found
    useful for implementing tools to support trace analysis.  This
@@ -164,14 +164,14 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-van den Broek, et al.     Expires May 9, 2008                   [Page 3]
+van den Broek, et al.     Expires May 16, 2008                  [Page 3]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-2.  Message Flows
+2.  Flows
 
-   Notation: Let M be a message of an SNMP trace T.  We denote the
+   Notation: Let M be a message of an SNMP trace T. We denote the
    properties of M as follows:
 
       M.type    = operation type of message M (get, getnext, ...)
@@ -183,20 +183,26 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
       M.reqid   = request identifier of message M
       M.time    = capture timestamp of message M
 
+   Note that the properties of a message can be easily extracted from
+   the exchange formats defined in RFC XXXX
+   [ID-IRTF-NMRG-SNMP-MEASURE-01].
+
    Definition (command messages): The set of command messages of an SNMP
    trace T consists of all messages M in T satisfying the following
    conditions:
 
-   (C1)  M is a Read class [RFC3411] message or
-   (C2)  M is a Write class [RFC3411] messages or
-   (C3)  M is a Response class [RFC3411] messages and there exists a
-         Read class or Write class message R such that the following
-         holds:
+   (C1)   M is a Read class [RFC3411] message or
 
-   	  M.reqid = R.reqid
-   	  M.tdst  = R.tsrc
-   	  M.nsrc  = R.ndst
-   	  (M.time - R.time) < t
+   (C2)   M is a Write class [RFC3411] messages or
+
+   (C3)   M is a Response class [RFC3411] messages and there exists a
+          Read class or Write class message R such that the following
+          holds:
+
+             M.reqid = R.reqid
+             M.tdst  = R.tsrc
+             M.nsrc  = R.ndst
+             (M.time - R.time) < t
 
    The parameter t defines a maximum timeout for response messages.
 
@@ -204,15 +210,25 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    of an SNMP trace T consists of all messages M in T satisfying the
    following conditions:
 
-   (N1)  M is a Notfication class [RFC3411] message or
-   (N2)  M is a Response class [RFC3411] message and there exists a
-         Notification class [RFC3411] message R such that the following
-         holds:
+   (N1)   M is a Notfication class [RFC3411] message or
 
-   	  M.reqid = R.reqid
-   	  M.tdst  = R.tsrc
-   	  M.nsrc  = R.ndst
-   	  (M.time - R.time) < t
+   (N2)   M is a Response class [RFC3411] message and there exists a
+          Notification class [RFC3411] message R such that the following
+          holds:
+
+
+
+
+
+van den Broek, et al.     Expires May 16, 2008                  [Page 4]
+
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
+
+
+             M.reqid = R.reqid
+             M.tdst  = R.tsrc
+             M.nsrc  = R.ndst
+             (M.time - R.time) < t
 
    The parameter t defines a maximum timeout for response messages.
 
@@ -220,22 +236,65 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-van den Broek, et al.     Expires May 9, 2008                   [Page 4]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires May 16, 2008                  [Page 5]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
    Definition (flow): A flow F is the set of messages of an SNMP trace T
    with the following properties:
 
-   (F1)  All messages belong to a single source and destination network
-         address pair.
-   (F2)  All messages are either command group messages, notification
-         group messages, or internal group messages.
-   (F3)  All Response class messages originate from a single network
-         address.
-   (F4)  All non-Response class messages originate from a single network
-         address.
+   (F1)   All messages belong to a single source and destination network
+          address pair.
+
+   (F2)   All messages are either command group messages, notification
+          group messages, or internal group messages.
+
+   (F3)   All Response class messages originate from a single network
+          address.
+
+   (F4)   All non-Response class messages originate from a single
+          network address.
 
    Subsequently, we call flows containing command messages command
    flows.  Similarily, we call flows containing notification messages
@@ -244,11 +303,11 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    Notation: Let F be a flow as defined above.  We denote the properties
    of F as follows:
 
-      F.type    = type of the flow F (command / notification / internal flow)
-      F.nsrc    = network layer source endpoint of F
-      F.ndst    = network layer destination endpoint of F
-      F.start   = time stamp of the first message in F
-      F.end     = time stamp of the last message in F
+      F.type  = type of the flow F (command/notification/internal flow)
+      F.nsrc  = network layer source endpoint of F
+      F.ndst  = network layer destination endpoint of F
+      F.start = time stamp of the first message in F
+      F.end   = time stamp of the last message in F
 
    This definition of a flow is consistent with the definition of a flow
    in the paper [SPHSM07].
@@ -273,47 +332,50 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 5]
+van den Broek, et al.     Expires May 16, 2008                  [Page 6]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-3.  FLow Slices
+3.  Flow Slices
 
    Definition (linked): A Response/GetNext or Response/GetBulk message
    pair is linked if the following holds:
 
-   (L1)  The request message (GetNext or GetBulk) must contain at least
-         one OID which has been contained in the (repeater) varbind list
-         of the last response message of a previous request message.
+   (L1)   The request message (GetNext or GetBulk) must contain at least
+          one OID which has been contained in the (repeater) varbind
+          list of the last response message of a previous request
+          message.
 
    Definition (slice): A slice S is a subset of messages in a flow F for
    which the following properties hold:
 
-   (S1)  All messages are exchanged between two transport endpoints (a
-         single transport address pair).
-   (S2)  All request messages must be of the same type.
-   (S3)  All Get, Set, Trap, Inform messages must contain the same set
-         of OIDs.
-   (S4)  All Response messages must follow a previous request message
-         that is part of the same slice.
-   (S5)  All GetNext or GetBulk message must either contain the same set
-         of OIDs or they must be linked to the last response of the
-         previous request.
-   (S6)  For a request message Q following the last response message R
-         to the previous request, the condition (Q.time - R.time) < e is
-         true.
+   (S1)   All messages are exchanged between two transport endpoints (a
+          single transport address pair).
+
+   (S2)   All request messages must be of the same type.
+
+   (S3)   All Get, Set, Trap, Inform messages must contain the same set
+          of OIDs.
+
+   (S4)   All Response messages must follow a previous request message
+          that is part of the same slice.
+
+   (S5)   All GetNext or GetBulk message must either contain the same
+          set of OIDs or they must be linked to the last response of the
+          previous request.
+
+   (S6)   For a request message Q following the last response message R
+          to the previous request, the condition (Q.time - R.time) < e
+          is true.
 
    Notation: A slice S has several properties.  We introduce the
    following notation:
 
-      S.type   = type of non-response messages in S
-      S.start  = time stamp of the first message in S
-      S.end    = time stamp of the last message in S
-      S.prefix = set of prefixes of messages in S /* [TODO] */
+      S.type     = type of non-response messages in S
+      S.start    = time stamp of the first message in S
+      S.end      = time stamp of the last message in S
+      S.prefix   = set of prefixes of messages in S /* [TODO] */
 
 
 
@@ -326,19 +388,95 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 6]
+van den Broek, et al.     Expires May 16, 2008                  [Page 7]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
+
+
+   Definition (concurrency): Two slides A and B of a given flow F are
+   concurrent at time t if A.start <= t <= A.end and B.start <= t <=
+   B.end.  The concurrency level F.clevel(t) of a flow F at time t is
+   given by the number of concurrent slices of F at time t.  The
+   concurrency level of a manager identified by the network address addr
+   at time t is given by the sum of the flow currency levels F.clevel(t)
+   for all flows originating from addr, that is F.nsrc = addr.
+
+   Definition (delta time serial): Two slides A and B of a given flow F
+   are called delta time serial if (B.start - A.end) < delta.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires May 16, 2008                  [Page 8]
+
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 4.  Slice Sets
 
+   Definition (slice type): A slice type is a type mark identifying
+   slices that share the following properties:
+
+   (ST1)   All messages have been exchanged between the same transport
+           endpoints. (really transport? does this not break if a
+           manager always changes its port number?)
+
+   (ST2)   All READ, WRITE, NOTIFY messages originate from the same
+           transport endpoint. (really transport???)
+
+   (ST3)   All non-response messages are of the same type
+
+   [TODO: Should this be an equivalence relation so that slice sets turn
+   into equivalent classes?]
+
+   Definition (slice set): A slice set is a set of slices that have the
+   following properties:
+
+   (SS1)   All READ, WRITE, NOTIFY messages originate from the same
+           transport endpoint. (really transport???)
+
+   (SS2)   ???
+
+   (SS3)   All messages occurred within a specific time frame of each
+           other. (what does this mean??? do we need delta serial for
+           messages???)
 
 
 
@@ -362,35 +500,9 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 7]
+van den Broek, et al.     Expires May 16, 2008                  [Page 9]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 5.  Walks
@@ -398,9 +510,24 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    Definition (walk): A walk W is a slice S with the following
    properties:
 
-   (W1)  The type of the slice S is either get-next-request or
-         get-bulk-request.
-   (W2)  ...
+   (W1)   The type of the slice S is either get-next-request or get-
+          bulk-request.
+
+   (W2)   At least one object identifier in the sequence of requests at
+          the same varbind index must be increasing lexicographically
+          while all object identifiers at the same varbind index have to
+          be non-decreasing.
+
+   Definition (strict walk): A walk W is a strict walk if all object
+   identifiers in the sequence of requests at the same varbind index are
+   strictly increasing lexicographically.  Furthermore, the object
+   identifiers at the same index of a response and a subsequent request
+   must be identical.
+
+   Definition (prefix constrained walk): A walk W is prefix constrained
+   if all object identifiers at the same index have the same object
+   identifier prefix.  This prefix is established by the first request
+   within the walk.
 
 
 
@@ -429,28 +556,15 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 8]
+van den Broek, et al.     Expires May 16, 2008                 [Page 10]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 6.  Security Considerations
 
+   This document provides definitions for the analysis of SNMP traces
+   and does not impact the security of the Internet.
 
 
 
@@ -498,11 +612,9 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-van den Broek, et al.     Expires May 9, 2008                   [Page 9]
+van den Broek, et al.     Expires May 16, 2008                 [Page 11]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 7.  Acknowledgements
@@ -556,35 +668,65 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-van den Broek, et al.     Expires May 9, 2008                  [Page 10]
+van den Broek, et al.     Expires May 16, 2008                 [Page 12]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 8.  References
 
-8.1  Normative References
+8.1.  Normative References
 
-   [RFC3410]  Case, J., Mundy, R., Partain, D. and B. Stewart,
+   [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
+              Architecture for Describing Simple Network Management
+              Protocol (SNMP) Management Frameworks", RFC 3411,
+              December 2002.
+
+8.2.  Informative References
+
+   [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
               "Introduction and Applicability Statements for Internet
               Standard Management Framework", RFC 3410, December 2002.
-
-   [RFC3411]  Harrington, D., Presuhn, R. and B. Wijnen, "An
-              Architecture for Describing Simple Network Management
-              Protocol (SNMP) Management Frameworks", RFC 3411, December
-              2002.
-
-8.2  Informative References
 
    [ID-IRTF-NMRG-SNMP-MEASURE-01]
               Schoenwaelder, J., "An Architecture for Describing Simple
               Network Management Protocol (SNMP) Management Frameworks",
-              ID draft-irtf-nmrg-snmp-measure-01.txt, Janury 2007.
+              ID draft-irtf-nmrg-snmp-measure-01.txt, January 2007.
 
-   [SPHSM07]  Schoenwaelder, J., Pras, A., Harvan, M., Schippers, J. and
-              R. van de Meent, "SNMP Traffic Analysis: Approaches,
-              Tools, and First Results", IFIP/IEEE Integrated Management
-              IM 2007, May 2007.
+   [SPHSM07]  Schoenwaelder, J., Pras, A., Harvan, M., Schippers, J.,
+              and R. van de Meent, "SNMP Traffic Analysis: Approaches,
+              Tools, and First Results", IFIP/IEEE Integrated
+              Management IM 2007, May 2007.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires May 16, 2008                 [Page 13]
+
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 Authors' Addresses
@@ -596,25 +738,17 @@ Authors' Addresses
    Netherlands
 
    Phone:
-   EMail: j.g.vandenbroek@student.utwente.nl
+   Email: j.g.vandenbroek@student.utwente.nl
 
 
    Matus Harvan
    ETH Zurich
+   ETH Zentrum
+   8092 Zurich
+   Switzerland
 
-   Phone:
-   EMail: mharvan@inf.ethz.ch
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                  [Page 11]
-
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+   Phone: +41 44 632 68 76
+   Email: mharvan@inf.ethz.ch
 
 
    Aiko Pras
@@ -624,7 +758,7 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    Netherlands
 
    Phone: +31 53 4893778
-   EMail: a.pras@cs.utwente.nl
+   Email: a.pras@cs.utwente.nl
 
 
    Juergen Schoenwaelder
@@ -634,7 +768,7 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
    Germany
 
    Phone: +49 421 200-3587
-   EMail: j.schoenwaelder@jacobs-university.de
+   Email: j.schoenwaelder@jacobs-university.de
 
 
 
@@ -646,34 +780,29 @@ Internet-Draft      SNMP Trace Analysis Definitions        November 2007
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires May 9, 2008                  [Page 12]
+van den Broek, et al.     Expires May 16, 2008                 [Page 14]
 
-Internet-Draft      SNMP Trace Analysis Definitions        November 2007
+Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-Intellectual Property Statement
+Full Copyright Statement
+
+   Copyright (C) The IETF Trust (2007).
+
+   This document is subject to the rights, licenses and restrictions
+   contained in BCP 78, and except as set forth therein, the authors
+   retain all their rights.
+
+   This document and the information contained herein are provided on an
+   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
+   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY, THE IETF TRUST AND
+   THE INTERNET ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS
+   OR IMPLIED, INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF
+   THE INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
+   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Intellectual Property
 
    The IETF takes no position regarding the validity or scope of any
    Intellectual Property Rights or other rights that might be claimed to
@@ -698,31 +827,14 @@ Intellectual Property Statement
    ietf-ipr@ietf.org.
 
 
-Disclaimer of Validity
-
-   This document and the information contained herein are provided on an
-   "AS IS" basis and THE CONTRIBUTOR, THE ORGANIZATION HE/SHE REPRESENTS
-   OR IS SPONSORED BY (IF ANY), THE INTERNET SOCIETY AND THE INTERNET
-   ENGINEERING TASK FORCE DISCLAIM ALL WARRANTIES, EXPRESS OR IMPLIED,
-   INCLUDING BUT NOT LIMITED TO ANY WARRANTY THAT THE USE OF THE
-   INFORMATION HEREIN WILL NOT INFRINGE ANY RIGHTS OR ANY IMPLIED
-   WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
-
-
-Copyright Statement
-
-   Copyright (C) The Internet Society (2007).  This document is subject
-   to the rights, licenses and restrictions contained in BCP 78, and
-   except as set forth therein, the authors retain all their rights.
-
-
 Acknowledgment
 
-   Funding for the RFC Editor function is currently provided by the
-   Internet Society.
+   Funding for the RFC Editor function is provided by the IETF
+   Administrative Support Activity (IASA).
 
 
 
 
-van den Broek, et al.     Expires May 9, 2008                  [Page 13]
+
+van den Broek, et al.     Expires May 16, 2008                 [Page 15]
 

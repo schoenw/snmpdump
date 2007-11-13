@@ -3,7 +3,7 @@
 <?rfc toc="yes"?>
 <?rfc symrefs="yes"?> 
 <!-- full3978 -->
-<rfc ipr='full3667' 
+<rfc ipr='full3978' 
      docName="draft-irtf-nmrg-snmp-trace-definitions-00.txt"
      category="info">
 
@@ -36,13 +36,16 @@
     </author>
 
     <author initials="M." surname="Harvan"
-	    fullname="Matus Harvan">
+            fullname="Matus Harvan">
       <organization>ETH Zurich</organization>
       <address>
-	<postal>
-	</postal>
-	<phone></phone>
-	<email>mharvan@inf.ethz.ch</email>
+        <postal>
+          <street>ETH Zentrum</street>
+          <city>8092 Zurich</city>
+          <country>Switzerland</country>
+        </postal>
+        <phone>+41 44 632 68 76</phone>
+        <email>mharvan@inf.ethz.ch</email>
       </address>
     </author>
 
@@ -86,21 +89,21 @@
 
       <abstract>
         <t>
-	  The Network Management Research Group (NMRG) started an
-	  activity to collect traces of the Simple Network Management
-	  Protocol (SNMP) from operational networks. To analyze these
-	  traces, it is necessary to split potentially large traces
-	  into more manageable pieces that also make it easier to deal
-	  with large data sets and simplify the analysis of the data.
-	</t>
-	<t>
-	  This document provides some common definitions that have
-	  been found useful for implementing tools to support trace
-	  analysis. This document mainly serves as a reference for the
-	  the definitions underlying these tools and it is not meant
-	  to explain all the motivation and resoning behind the
-	  definitions. Some of this background information can be
-	  found in other research papers.
+          The Network Management Research Group (NMRG) started an
+          activity to collect traces of the Simple Network Management
+          Protocol (SNMP) from operational networks. To analyze these
+          traces, it is necessary to split potentially large traces
+          into more manageable pieces that also make it easier to deal
+          with large data sets and simplify the analysis of the data.
+        </t>
+        <t>
+          This document provides some common definitions that have
+          been found useful for implementing tools to support trace
+          analysis. This document mainly serves as a reference for the
+          the definitions underlying these tools and it is not meant
+          to explain all the motivation and resoning behind the
+          definitions. Some of this background information can be
+          found in other research papers.
         </t>
       </abstract>
 
@@ -114,35 +117,37 @@
 
     <section anchor="introduction" title="Introduction">
       <t>
-	The Network Management Research Group (NMRG) started an
-	activity to collect traces of the Simple Network Management
-	Protocol (SNMP) <xref target="RFC3410"/> from operational
-	networks. To analyze these traces, it is necessary to split
-	potentially large traces into more manageable pieces that also
-	make it easier to deal with large data sets and simplify the
-	analysis of the data.
+        The Network Management Research Group (NMRG) started an
+        activity to collect traces of the Simple Network Management
+        Protocol (SNMP) <xref target="RFC3410"/>
+        <xref target="RFC3411"/> from operational networks. To analyze
+        these traces, it is necessary to split potentially large
+        traces into more manageable pieces that also make it easier to
+        deal with large data sets and simplify the analysis of the
+        data.
       </t>
       <t>
-	This document provides some common definitions that have
-	been found useful for implementing tools to support trace
-	analysis. This document mainly serves as a reference for the
-	the definitions underlying these tools and it is not meant
-	to explain all the motivation and resoning behind the
-	definitions. Some of this background information can be
-	found in other research papers.
+        This document provides some common definitions that have
+        been found useful for implementing tools to support trace
+        analysis. This document mainly serves as a reference for the
+        the definitions underlying these tools and it is not meant
+        to explain all the motivation and resoning behind the
+        definitions. Some of this background information can be
+        found in other research papers.
       </t>
       <t>
-	More information and the motivation for SNMP trace collection
-	and analysis can be found in RFC XXXX <xref
-	target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
+        More information and the motivation for SNMP trace collection
+        and analysis can be found in RFC XXXX <xref
+        target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
       </t>
     </section>
 
-    <section anchor="flows" title="Message Flows">
+    <section anchor="flows" title="Flows">
       <t>
-	Notation: Let M be a message of an SNMP trace T. We denote the
-	properties of M as follows:
+        Notation: Let M be a message of an SNMP trace T. We denote the
+        properties of M as follows:
       </t>
+      <figure>
       <artwork><![CDATA[
    M.type    = operation type of message M (get, getnext, ...)
    M.class   = class of message M (according RFC 3411)
@@ -153,54 +158,64 @@
    M.reqid   = request identifier of message M
    M.time    = capture timestamp of message M
    ]]></artwork>
-
+      </figure>
       <t>
-	Definition (command messages): The set of command messages of
-	an SNMP trace T consists of all messages M in T satisfying the
-	following conditions:
-      </t>
-      <t>
-	<list style='format (C%d) ' counter='command'>
-	  <t>M is a Read class [RFC3411] message or</t>
-	  <t>M is a Write class [RFC3411] messages or</t>
-	  <t>M is a Response class [RFC3411] messages and there exists
-	  a Read class or Write class message R such that the
-	  following holds:
-	  <artwork><![CDATA[
-	  M.reqid = R.reqid
-	  M.tdst  = R.tsrc
-	  M.nsrc  = R.ndst
-	  (M.time - R.time) < t
-	  ]]></artwork>
-	  </t>
-	</list>
-      </t>
-      <t>
-	The parameter t defines a maximum timeout for response messages.
+	Note that the properties of a message can be easily extracted
+	from the exchange formats defined in RFC XXXX
+	<xref target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
       </t>
 
       <t>
-	Definition (notification messages): The set of notification
-	messages of an SNMP trace T consists of all messages M in T
-	satisfying the following conditions:
+        Definition (command messages): The set of command messages of
+        an SNMP trace T consists of all messages M in T satisfying the
+        following conditions:
       </t>
       <t>
-	<list style='format (N%d) ' counter='notification'>
-	  <t>M is a Notfication class [RFC3411] message or</t>
-	  <t>M is a Response class [RFC3411] message and there exists
-	  a Notification class [RFC3411] message R such that the
-	  following holds:
-	  <artwork><![CDATA[
-	  M.reqid = R.reqid
-	  M.tdst  = R.tsrc
-	  M.nsrc  = R.ndst
-	  (M.time - R.time) < t
-	  ]]></artwork>
-	  </t>
-	</list>
+        <list style='format (C%d) ' counter='command'>
+          <t>M is a Read class [RFC3411] message or</t>
+          <t>M is a Write class [RFC3411] messages or</t>
+          <t>M is a Response class [RFC3411] messages and there exists
+            a Read class or Write class message R such that the
+            following holds:
+            <figure>
+              <artwork><![CDATA[
+          M.reqid = R.reqid
+          M.tdst  = R.tsrc
+          M.nsrc  = R.ndst
+          (M.time - R.time) < t
+          ]]></artwork>
+            </figure>
+          </t>
+        </list>
       </t>
       <t>
-	The parameter t defines a maximum timeout for response messages.
+        The parameter t defines a maximum timeout for response messages.
+      </t>
+
+      <t>
+        Definition (notification messages): The set of notification
+        messages of an SNMP trace T consists of all messages M in T
+        satisfying the following conditions:
+      </t>
+      <t>
+        <list style='format (N%d) ' counter='notification'>
+          <t>M is a Notfication class [RFC3411] message or</t>
+          <t>M is a Response class [RFC3411] message and there exists
+            a Notification class [RFC3411] message R such that the
+            following holds:
+	    <figure>
+              <artwork><![CDATA[
+          M.reqid = R.reqid
+          M.tdst  = R.tsrc
+          M.nsrc  = R.ndst
+          (M.time - R.time) < t
+          ]]></artwork>
+	    </figure>
+          </t>
+        </list>
+      </t>
+      <t>
+        The parameter t defines a maximum timeout for response messages.
       </t>
 
       <!--
@@ -212,188 +227,214 @@
       <t><vspace blankLines="100"/></t>
 
       <t>
-	Definition (flow): A flow F is the set of messages of an SNMP
-	trace T with the following properties:
+        Definition (flow): A flow F is the set of messages of an SNMP
+        trace T with the following properties:
       </t>
       <t>
-	<list style='format (F%d) ' counter='flow'>
-	  <t>
-	    All messages belong to a single source and destination
-	    network address pair.
-	  </t>
-	  <t>
-	    All messages are either command group messages,
-	    notification group messages, or internal group messages.
-	  </t>
-	  <t>
-	    All Response class messages originate from a single
-	    network address.
-	  </t>
-	  <t>
-	    All non-Response class messages originate from a single
-	    network address.
-	  </t>
-	</list>
+        <list style='format (F%d) ' counter='flow'>
+          <t>
+            All messages belong to a single source and destination
+            network address pair.
+          </t>
+          <t>
+            All messages are either command group messages,
+            notification group messages, or internal group messages.
+          </t>
+          <t>
+            All Response class messages originate from a single
+            network address.
+          </t>
+          <t>
+            All non-Response class messages originate from a single
+            network address.
+          </t>
+        </list>
       </t>
       <t>
-	Subsequently, we call flows containing command messages
-	command flows. Similarily, we call flows containing
-	notification messages notification flows.
+        Subsequently, we call flows containing command messages
+        command flows. Similarily, we call flows containing
+        notification messages notification flows.
       </t>
       <t>
-	Notation: Let F be a flow as defined above. We denote the
-	properties of F as follows:
+        Notation: Let F be a flow as defined above. We denote the
+        properties of F as follows:
       </t>
+      <figure>
       <artwork><![CDATA[
-   F.type    = type of the flow F (command / notification / internal flow)
-   F.nsrc    = network layer source endpoint of F
-   F.ndst    = network layer destination endpoint of F
-   F.start   = time stamp of the first message in F
-   F.end     = time stamp of the last message in F
+   F.type  = type of the flow F (command/notification/internal flow)
+   F.nsrc  = network layer source endpoint of F
+   F.ndst  = network layer destination endpoint of F
+   F.start = time stamp of the first message in F
+   F.end   = time stamp of the last message in F
    ]]></artwork>
+      </figure>
       <t>
-	This definition of a flow is consistent with the definition of
-	a flow in the paper <xref target="SPHSM07"/>.
+        This definition of a flow is consistent with the definition of
+        a flow in the paper <xref target="SPHSM07"/>.
       </t>
     </section>
 
     <section anchor="slices" title="Flow Slices">
 
       <t>
-	Definition (linked): A Response/GetNext or Response/GetBulk
-	message pair is linked if the following holds:
+        Definition (linked): A Response/GetNext or Response/GetBulk
+        message pair is linked if the following holds:
       </t>
       <t>
-	<list style='format (L%d) ' counter='linked'>
-	  <t>
-	    The request message (GetNext or GetBulk) must contain at
-	    least one OID which has been contained in the (repeater)
-	    varbind list of the last response message of a previous
-	    request message.
-	  </t>
-	</list>
+        <list style='format (L%d) ' counter='linked'>
+          <t>
+            The request message (GetNext or GetBulk) must contain at
+            least one OID which has been contained in the (repeater)
+            varbind list of the last response message of a previous
+            request message.
+          </t>
+        </list>
       </t>
 
       <t>
-	Definition (slice): A slice S is a subset of messages in a
-	flow F for which the following properties hold:
+        Definition (slice): A slice S is a subset of messages in a
+        flow F for which the following properties hold:
       </t>
       <t>
-	<list style='format (S%d) ' counter='slice'>
-	  <t>
-	    All messages are exchanged between two transport endpoints
-	    (a single transport address pair).
-	  </t>
-	  <t>
-	    All request messages must be of the same type.
-	  </t>
-	  <t>
-	    All Get, Set, Trap, Inform messages must contain the same set
-	    of OIDs.
-	  </t>
-	  <t>
-	    All Response messages must follow a previous request
-	    message that is part of the same slice.
-	  </t>
-	  <t>
-	    All GetNext or GetBulk message must either contain the
-	    same set of OIDs or they must be linked to the last
-	    response of the previous request.
-	  </t>
-	  <t>
-	    For a request message Q following the last response
-	    message R to the previous request, the condition
-	    (Q.time - R.time) < e is true.
-	  </t>
-	</list>
+        <list style='format (S%d) ' counter='slice'>
+          <t>
+            All messages are exchanged between two transport endpoints
+            (a single transport address pair).
+          </t>
+          <t>
+            All request messages must be of the same type.
+          </t>
+          <t>
+            All Get, Set, Trap, Inform messages must contain the same set
+            of OIDs.
+          </t>
+          <t>
+            All Response messages must follow a previous request
+            message that is part of the same slice.
+          </t>
+          <t>
+            All GetNext or GetBulk message must either contain the
+            same set of OIDs or they must be linked to the last
+            response of the previous request.
+          </t>
+          <t>
+            For a request message Q following the last response
+            message R to the previous request, the condition
+            (Q.time - R.time) < e is true.
+          </t>
+        </list>
       </t>
 
       <t>
-	Notation: A slice S has several properties. We introduce the
-	following notation:
+        Notation: A slice S has several properties. We introduce the
+        following notation:
       </t>
-      <artwork><![CDATA[
+      <figure>
+	<artwork><![CDATA[
    S.type     = type of non-response messages in S
    S.start    = time stamp of the first message in S
    S.end      = time stamp of the last message in S
    S.prefix   = set of prefixes of messages in S /* [TODO] */
    ]]></artwork>
-
+      </figure>
+      <t><vspace blankLines="100"/></t>
       <t>
-	Definition (concurrency): Two slides A and B of a given flow F
-	are concurrent at time t if A.start &lt;= t &lt;= A.end and
-	B.start &lt;= t &lt;= B.end. The concurrency level F.clevel(t)
-	of a flow F at time t is given by the number of concurrent
-	slices of F at time t. The concurrency level of a manager
-	identified by the network address addr at time t is given by
-	the sum of the flow currency levels F.clevel(t) for all flows
-	originating from addr, that is F.nsrc = addr.
+        Definition (concurrency): Two slides A and B of a given flow F
+        are concurrent at time t if A.start &lt;= t &lt;= A.end and
+        B.start &lt;= t &lt;= B.end. The concurrency level F.clevel(t)
+        of a flow F at time t is given by the number of concurrent
+        slices of F at time t. The concurrency level of a manager
+        identified by the network address addr at time t is given by
+        the sum of the flow currency levels F.clevel(t) for all flows
+        originating from addr, that is F.nsrc = addr.
       </t>
-      
       <t>
-	Definition (delta time serial): Two slides A and B of a given
-	flow F are called delta time serial if (B.start - A.end) &lt;
-	delta.
+        Definition (delta time serial): Two slides A and B of a given
+        flow F are called delta time serial if (B.start - A.end) &lt;
+        delta.
       </t>
-      
     </section>
 
     <section anchor="slice-sets" title="Slice Sets">
 
-   Def: A session type is a type mark identifying sessions
-
-   (1) All messages have been exchanged between the same transport
-       endpoints. (really transport?)
-   (2) All READ, WRITE, NOTIFY messages originate from the same
-       transport endpoint. (really transport???)
-   (3) All non-response messages are of the same type
-
-   Def: A session set is a set of sessions that have the following
-   properties:
-
-   (1) All READ, WRITE, NOTIFY messages originate from the same
-       transport endpoint. (really transport???)
-   (2) 
-   (3) All messages occurred within a specific time frame of each
-       other.
-
+      <t>
+	Definition (slice type): A slice type is a type mark
+	identifying slices that share the following properties:
+      </t>
+      <t>
+        <list style='format (ST%d) ' counter='slicetype'>
+          <t>
+	    All messages have been exchanged between the same
+	    transport endpoints. (really transport? does this not
+	    break if a manager always changes its port number?)
+	  </t>
+	  <t>
+	    All READ, WRITE, NOTIFY messages originate from the same
+	    transport endpoint. (really transport???)
+	  </t>
+	  <t>
+	    All non-response messages are of the same type
+	  </t>
+	</list>
+      </t>
+      <t>
+	[TODO: Should this be an equivalence relation so that slice
+	sets turn into equivalent classes?]
+      </t>
+      <t>
+	Definition (slice set): A slice set is a set of slices that
+	have the following properties:
+      </t>
+      <t>
+        <list style='format (SS%d) ' counter='sliceset'>
+          <t>
+	    All READ, WRITE, NOTIFY messages originate from the same
+	    transport endpoint. (really transport???)
+	  </t>
+	  <t>???</t>
+	  <t>All messages occurred within a specific time frame of
+	    each other. (what does this mean??? do we need delta
+	    serial for messages???)
+	  </t>
+	</list>
+      </t>
 
     </section>
 
     <section anchor="walks" title="Walks">
 
       <t>
-	Definition (walk): A walk W is a slice S with the following
-	properties:
+        Definition (walk): A walk W is a slice S with the following
+        properties:
       </t>
       <t>
-	<list style='format (W%d) ' counter='walk'>
-	  <t>
-	    The type of the slice S is either get-next-request or
-	    get-bulk-request.
-	  </t>
-	  <t>
-	    At least one object identifier in the sequence of requests
-	    at the same varbind index must be increasing
-	    lexicographically while all object identifiers at the same
-	    varbind index have to be non-decreasing.
-	  </t>
-	</list>
-      </t>
-
-      <t>
-	Definition (strict walk): A walk W is a strict walk if all
-	object identifiers in the sequence of requests at the same
-	varbind index are strictly increasing lexicographically.
-	Furthermore, the object identifiers at the same index of a
-	response and a subsequent request must be identical.
+        <list style='format (W%d) ' counter='walk'>
+          <t>
+            The type of the slice S is either get-next-request or
+            get-bulk-request.
+          </t>
+          <t>
+            At least one object identifier in the sequence of requests
+            at the same varbind index must be increasing
+            lexicographically while all object identifiers at the same
+            varbind index have to be non-decreasing.
+          </t>
+        </list>
       </t>
 
       <t>
-	Definition (prefix constrained walk): A walk W is prefix
-	constrained if all object identifiers at the same index have
-	the same object identifier prefix.  This prefix is established
-	by the first request within the walk.
+        Definition (strict walk): A walk W is a strict walk if all
+        object identifiers in the sequence of requests at the same
+        varbind index are strictly increasing lexicographically.
+        Furthermore, the object identifiers at the same index of a
+        response and a subsequent request must be identical.
+      </t>
+
+      <t>
+        Definition (prefix constrained walk): A walk W is prefix
+        constrained if all object identifiers at the same index have
+        the same object identifier prefix.  This prefix is established
+        by the first request within the walk.
       </t>
 
     </section>
@@ -401,8 +442,8 @@
 
     <section anchor="security" title="Security Considerations">
       <t>
-	This document provides definitions for the analysis of SNMP
-	traces and does not impact the security of the Internet.
+        This document provides definitions for the analysis of SNMP
+        traces and does not impact the security of the Internet.
       </t>
     </section>
 
@@ -425,6 +466,31 @@
 
 
     <references title="Normative References">
+
+      <reference anchor="RFC3411">
+        <front>
+          <title>
+            An Architecture for Describing Simple Network Management
+            Protocol (SNMP) Management Frameworks
+          </title>
+          <author initials="D." surname="Harrington" fullname="D. Harrington">
+            <organization>Enterasys Networks</organization>
+          </author>
+          <author initials="R." surname="Presuhn" fullname="R. Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <author initials="B." surname="Wijnen" fullname="B. Wijnen">
+            <organization>Lucent Technologies</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3411"/>
+      </reference>
+
+    </references>
+
+
+    <references title="Informative References">
 
       <reference anchor="RFC3410">
         <front>
@@ -449,41 +515,16 @@
         <seriesInfo name="RFC" value="3410"/>
       </reference>
 
-      <reference anchor="RFC3411">
-        <front>
-          <title>
-	    An Architecture for Describing Simple Network Management
-	    Protocol (SNMP) Management Frameworks
-          </title>
-          <author initials="D." surname="Harrington" fullname="D. Harrington">
-            <organization>Enterasys Networks</organization>
-          </author>
-          <author initials="R." surname="Presuhn" fullname="R. Presuhn">
-            <organization>BMC Software, Inc.</organization>
-          </author>
-          <author initials="B." surname="Wijnen" fullname="B. Wijnen">
-            <organization>Lucent Technologies</organization>
-          </author>
-          <date month="December" year="2002"/>
-        </front>
-        <seriesInfo name="RFC" value="3411"/>
-      </reference>
-
-    </references>
-
-
-    <references title="Informative References">
-
       <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE-01">
         <front>
           <title>
-	    An Architecture for Describing Simple Network Management
-	    Protocol (SNMP) Management Frameworks
+            An Architecture for Describing Simple Network Management
+            Protocol (SNMP) Management Frameworks
           </title>
           <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
             <organization>TU Braunschweig</organization>
           </author>
-          <date month="Janury" year="2007"/>
+          <date month="January" year="2007"/>
         </front>
         <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure-01.txt"/>
       </reference>
@@ -521,7 +562,7 @@
 </rfc>
 
 <!-- Local Variables:                                           -->
-<!-- compile-command: "xml2rfc measure.xml"                     -->
+<!-- compile-command: "xml2rfc definitions.xml"                 -->
 <!-- ispell-local-dictionary: "american"                        -->
 <!-- sgml-declaration: "/usr/lib/sgml/declaration/xml.decl"     -->
 <!-- sgml-omittag:nil                                           -->
