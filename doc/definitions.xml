@@ -257,7 +257,7 @@
       </t>
     </section>
 
-    <section anchor="slices" title="FLow Slices">
+    <section anchor="slices" title="Flow Slices">
 
       <t>
 	Definition (linked): A Response/GetNext or Response/GetBulk
@@ -313,11 +313,29 @@
 	following notation:
       </t>
       <artwork><![CDATA[
-   S.type   = type of non-response messages in S
-   S.start  = time stamp of the first message in S
-   S.end    = time stamp of the last message in S
-   S.prefix = set of prefixes of messages in S /* [TODO] */
+   S.type     = type of non-response messages in S
+   S.start    = time stamp of the first message in S
+   S.end      = time stamp of the last message in S
+   S.prefix   = set of prefixes of messages in S /* [TODO] */
    ]]></artwork>
+
+      <t>
+	Definition (concurrency): Two slides A and B of a given flow F
+	are concurrent at time t if A.start &lt;= t &lt;= A.end and
+	B.start &lt;= t &lt;= B.end. The concurrency level F.clevel(t)
+	of a flow F at time t is given by the number of concurrent
+	slices of F at time t. The concurrency level of a manager
+	identified by the network address addr at time t is given by
+	the sum of the flow currency levels F.clevel(t) for all flows
+	originating from addr, that is F.nsrc = addr.
+      </t>
+      
+      <t>
+	Definition (delta time serial): Two slides A and B of a given
+	flow F are called delta time serial if (B.start - A.end) &lt;
+	delta.
+      </t>
+      
     </section>
 
     <section anchor="slice-sets" title="Slice Sets">
@@ -355,9 +373,27 @@
 	    get-bulk-request.
 	  </t>
 	  <t>
-	    ...
+	    At least one object identifier in the sequence of requests
+	    at the same varbind index must be increasing
+	    lexicographically while all object identifiers at the same
+	    varbind index have to be non-decreasing.
 	  </t>
 	</list>
+      </t>
+
+      <t>
+	Definition (strict walk): A walk W is a strict walk if all
+	object identifiers in the sequence of requests at the same
+	varbind index are strictly increasing lexicographically.
+	Furthermore, the object identifiers at the same index of a
+	response and a subsequent request must be identical.
+      </t>
+
+      <t>
+	Definition (prefix constrained walk): A walk W is prefix
+	constrained if all object identifiers at the same index have
+	the same object identifier prefix.  This prefix is established
+	by the first request within the walk.
       </t>
 
     </section>
@@ -365,6 +401,8 @@
 
     <section anchor="security" title="Security Considerations">
       <t>
+	This document provides definitions for the analysis of SNMP
+	traces and does not impact the security of the Internet.
       </t>
     </section>
 
