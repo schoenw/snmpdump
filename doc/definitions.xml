@@ -101,7 +101,7 @@
           been found useful for implementing tools to support trace
           analysis. This document mainly serves as a reference for the
           the definitions underlying these tools and it is not meant
-          to explain all the motivation and resoning behind the
+          to explain all the motivation and reasoning behind the
           definitions. Some of this background information can be
           found in other research papers.
         </t>
@@ -131,7 +131,7 @@
         been found useful for implementing tools to support trace
         analysis. This document mainly serves as a reference for the
         the definitions underlying these tools and it is not meant
-        to explain all the motivation and resoning behind the
+        to explain all the motivation and reasoning behind the
         definitions. Some of this background information can be
         found in other research papers.
       </t>
@@ -142,7 +142,7 @@
       </t>
     </section>
 
-    <section anchor="flows" title="Flows">
+    <section anchor="messages" title="Messages">
       <t>
         Notation: Let M be a message of an SNMP trace T. We denote the
         properties of M as follows:
@@ -160,29 +160,70 @@
    ]]></artwork>
       </figure>
       <t>
-	Note that the properties of a message can be easily extracted
-	from the exchange formats defined in RFC XXXX
-	<xref target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
+        Note that the properties of a message can be easily extracted
+        from the exchange formats defined in RFC XXXX
+        <xref target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
       </t>
 
       <t>
-        Definition (command messages): The set of command messages of
-        an SNMP trace T consists of all messages M in T satisfying the
-        following conditions:
+        Definition (read request message): A read request message is a
+        message M containing a PDU of type GetRequest, GetNextRequest,
+        or GetBulkRequest.
+      </t>
+
+      <t>
+        Definition (write request message): A write request message is
+        a message M containing a PDU of type SetRequest.
+      </t>
+
+      <t>
+        Definition (notify request message): A notify request message is
+        a message M containing a PDU of type InformRequest.
+      </t>
+
+      <t>
+        Definition (request message): A request message is a message M
+        which is either a read request message, a write request
+        message, or a notify request message.
+      </t>
+      
+      <t>
+	Definition (response message): A response message is a message
+	M containing a PDU of type Response.
+      </t>
+
+      <t>
+	Definition (non-response message): A non-response message is a
+	message M which is not a response message.
+      </t>
+
+      <t>
+        Definition (notification message): A notification message is a
+        message M containing a PDU of type Trap or InformRequest.
+      </t>
+
+      <t>
+        Definition (command message): A command message is a message M
+        which is either read request message or a write request
+        message.
+      </t>
+
+      <t>
+        Definition (command group messages): The set of command group
+        messages of an SNMP trace T consists of all messages M in T
+        satisfying the following conditions:
       </t>
       <t>
         <list style='format (C%d) ' counter='command'>
-          <t>M is a Read class [RFC3411] message or</t>
-          <t>M is a Write class [RFC3411] messages or</t>
-          <t>M is a Response class [RFC3411] messages and there exists
-            a Read class or Write class message R such that the
-            following holds:
-            <figure>
-              <artwork><![CDATA[
-          M.reqid = R.reqid
-          M.tdst  = R.tsrc
-          M.nsrc  = R.ndst
-          (M.time - R.time) < t
+          <t>M is a command message or</t>
+          <t>M is a response messages and there exists a command
+          message C such that the following holds:
+          <figure>
+            <artwork><![CDATA[
+          M.reqid = C.reqid
+          M.tdst  = C.tsrc
+          M.nsrc  = C.ndst
+          (M.time - C.time) < t
           ]]></artwork>
             </figure>
           </t>
@@ -193,24 +234,23 @@
       </t>
 
       <t>
-        Definition (notification messages): The set of notification
-        messages of an SNMP trace T consists of all messages M in T
-        satisfying the following conditions:
+        Definition (notification group messages): The set of group
+        notification messages of an SNMP trace T consists of all
+        messages M in T satisfying the following conditions:
       </t>
       <t>
         <list style='format (N%d) ' counter='notification'>
-          <t>M is a Notfication class [RFC3411] message or</t>
-          <t>M is a Response class [RFC3411] message and there exists
-            a Notification class [RFC3411] message R such that the
-            following holds:
-	    <figure>
+          <t>M is a notification message or</t>
+          <t>M is a response message and there exists a notify request
+          message N such that the following holds:
+            <figure>
               <artwork><![CDATA[
-          M.reqid = R.reqid
-          M.tdst  = R.tsrc
-          M.nsrc  = R.ndst
-          (M.time - R.time) < t
+          M.reqid = N.reqid
+          M.tdst  = N.tsrc
+          M.nsrc  = N.ndst
+          (M.time - N.time) < t
           ]]></artwork>
-	    </figure>
+            </figure>
           </t>
         </list>
       </t>
@@ -224,8 +264,9 @@
    solution... xxx */
       -->
 
-      <t><vspace blankLines="100"/></t>
+    </section>
 
+    <section anchor="flows" title="Flows">
       <t>
         Definition (flow): A flow F is the set of messages of an SNMP
         trace T with the following properties:
@@ -252,8 +293,13 @@
       </t>
       <t>
         Subsequently, we call flows containing command messages
-        command flows. Similarily, we call flows containing
+        command flows. Similarly, we call flows containing
         notification messages notification flows.
+      </t>
+      <t>
+        Definition (flow initiator): A flow initiator is the one of
+        the network endpoints involved in a flow, which is responsible
+        for sending the chronologically first non-response message.
       </t>
       <t>
         Notation: Let F be a flow as defined above. We denote the
@@ -264,8 +310,8 @@
    F.type  = type of the flow F (command/notification/internal flow)
    F.nsrc  = network layer source endpoint of F
    F.ndst  = network layer destination endpoint of F
-   F.start = time stamp of the first message in F
-   F.end   = time stamp of the last message in F
+   F.start = time stamp of the chronologically first message in F
+   F.end   = time stamp of the chronologically last message in F
    ]]></artwork>
       </figure>
       <t>
@@ -285,8 +331,8 @@
           <t>
             The request message (GetNext or GetBulk) must contain at
             least one OID which has been contained in the (repeater)
-            varbind list of the last response message of a previous
-            request message.
+            varbind list of the chronologically last response message
+            of a previous request message.
           </t>
         </list>
       </t>
@@ -313,9 +359,9 @@
             message that is part of the same slice.
           </t>
           <t>
-            All GetNext or GetBulk message must either contain the
-            same set of OIDs or they must be linked to the last
-            response of the previous request.
+            Each GetNext or GetBulk message must either contain the
+            same set of OIDs or they must be linked to the
+            chronologically last response of the previous request.
           </t>
           <t>
             For a request message Q following the last response
@@ -326,14 +372,23 @@
       </t>
 
       <t>
+        Definition (slice initiator): A slice initiator is one of the
+        two transport endpoints involved in a slice, which is
+        responsible for sending the chronologically first non-response
+        class message.
+      </t>
+
+      <t>
         Notation: A slice S has several properties. We introduce the
         following notation:
       </t>
       <figure>
-	<artwork><![CDATA[
+        <artwork><![CDATA[
    S.type     = type of non-response messages in S
-   S.start    = time stamp of the first message in S
-   S.end      = time stamp of the last message in S
+   S.tsrc     = transport layer endpoint of initiator of S
+   S.tdst     = transport layer endpoint of non-initiator of S
+   S.start    = time stamp of the chronologically first message in S
+   S.end      = time stamp of the chronologically last message in S
    S.prefix   = set of prefixes of messages in S /* [TODO] */
    ]]></artwork>
       </figure>
@@ -358,45 +413,45 @@
     <section anchor="slice-sets" title="Slice Sets">
 
       <t>
-	Definition (slice type): A slice type is a type mark
-	identifying slices that share the following properties:
+        Definition (slice type): A slice type is a type mark
+        identifying slices that share the following properties:
       </t>
       <t>
         <list style='format (ST%d) ' counter='slicetype'>
           <t>
-	    All messages have been exchanged between the same
-	    transport endpoints. (really transport? does this not
-	    break if a manager always changes its port number?)
-	  </t>
-	  <t>
-	    All READ, WRITE, NOTIFY messages originate from the same
-	    transport endpoint. (really transport???)
-	  </t>
-	  <t>
-	    All non-response messages are of the same type
-	  </t>
-	</list>
+            All messages have been exchanged between the same
+            transport endpoints. (really transport? does this not
+            break if a manager always changes its port number?)
+          </t>
+          <t>
+            All READ, WRITE, NOTIFY messages originate from the same
+            transport endpoint. (really transport???)
+          </t>
+          <t>
+            All non-response messages are of the same type
+          </t>
+        </list>
       </t>
       <t>
-	[TODO: Should this be an equivalence relation so that slice
-	sets turn into equivalent classes?]
+        [TODO: Should this be an equivalence relation so that slice
+        sets turn into equivalent classes?]
       </t>
       <t>
-	Definition (slice set): A slice set is a set of slices that
-	have the following properties:
+        Definition (slice set): A slice set is a set of slices that
+        have the following properties:
       </t>
       <t>
         <list style='format (SS%d) ' counter='sliceset'>
           <t>
-	    All READ, WRITE, NOTIFY messages originate from the same
-	    transport endpoint. (really transport???)
-	  </t>
-	  <t>???</t>
-	  <t>All messages occurred within a specific time frame of
-	    each other. (what does this mean??? do we need delta
-	    serial for messages???)
-	  </t>
-	</list>
+            All READ, WRITE, NOTIFY messages originate from the same
+            transport endpoint. (really transport???)
+          </t>
+          <t>???</t>
+          <t>All messages occurred within a specific time frame of
+            each other. (what does this mean??? do we need delta
+            serial for messages???)
+          </t>
+        </list>
       </t>
 
     </section>

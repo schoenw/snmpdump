@@ -4,12 +4,12 @@
 NMRG                                                    G. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                                 M. Harvan
-Expires: May 16, 2008                                         ETH Zurich
+Expires: May 25, 2008                                         ETH Zurich
                                                                  A. Pras
                                                     University of Twente
                                                         J. Schoenwaelder
                                                 Jacobs University Bremen
-                                                       November 13, 2007
+                                                       November 22, 2007
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on May 16, 2008.
+   This Internet-Draft will expire on May 25, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-van den Broek, et al.     Expires May 16, 2008                  [Page 1]
+van den Broek, et al.     Expires May 25, 2008                  [Page 1]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
@@ -70,22 +70,23 @@ Abstract
    useful for implementing tools to support trace analysis.  This
    document mainly serves as a reference for the the definitions
    underlying these tools and it is not meant to explain all the
-   motivation and resoning behind the definitions.  Some of this
+   motivation and reasoning behind the definitions.  Some of this
    background information can be found in other research papers.
 
 
 Table of Contents
 
    1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
-   2.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  4
-   3.  Flow Slices  . . . . . . . . . . . . . . . . . . . . . . . . .  7
-   4.  Slice Sets . . . . . . . . . . . . . . . . . . . . . . . . . .  9
-   5.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
-   6.  Security Considerations  . . . . . . . . . . . . . . . . . . . 11
-   7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 12
-   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 13
-     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 13
-     8.2.  Informative References . . . . . . . . . . . . . . . . . . 13
+   2.  Messages . . . . . . . . . . . . . . . . . . . . . . . . . . .  4
+   3.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  6
+   4.  Flow Slices  . . . . . . . . . . . . . . . . . . . . . . . . .  7
+   5.  Slice Sets . . . . . . . . . . . . . . . . . . . . . . . . . .  9
+   6.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   7.  Security Considerations  . . . . . . . . . . . . . . . . . . . 11
+   8.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 12
+   9.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+     9.1.  Normative References . . . . . . . . . . . . . . . . . . . 13
+     9.2.  Informative References . . . . . . . . . . . . . . . . . . 13
    Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 14
    Intellectual Property and Copyright Statements . . . . . . . . . . 15
 
@@ -107,8 +108,7 @@ Table of Contents
 
 
 
-
-van den Broek, et al.     Expires May 16, 2008                  [Page 2]
+van den Broek, et al.     Expires May 25, 2008                  [Page 2]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
@@ -126,7 +126,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
    useful for implementing tools to support trace analysis.  This
    document mainly serves as a reference for the the definitions
    underlying these tools and it is not meant to explain all the
-   motivation and resoning behind the definitions.  Some of this
+   motivation and reasoning behind the definitions.  Some of this
    background information can be found in other research papers.
 
    More information and the motivation for SNMP trace collection and
@@ -164,12 +164,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                  [Page 3]
+van den Broek, et al.     Expires May 25, 2008                  [Page 3]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-2.  Flows
+2.  Messages
 
    Notation: Let M be a message of an SNMP trace T. We denote the
    properties of M as follows:
@@ -187,48 +187,69 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
    the exchange formats defined in RFC XXXX
    [ID-IRTF-NMRG-SNMP-MEASURE-01].
 
-   Definition (command messages): The set of command messages of an SNMP
-   trace T consists of all messages M in T satisfying the following
-   conditions:
+   Definition (read request message): A read request message is a
+   message M containing a PDU of type GetRequest, GetNextRequest, or
+   GetBulkRequest.
 
-   (C1)   M is a Read class [RFC3411] message or
+   Definition (write request message): A write request message is a
+   message M containing a PDU of type SetRequest.
 
-   (C2)   M is a Write class [RFC3411] messages or
+   Definition (notify request message): A notify request message is a
+   message M containing a PDU of type InformRequest.
 
-   (C3)   M is a Response class [RFC3411] messages and there exists a
-          Read class or Write class message R such that the following
-          holds:
+   Definition (request message): A request message is a message M which
+   is either a read request message, a write request message, or a
+   notify request message.
 
-             M.reqid = R.reqid
-             M.tdst  = R.tsrc
-             M.nsrc  = R.ndst
-             (M.time - R.time) < t
+   Definition (response message): A response message is a message M
+   containing a PDU of type Response.
 
-   The parameter t defines a maximum timeout for response messages.
+   Definition (non-response message): A non-response message is a
+   message M which is not a response message.
 
-   Definition (notification messages): The set of notification messages
-   of an SNMP trace T consists of all messages M in T satisfying the
-   following conditions:
+   Definition (notification message): A notification message is a
+   message M containing a PDU of type Trap or InformRequest.
 
-   (N1)   M is a Notfication class [RFC3411] message or
+   Definition (command message): A command message is a message M which
+   is either read request message or a write request message.
 
-   (N2)   M is a Response class [RFC3411] message and there exists a
-          Notification class [RFC3411] message R such that the following
-          holds:
-
-
-
+   Definition (command group messages): The set of command group
+   messages of an SNMP trace T consists of all messages M in T
+   satisfying the following conditions:
 
 
-van den Broek, et al.     Expires May 16, 2008                  [Page 4]
+
+
+van den Broek, et al.     Expires May 25, 2008                  [Page 4]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-             M.reqid = R.reqid
-             M.tdst  = R.tsrc
-             M.nsrc  = R.ndst
-             (M.time - R.time) < t
+   (C1)   M is a command message or
+
+   (C2)   M is a response messages and there exists a command message C
+          such that the following holds:
+
+             M.reqid = C.reqid
+             M.tdst  = C.tsrc
+             M.nsrc  = C.ndst
+             (M.time - C.time) < t
+
+   The parameter t defines a maximum timeout for response messages.
+
+   Definition (notification group messages): The set of group
+   notification messages of an SNMP trace T consists of all messages M
+   in T satisfying the following conditions:
+
+   (N1)   M is a notification message or
+
+   (N2)   M is a response message and there exists a notify request
+          message N such that the following holds:
+
+             M.reqid = N.reqid
+             M.tdst  = N.tsrc
+             M.nsrc  = N.ndst
+             (M.time - N.time) < t
 
    The parameter t defines a maximum timeout for response messages.
 
@@ -255,31 +276,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires May 16, 2008                  [Page 5]
+van den Broek, et al.     Expires May 25, 2008                  [Page 5]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
+
+3.  Flows
 
    Definition (flow): A flow F is the set of messages of an SNMP trace T
    with the following properties:
@@ -297,8 +299,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
           network address.
 
    Subsequently, we call flows containing command messages command
-   flows.  Similarily, we call flows containing notification messages
+   flows.  Similarly, we call flows containing notification messages
    notification flows.
+
+   Definition (flow initiator): A flow initiator is the one of the
+   network endpoints involved in a flow, which is responsible for
+   sending the chronologically first non-response message.
 
    Notation: Let F be a flow as defined above.  We denote the properties
    of F as follows:
@@ -306,8 +312,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
       F.type  = type of the flow F (command/notification/internal flow)
       F.nsrc  = network layer source endpoint of F
       F.ndst  = network layer destination endpoint of F
-      F.start = time stamp of the first message in F
-      F.end   = time stamp of the last message in F
+      F.start = time stamp of the chronologically first message in F
+      F.end   = time stamp of the chronologically last message in F
 
    This definition of a flow is consistent with the definition of a flow
    in the paper [SPHSM07].
@@ -326,26 +332,20 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-
-
-
-
-
-
-van den Broek, et al.     Expires May 16, 2008                  [Page 6]
+van den Broek, et al.     Expires May 25, 2008                  [Page 6]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-3.  Flow Slices
+4.  Flow Slices
 
    Definition (linked): A Response/GetNext or Response/GetBulk message
    pair is linked if the following holds:
 
    (L1)   The request message (GetNext or GetBulk) must contain at least
           one OID which has been contained in the (repeater) varbind
-          list of the last response message of a previous request
-          message.
+          list of the chronologically last response message of a
+          previous request message.
 
    Definition (slice): A slice S is a subset of messages in a flow F for
    which the following properties hold:
@@ -361,20 +361,26 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
    (S4)   All Response messages must follow a previous request message
           that is part of the same slice.
 
-   (S5)   All GetNext or GetBulk message must either contain the same
-          set of OIDs or they must be linked to the last response of the
-          previous request.
+   (S5)   Each GetNext or GetBulk message must either contain the same
+          set of OIDs or they must be linked to the chronologically last
+          response of the previous request.
 
    (S6)   For a request message Q following the last response message R
           to the previous request, the condition (Q.time - R.time) < e
           is true.
 
+   Definition (slice initiator): A slice initiator is one of the two
+   transport endpoints involved in a slice, which is responsible for
+   sending the chronologically first non-response class message.
+
    Notation: A slice S has several properties.  We introduce the
    following notation:
 
       S.type     = type of non-response messages in S
-      S.start    = time stamp of the first message in S
-      S.end      = time stamp of the last message in S
+      S.tsrc     = transport layer endpoint of initiator of S
+      S.tdst     = transport layer endpoint of non-initiator of S
+      S.start    = time stamp of the chronologically first message in S
+      S.end      = time stamp of the chronologically last message in S
       S.prefix   = set of prefixes of messages in S /* [TODO] */
 
 
@@ -382,13 +388,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-
-
-
-
-
-
-van den Broek, et al.     Expires May 16, 2008                  [Page 7]
+van den Broek, et al.     Expires May 25, 2008                  [Page 7]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
@@ -444,12 +444,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                  [Page 8]
+van den Broek, et al.     Expires May 25, 2008                  [Page 8]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-4.  Slice Sets
+5.  Slice Sets
 
    Definition (slice type): A slice type is a type mark identifying
    slices that share the following properties:
@@ -500,12 +500,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                  [Page 9]
+van den Broek, et al.     Expires May 25, 2008                  [Page 9]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-5.  Walks
+6.  Walks
 
    Definition (walk): A walk W is a slice S with the following
    properties:
@@ -556,12 +556,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 10]
+van den Broek, et al.     Expires May 25, 2008                 [Page 10]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-6.  Security Considerations
+7.  Security Considerations
 
    This document provides definitions for the analysis of SNMP traces
    and does not impact the security of the Internet.
@@ -612,12 +612,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 11]
+van den Broek, et al.     Expires May 25, 2008                 [Page 11]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-7.  Acknowledgements
+8.  Acknowledgements
 
    This document was influenced by discussions within the Network
    Management Research Group (NMRG).
@@ -668,21 +668,21 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 12]
+van den Broek, et al.     Expires May 25, 2008                 [Page 12]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
-8.  References
+9.  References
 
-8.1.  Normative References
+9.1.  Normative References
 
    [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
               Architecture for Describing Simple Network Management
               Protocol (SNMP) Management Frameworks", RFC 3411,
               December 2002.
 
-8.2.  Informative References
+9.2.  Informative References
 
    [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
               "Introduction and Applicability Statements for Internet
@@ -724,7 +724,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 13]
+van den Broek, et al.     Expires May 25, 2008                 [Page 13]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
@@ -780,7 +780,7 @@ Authors' Addresses
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 14]
+van den Broek, et al.     Expires May 25, 2008                 [Page 14]
 
 Internet-Draft       SNMP Trace Analysis Definitions       November 2007
 
@@ -836,5 +836,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.     Expires May 16, 2008                 [Page 15]
+van den Broek, et al.     Expires May 25, 2008                 [Page 15]
 
