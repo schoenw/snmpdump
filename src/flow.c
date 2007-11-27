@@ -486,17 +486,18 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
 			     &pkt->snmp.scoped_pdu.pdu.req_id)
 	    
 	    /* xxx what about ipv6 addresses ??? */
-
+	    
 	    /* xxx if I comment out the first ip address check, things
 	     * behave very strange; we loose packets in unknown (kind
 	     * of expected, but they do not show up elsewhere and in
 	     * addition I saw an empty line in the unknown file and I
 	     * have no clue where this is coming from; furthermore
 	     * runtime seems to increase significantly xxx */
-	     
+	    
 	    && snmp_ipaddr_equal(&p->pkt->dst_addr, &pkt->src_addr)
-	    && snmp_uint32_equal(&p->pkt->src_port, &pkt->dst_port)
-	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)) {
+	    && snmp_uint32_equal(&p->pkt->dst_port, &pkt->src_port)
+	    && snmp_ipaddr_equal(&p->pkt->src_addr, &pkt->dst_addr)
+  	    && snmp_uint32_equal(&p->pkt->src_port, &pkt->dst_port)) {
 	    return p;
 	}
     }
