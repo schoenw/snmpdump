@@ -100,8 +100,8 @@
           This document provides some common definitions that have
           been found useful for implementing tools to support trace
           analysis. This document mainly serves as a reference for the
-          the definitions underlying these tools and it is not meant
-          to explain all the motivation and reasoning behind the
+          definitions underlying these tools and it is not meant to
+          explain all the motivation and reasoning behind the
           definitions. Some of this background information can be
           found in other research papers.
         </t>
@@ -127,13 +127,13 @@
         data.
       </t>
       <t>
-        This document provides some common definitions that have
-        been found useful for implementing tools to support trace
+        This document provides some common definitions that have been
+        found useful for implementing tools to support trace
         analysis. This document mainly serves as a reference for the
-        the definitions underlying these tools and it is not meant
-        to explain all the motivation and reasoning behind the
-        definitions. Some of this background information can be
-        found in other research papers.
+        definitions underlying these tools and it is not meant to
+        explain all the motivation and reasoning behind the
+        definitions. Some of this background information can be found
+        in other research papers.
       </t>
       <t>
         More information and the motivation for SNMP trace collection
@@ -142,10 +142,46 @@
       </t>
     </section>
 
+    <section anchor="overview" title="Overview">
+      <t>
+	
+      </t>
+      <figure>
+      <artwork><![CDATA[
+        +----------------+ 1     1..* +-----------+
+        | Slice Set Type |------------| Slice Set |
+        +----------------+            +-----------+
+                                             | 1
+                                             | ^belongs_to
+                                             |
++-------+ 1     0..* +------+ 1     0..* +-------+
+| Trace |------------| Flow |------------| Slice | 
++-------+  contains> +------+  contains> +-------+
+                                             ^
+                                             | ^is_a
+                                             |
+                                         +-------+
+                                         | Walk  |
+                                         +-------+
+                                           ^   ^
+                   +-----------------------+   |
+                   |                           |
+            +-------------+     +-------------------------+
+            | Strict Walk |     | Prefix Constrained Walk |
+            +-------------+     +-------------------------+      
+      ]]></artwork>
+      </figure>
+      <t>
+	[TODO: describe the general relation between traces, flows,
+	slices, etc. to give the reader a short introduction to the
+	terminology]
+      </t>
+    </section>
+
     <section anchor="messages" title="Messages">
       <t>
-        Notation: Let M be a message of an SNMP trace T. We denote the
-        properties of M as follows:
+        Notation: Let M be a message. We denote the properties of M as
+        follows:
       </t>
       <figure>
       <artwork><![CDATA[
@@ -157,6 +193,8 @@
    M.ndst    = network layer destination endpoint of message M
    M.reqid   = request identifier of message M
    M.time    = capture timestamp of message M
+   M.oids    = OIDs listed in varbind list of message M
+   M.values  = values listed in varbind list of message M
    ]]></artwork>
       </figure>
       <t>
@@ -189,7 +227,17 @@
       
       <t>
 	Definition (response message): A response message is a message
-	M containing a PDU of type Response.
+	M containing a PDU of type Response or of type Report.
+      </t>
+
+      <t>
+	Note that Report messages are treated like Response messages
+	since the SNMPv3 specifications currently use Report messages
+	only as an error reporting mechanism, always triggered by the
+	processing of some request messages. In case future SNMP
+	versions or extensions use Report messages without having a
+	request triggering the generation of Report messages, we may
+	have to revisit the definition above.
       </t>
 
       <t>
@@ -204,25 +252,25 @@
 
       <t>
         Definition (command message): A command message is a message M
-        which is either read request message or a write request
+        which is either a read request message or a write request
         message.
       </t>
 
       <t>
         Definition (command group messages): The set of command group
-        messages of an SNMP trace T consists of all messages M in T
-        satisfying the following conditions:
+        messages consists of all messages M satisfying the following
+        conditions:
       </t>
       <t>
         <list style='format (C%d) ' counter='command'>
           <t>M is a command message or</t>
-          <t>M is a response messages and there exists a command
+          <t>M is a response message and there exists a command
           message C such that the following holds:
-          <figure>
+	  <figure>
             <artwork><![CDATA[
           M.reqid = C.reqid
           M.tdst  = C.tsrc
-          M.nsrc  = C.ndst
+          M.tsrc  = C.tdst
           (M.time - C.time) < t
           ]]></artwork>
             </figure>
@@ -234,9 +282,32 @@
       </t>
 
       <t>
+	Note that this definition requires that the response messages
+	originates from the transport endpoint over which the request
+	message has been received. This is not strictly required by
+	SNMP transport mappings and in particular the UDP transport
+	mapping allows to send responses from different transport
+	endpoints. While sending response messages from a different
+	transport endpoint is legal, it is also considered bad
+	practice causing interoperability problems since several
+	management systems do not accept such messages.
+      </t>
+      <t>
+	It was decided to require matching transport endpoints since
+	doing so significantly simplifies the procedures below and
+	avoids accidentally confusing requests and responses. Note
+	that implementations responding from different transport
+	endpoints will lead to (a) a larger number of requests without
+	responses (and likely no retries) and (b) a similarly large
+	number of response messages without a matching request. If
+	such behavior can be detected, people should investigate the
+	traces and if needed correct the transport endpoints.
+      </t>
+
+      <t>
         Definition (notification group messages): The set of group
-        notification messages of an SNMP trace T consists of all
-        messages M in T satisfying the following conditions:
+        notification messages consists of all messages M satisfying
+        the following conditions:
       </t>
       <t>
         <list style='format (N%d) ' counter='notification'>
@@ -247,7 +318,7 @@
               <artwork><![CDATA[
           M.reqid = N.reqid
           M.tdst  = N.tsrc
-          M.nsrc  = N.ndst
+          M.tsrc  = N.tdst
           (M.time - N.time) < t
           ]]></artwork>
             </figure>
@@ -258,12 +329,40 @@
         The parameter t defines a maximum timeout for response messages.
       </t>
 
-      <!--
-   Def: The class of {internal group} messages consists of (I.1) all
-   Internal class messages. /* xxx I am not sure this is the best
-   solution... xxx */
-      -->
+      <t>
+	Note that we again require that the transport endpoints match
+	for notification group messages.
+      </t>
 
+    </section>
+
+    <section anchor="traces" title="Traces">
+      <t>
+	Definition (trace): An SNMP trace (or short trace) T is an
+	ordered set of zero or more SNMP messages M for which the
+	following holds:
+      </t>
+      <t>
+        <list style='format (T%d) ' counter='notification'>
+	  <t>
+	    Each messages M in T is either a non-response message or a
+	    response message.
+	  </t>
+	  <t>
+	    All messages M in T are chronologically ordered according
+	    to the capture time stamp M.time.
+	  </t>
+	  <t>
+	    [TODO: For each message in M are all stated properties
+	    known.  I believe this requirement is wrong; my traces
+	    contain various amounts of unknown fields, also due to
+	    anonymization requirements. Saying these traces are not
+	    traces feels wrong nor does it help in any of the other
+	    definitions. And finally, it is not clear what "all stated
+	    properties" actually refers to.]
+	  </t>
+        </list>
+      </t>
     </section>
 
     <section anchor="flows" title="Flows">
@@ -274,32 +373,37 @@
       <t>
         <list style='format (F%d) ' counter='flow'>
           <t>
-            All messages belong to a single source and destination
-            network address pair.
+            All response messages originate from a single network
+            endpoint.
           </t>
           <t>
-            All messages are either command group messages,
-            notification group messages, or internal group messages.
+            All non-response messages originate from a single network
+            endpoint.
           </t>
           <t>
-            All Response class messages originate from a single
-            network address.
-          </t>
-          <t>
-            All non-Response class messages originate from a single
-            network address.
+            All messages are either command group messages or
+            notification group messages.
           </t>
         </list>
       </t>
       <t>
-        Subsequently, we call flows containing command messages
+        Subsequently, we call flows containing command group messages
         command flows. Similarly, we call flows containing
-        notification messages notification flows.
+        notification group messages notification flows.
+      </t>
+      <t>
+	Note that it is possible that response messages of a trace
+	cannot be classified to belong to any flow. This can happen if
+	request messages triggering the response messages were not
+	recorded (for example due to asymmetric routing) or because
+	response messages were originating from transport endpoints
+	different from the endpoint used to receive the associated
+	request message.
       </t>
       <t>
         Definition (flow initiator): A flow initiator is the one of
         the network endpoints involved in a flow, which is responsible
-        for sending the chronologically first non-response message.
+        for sending the first non-response message.
       </t>
       <t>
         Notation: Let F be a flow as defined above. We denote the
@@ -315,27 +419,17 @@
    ]]></artwork>
       </figure>
       <t>
-        This definition of a flow is consistent with the definition of
-        a flow in the paper <xref target="SPHSM07"/>.
+        This definition of a flow is mostly consistent with the
+        definition of a flow used in <xref target="SPHSM07"/>. The
+        difference is that the tool used to generate the data reported
+        in <xref target="SPHSM07"/> did only require that the network
+        layer source endpoint has been used by response messages
+        matches the destination network layer endpoint of the
+        associated request messages.
       </t>
     </section>
 
-    <section anchor="slices" title="Flow Slices">
-
-      <t>
-        Definition (linked): A Response/GetNext or Response/GetBulk
-        message pair is linked if the following holds:
-      </t>
-      <t>
-        <list style='format (L%d) ' counter='linked'>
-          <t>
-            The request message (GetNext or GetBulk) must contain at
-            least one OID which has been contained in the (repeater)
-            varbind list of the chronologically last response message
-            of a previous request message.
-          </t>
-        </list>
-      </t>
+    <section anchor="slices" title="Slices">
 
       <t>
         Definition (slice): A slice S is a subset of messages in a
@@ -345,7 +439,7 @@
         <list style='format (S%d) ' counter='slice'>
           <t>
             All messages are exchanged between two transport endpoints
-            (a single transport address pair).
+            (a single transport endpoint pair).
           </t>
           <t>
             All request messages must be of the same type.
@@ -355,13 +449,17 @@
             of OIDs.
           </t>
           <t>
-            All Response messages must follow a previous request
-            message that is part of the same slice.
-          </t>
-          <t>
             Each GetNext or GetBulk message must either contain the
             same set of OIDs or they must be linked to the
-            chronologically last response of the previous request.
+            chronologically last response of the previous request,
+            that is the request must contain at least one OID that has
+            been contained in the (repeater) varbind list of the
+            chronologically last response message of a previous
+            request message.
+          </t>
+          <t>
+            All Response messages must follow a previous request
+            message that is part of the same slice.
           </t>
           <t>
             For a request message Q following the last response
@@ -379,6 +477,10 @@
       </t>
 
       <t>
+	Definition (slice prefix): [TODO]
+      </t>
+
+      <t>
         Notation: A slice S has several properties. We introduce the
         following notation:
       </t>
@@ -389,7 +491,7 @@
    S.tdst     = transport layer endpoint of non-initiator of S
    S.start    = time stamp of the chronologically first message in S
    S.end      = time stamp of the chronologically last message in S
-   S.prefix   = set of prefixes of messages in S /* [TODO] */
+   S.prefix   = prefix of S
    ]]></artwork>
       </figure>
       <t><vspace blankLines="100"/></t>
@@ -410,7 +512,7 @@
       </t>
     </section>
 
-    <section anchor="slice-sets" title="Slice Sets">
+    <section anchor="slice-sets" title="Slice Sets - (more thoughts needed)">
 
       <t>
         Definition (slice type): A slice type is a type mark
@@ -420,12 +522,12 @@
         <list style='format (ST%d) ' counter='slicetype'>
           <t>
             All messages have been exchanged between the same
-            transport endpoints. (really transport? does this not
-            break if a manager always changes its port number?)
+            transport endpoints.
           </t>
           <t>
-            All READ, WRITE, NOTIFY messages originate from the same
-            transport endpoint. (really transport???)
+            All read request messages, write request messages, and
+            notification messages originate from the same transport
+            endpoint.
           </t>
           <t>
             All non-response messages are of the same type
@@ -456,7 +558,7 @@
 
     </section>
 
-    <section anchor="walks" title="Walks">
+    <section anchor="walks" title="Walks - (more thoughts needed)">
 
       <t>
         Definition (walk): A walk W is a slice S with the following
