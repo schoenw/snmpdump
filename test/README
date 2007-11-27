@@ -1,0 +1,6 @@
+This directory contains some test cases used to do some regression
+testing of the software. The file 'slices.csv' contains manually
+generated test cases written by Gijs van den Broek during the BSc
+assignment <http://wwwhome.cs.utwente.nl/~broekjg/bsc/> which we
+incorporated to test snmpdump's slice generation code.
+
