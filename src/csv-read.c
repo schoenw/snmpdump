@@ -342,8 +342,10 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
     } else if (strcmp(type, "end-of-mib-view") == 0) {
 	v->type = SNMP_TYPE_END_MIB_VIEW;
 	v->attr.flags |= SNMP_FLAG_VALUE;
+    } else if (*type == '\0') {
+	v->attr.flags &= ~SNMP_FLAG_VALUE;
     } else {
-	fprintf(stderr, "%s: unknown varbind type: %s\n", progname, type);
+	fprintf(stderr, "%s: unknown varbind type: '%s'\n", progname, type);
     }
 }
 
