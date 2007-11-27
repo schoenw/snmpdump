@@ -281,14 +281,15 @@ snmp_pkt_copy(snmp_packet_t *pkt)
 	(*nvb)->name.attr.flags |= SNMP_FLAG_DYNAMIC;
 	(*nvb)->name.value = xmemdup(vb->name.value,
 				     vb->name.len * sizeof(uint32_t));
-	if (vb->type == SNMP_TYPE_OCTS) {
+	switch (vb->type) {
+	case SNMP_TYPE_OCTS:
 	    (*nvb)->value.octs.value = xmemdup(vb->value.octs.value,
 					       vb->value.octs.len);
 	    (*nvb)->value.octs.attr.flags |= SNMP_FLAG_DYNAMIC;
-	}
-	if (vb->type == SNMP_TYPE_OID) {
-	    (*nvb)->value.octs.value = xmemdup(vb->value.oid.value,
-					       vb->value.oid.len * sizeof(uint32_t));
+	    break;
+	case SNMP_TYPE_OID:
+	    (*nvb)->value.oid.value = xmemdup(vb->value.oid.value,
+					      vb->value.oid.len * sizeof(uint32_t));
 	    (*nvb)->value.oid.attr.flags |= SNMP_FLAG_DYNAMIC;
 	}
 	nvb = &((*nvb)->next);

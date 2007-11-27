@@ -176,7 +176,7 @@ main(int argc, char **argv)
     key = anon_key_new();
     anon_key_set_random(key);
 
-    while ((c = getopt(argc, argv, "FVz:f:w:i:o:c:m:hap:tC:P:")) != -1) {
+    while ((c = getopt(argc, argv, "FSVz:f:w:i:o:c:m:hap:tC:P:")) != -1) {
 	switch (c) {
 	case 'a':
 	    state->do_anon = snmp_anon_apply;
@@ -245,12 +245,16 @@ main(int argc, char **argv)
 	    state->do_flow_write = snmp_flow_write;
 	    state->do_flow_done = snmp_flow_done;
 	    break;
+	case 'S':
+	    state->do_flow_write = snmp_slice_write;
+	    state->do_flow_done = snmp_slice_done;
+	    break;
 	case 'V':
 	    printf("%s %s\n", progname, VERSION);
 	    exit(0);
 	case 'h':
 	case '?':
-	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-w file] [-h] [-V] [-F] [-C path] [-P prefix] [-a] file ... \n", progname);
+	    printf("%s [-c config] [-m module] [-f filter] [-i format] [-o format] [-z regex] [-p passphrase] [-w file] [-h] [-V] [-F] [-S] [-C path] [-P prefix] [-a] file ... \n", progname);
 	    exit(0);
 	}
     }

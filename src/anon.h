@@ -10,33 +10,28 @@
  */
 
 /*
-transform {
-    name	tr-inet-address-ipv4;
+transform inet-address-ipv4 {
     type	ipv4; 
     option	lex;
 };
 
-transform {
-    name	tr-ieee-mac;
+transform ieee-mac {
     type	mac;
 };
 
-transform {
-    name	tr-inet-port-number;
+transform inet-port-number {
     type	int64;
     range	0..65535;
     option	lex;
 };
 
-rule {
-    name	rule-ipv4-by-type;
-    apply	tr-inet-address-ipv4;
+rule ipv4-by-type {
+    apply	inet-address-ipv4;
     targets	"IpAddress|InetAddressIPv4";
 };
 
-rule {
-    name	rule-ieee-mac-by-type;
-    apply	tr-ieee-mac;
+rule ieee-mac-by-type {
+    apply	ieee-mac;
     targets	"MacAddress";	// what about PhysAddress?
 };
 */

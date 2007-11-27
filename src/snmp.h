@@ -30,6 +30,7 @@
 #define SNMP_FLAG_DPORT		0x0020
 #define SNMP_FLAG_DADDR		0x0040
 #define SNMP_FLAG_DYNAMIC	0x8000
+#define SNMP_FLAG_USER		0x4000
 
 typedef struct {
     int      blen;	/* length of the BER encided TLV triple */
@@ -272,6 +273,10 @@ typedef struct _snmp_write {
 void snmp_flow_init(snmp_write_t *out);
 void snmp_flow_write(snmp_write_t *out, snmp_packet_t *pkt);
 void snmp_flow_done(snmp_write_t *out);
+
+void snmp_slice_init(snmp_write_t *out);
+void snmp_slice_write(snmp_write_t *out, snmp_packet_t *pkt);
+void snmp_slice_done(snmp_write_t *out);
 
 /*
  * Interface for the filter-out filter which can be used to suppress
