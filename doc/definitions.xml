@@ -13,6 +13,8 @@
 
   <!--
       TODO:
+	- treat all traps (v1 and v2) in the same ways !?
+	- we currently ignore message versions - do we keep this?
   -->
 
   <front>
@@ -77,7 +79,7 @@
       </address>
     </author>
 
-    <date month="November" year="2007"/>
+    <date month="December" year="2007"/>
 
       <area>Operations and Management</area>
 
@@ -93,7 +95,7 @@
           activity to collect traces of the Simple Network Management
           Protocol (SNMP) from operational networks. To analyze these
           traces, it is necessary to split potentially large traces
-          into more manageable pieces that also make it easier to deal
+          into more manageable pieces that make it easier to deal
           with large data sets and simplify the analysis of the data.
         </t>
         <t>
@@ -122,7 +124,7 @@
         Protocol (SNMP) <xref target="RFC3410"/>
         <xref target="RFC3411"/> from operational networks. To analyze
         these traces, it is necessary to split potentially large
-        traces into more manageable pieces that also make it easier to
+        traces into more manageable pieces that make it easier to
         deal with large data sets and simplify the analysis of the
         data.
       </t>
@@ -144,16 +146,20 @@
 
     <section anchor="overview" title="Overview">
       <t>
-	
+	[TODO: The strict walk and prefix constrained walks do not
+	seem to be right because you can have a walk which is both at
+	the same time.]
       </t>
       <figure>
       <artwork><![CDATA[
         +----------------+ 1     1..* +-----------+
         | Slice Set Type |------------| Slice Set |
-        +----------------+            +-----------+
+        +----------------+  <of_type  +-----------+
                                              | 1
+                                             |
                                              | ^belongs_to
                                              |
+                                             | 1..*
 +-------+ 1     0..* +------+ 1     0..* +-------+
 | Trace |------------| Flow |------------| Slice | 
 +-------+  contains> +------+  contains> +-------+
@@ -172,13 +178,43 @@
       ]]></artwork>
       </figure>
       <t>
-	[TODO: describe the general relation between traces, flows,
-	slices, etc. to give the reader a short introduction to the
-	terminology]
+ 	In this document are names assigned to SNMP messages containing
+	specific PDU types. These messages are part of a large set of
+	SNMP messages, called a trace. A trace contains SNMP messages
+	exchanged between possibly many different managers and agents.
+	Such a trace may consist of one or more flows which contain only
+	those messages that are exchanged between two network endpoints.
+	Even smaller are slices, which are part of a flow and contain
+	SNMP messages that are related to each other in time and referenced
+	information. [TODO: I find this text somewhat confusing; I think it
+	needs a rewrite. Shall we add Messages to the diagram?]
+      </t>
+      <t>
+	Slices can be of a specific form: a walk. Only some of all slices
+	match the criteria for these very specific slices. In some cases
+	a slice may not only be regarded as a walk, but also even as
+	a strict walk or a prefix constrained walk.
+      </t>
+      <t>
+	On or more individual slices which are part of on or more flows
+	may all be related to each other as a result of, for example,
+	a polling configuration of a manager which polls a number of
+	agents every few minutes. All slices making up such a polling
+	instance would form a slice set. In turn, comparable slice sets
+	will be of the same slice set type.
       </t>
     </section>
 
     <section anchor="messages" title="Messages">
+
+      <t>
+	SNMP messages carry PDUs associated with well defined specific
+	protocol operations <xref target="RFC3416"/>. The PDUs can be
+	used to classify SNMP messages. Following are a number of
+	definitions that help to classify SNMP messages based on the
+	PDU contained in them. These definitions will be used later on
+	in this document.
+      </t>
       <t>
         Notation: Let M be a message. We denote the properties of M as
         follows:
@@ -186,7 +222,7 @@
       <figure>
       <artwork><![CDATA[
    M.type    = operation type of message M (get, getnext, ...)
-   M.class   = class of message M (according RFC 3411)
+   M.class   = class of message M (according to RFC 3411)
    M.tsrc    = transport layer source endpoint of message M
    M.tdst    = transport layer destination endpoint of message M
    M.nsrc    = network layer source endpoint of message M
@@ -215,14 +251,20 @@
       </t>
 
       <t>
-        Definition (notify request message): A notify request message is
-        a message M containing a PDU of type InformRequest.
+        Definition (notification request message): A notification
+        request message is a message M containing a PDU of type
+        InformRequest.
+      </t>
+
+      <t>
+        Definition (notification message): A notification message is a
+        message M containing a PDU of type Trap or InformRequest.
       </t>
 
       <t>
         Definition (request message): A request message is a message M
         which is either a read request message, a write request
-        message, or a notify request message.
+        message, or a notification request message.
       </t>
       
       <t>
@@ -242,12 +284,8 @@
 
       <t>
 	Definition (non-response message): A non-response message is a
-	message M which is not a response message.
-      </t>
-
-      <t>
-        Definition (notification message): A notification message is a
-        message M containing a PDU of type Trap or InformRequest.
+	message M which is either a read request message, a write
+	request message, or a notification message.
       </t>
 
       <t>
@@ -257,13 +295,13 @@
       </t>
 
       <t>
-        Definition (command group messages): The set of command group
-        messages consists of all messages M satisfying the following
-        conditions:
+        Definition (command group messages): A set of command group
+        messages consists of all messages M satisfying either of the
+        following two conditions:
       </t>
       <t>
         <list style='format (C%d) ' counter='command'>
-          <t>M is a command message or</t>
+          <t>M is a command message</t>
           <t>M is a response message and there exists a command
           message C such that the following holds:
 	  <figure>
@@ -282,7 +320,7 @@
       </t>
 
       <t>
-	Note that this definition requires that the response messages
+	Note that this definition requires that the response message
 	originates from the transport endpoint over which the request
 	message has been received. This is not strictly required by
 	SNMP transport mappings and in particular the UDP transport
@@ -295,25 +333,25 @@
       <t>
 	It was decided to require matching transport endpoints since
 	doing so significantly simplifies the procedures below and
-	avoids accidentally confusing requests and responses. Note
-	that implementations responding from different transport
-	endpoints will lead to (a) a larger number of requests without
+	avoids accidentally confusing requests and responses.
+	Implementations responding from different transport endpoints
+	will lead to (a) a larger number of requests without related
 	responses (and likely no retries) and (b) a similarly large
 	number of response messages without a matching request. If
-	such behavior can be detected, people should investigate the
-	traces and if needed correct the transport endpoints.
+	such behavior can be detected, the traces should be
+	investigated and if needed the transport endpoints corrected.
       </t>
 
       <t>
-        Definition (notification group messages): The set of group
+        Definition (notification group messages): A set of group
         notification messages consists of all messages M satisfying
-        the following conditions:
+        either of the following two conditions:
       </t>
       <t>
         <list style='format (N%d) ' counter='notification'>
-          <t>M is a notification message or</t>
-          <t>M is a response message and there exists a notify request
-          message N such that the following holds:
+          <t>M is a notification message</t>
+          <t>M is a response message and there exists a notification
+          request message N such that the following holds:
             <figure>
               <artwork><![CDATA[
           M.reqid = N.reqid
@@ -338,6 +376,15 @@
 
     <section anchor="traces" title="Traces">
       <t>
+	Traces are (large) sets of SNMP messages that are the result
+	of recording SNMP traffic using a single traffic recording
+	unit (e.g., using tcpdump) on a network segment carrying
+	traffic of one or more managers and agents. Traces being used
+	in the remainder of this document may be altered as a result
+	of anonymization, which may result in some message information
+	loss.
+      </t>
+      <t>
 	Definition (trace): An SNMP trace (or short trace) T is an
 	ordered set of zero or more SNMP messages M for which the
 	following holds:
@@ -351,15 +398,6 @@
 	  <t>
 	    All messages M in T are chronologically ordered according
 	    to the capture time stamp M.time.
-	  </t>
-	  <t>
-	    [TODO: For each message in M are all stated properties
-	    known.  I believe this requirement is wrong; my traces
-	    contain various amounts of unknown fields, also due to
-	    anonymization requirements. Saying these traces are not
-	    traces feels wrong nor does it help in any of the other
-	    definitions. And finally, it is not clear what "all stated
-	    properties" actually refers to.]
 	  </t>
         </list>
       </t>
@@ -387,9 +425,9 @@
         </list>
       </t>
       <t>
-        Subsequently, we call flows containing command group messages
-        command flows. Similarly, we call flows containing
-        notification group messages notification flows.
+        Subsequently, we call flows containing only command group
+        messages command flows. Similarly, we call flows containing
+        only notification group messages notification flows.
       </t>
       <t>
 	Note that it is possible that response messages of a trace
@@ -401,9 +439,9 @@
 	request message.
       </t>
       <t>
-        Definition (flow initiator): A flow initiator is the one of
-        the network endpoints involved in a flow, which is responsible
-        for sending the first non-response message.
+        Definition (flow initiator): A flow initiator is the network
+        endpoint of the two endpoints involved in a flow, which is
+        responsible for sending the first non-response message.
       </t>
       <t>
         Notation: Let F be a flow as defined above. We denote the
@@ -411,11 +449,11 @@
       </t>
       <figure>
       <artwork><![CDATA[
-   F.type  = type of the flow F (command/notification/internal flow)
+   F.type  = type of the flow F (command/notification)
    F.nsrc  = network layer source endpoint of F
    F.ndst  = network layer destination endpoint of F
-   F.start = time stamp of the chronologically first message in F
-   F.end   = time stamp of the chronologically last message in F
+   F.start = time stamp of the first message in F
+   F.end   = time stamp of the last message in F
    ]]></artwork>
       </figure>
       <t>
@@ -423,14 +461,19 @@
         definition of a flow used in <xref target="SPHSM07"/>. The
         difference is that the tool used to generate the data reported
         in <xref target="SPHSM07"/> did only require that the network
-        layer source endpoint has been used by response messages
-        matches the destination network layer endpoint of the
-        associated request messages.
+        layer source endpoint of the response messages matches the
+        destination network layer endpoint of the associated request
+        messages.
       </t>
     </section>
 
     <section anchor="slices" title="Slices">
 
+      <t>
+	Flows are made up of smaller sets of messages that are related
+	to each other. Such a subset of messages from a single flow
+	will be considered a slice of a flow.
+      </t>
       <t>
         Definition (slice): A slice S is a subset of messages in a
         flow F for which the following properties hold:
@@ -438,15 +481,15 @@
       <t>
         <list style='format (S%d) ' counter='slice'>
           <t>
-            All messages are exchanged between two transport endpoints
-            (a single transport endpoint pair).
+            All messages are exchanged between the same two transport
+            endpoints (a single transport endpoint pair).
           </t>
           <t>
-            All request messages must be of the same type.
+            All non-response messages must be of the same type.
           </t>
           <t>
-            All Get, Set, Trap, Inform messages must contain the same set
-            of OIDs.
+            All messages with a PDU of type Get, Set, Trap, or Inform
+            must contain the same set of OIDs.
           </t>
           <t>
             Each GetNext or GetBulk message must either contain the
@@ -462,11 +505,24 @@
             message that is part of the same slice.
           </t>
           <t>
-            For a request message Q following the last response
-            message R to the previous request, the condition
-            (Q.time - R.time) < e is true.
+	    For any two subsequent request messages Q1 and Q2 with
+	    Q1.time &lt; Q2.time, the following condition must hold:
+	    <figure>
+              <artwork><![CDATA[
+	    (Q2.time - Q1.time) < e
+	    ]]></artwork>
+	    </figure>
           </t>
         </list>
+      </t>
+
+      <t>
+	The parameter e defines a maximum time between two request
+	messages that belong to a slice.  This parameter should be
+	chosen such that unrelated requests within a flow are
+	considered to be of the same slice. This might, for example,
+	be the case where an agent never responds to requests from a
+	manager that is set to poll that agent on a periodic basis.
       </t>
 
       <t>
@@ -477,7 +533,30 @@
       </t>
 
       <t>
-	Definition (slice prefix): [TODO]
+	Definition (slice prefix): A slice prefix P is a set of OID
+	prefixes derived from the OIDs containted in the non-response
+	messages of a slice.  This set P consists of the following
+	OIDs:
+	<list style='format (SP%d) ' counter='sliceprefix'>
+	  <t>
+	    Each OID x in a non-response message C2 of a slice that is
+	    not in any of the response messages R of the previous
+	    non-response message C1, where R.time &lt; C2.time for
+	    each of these response messages, must hold that x is not
+	    already in P and there exists no OID in P that makes up a
+	    part (starting from the beginning) of x.
+	  </t>
+	</list>
+      </t>
+      
+      <t>
+	[I am not sure this is clear yet. Do we need some examples?
+	 Or shall we specify this with some pseudo code?]
+      </t>
+
+      <t>
+	The slice prefix allows for comparing/differentiating between
+	individual slices.
       </t>
 
       <t>
@@ -642,6 +721,20 @@
           <date month="December" year="2002"/>
         </front>
         <seriesInfo name="RFC" value="3411"/>
+      </reference>
+
+      <reference anchor="RFC3416">
+        <front>
+          <title>
+	    Version 2 of the Protocol Operations for
+	    the Simple Network Management Protocol (SNMP)
+          </title>
+          <author initials="R." surname="Presuhn" fullname="R. Presuhn">
+            <organization>BMC Software, Inc.</organization>
+          </author>
+          <date month="December" year="2002"/>
+        </front>
+        <seriesInfo name="RFC" value="3416"/>
       </reference>
 
     </references>
