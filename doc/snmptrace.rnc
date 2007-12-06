@@ -78,7 +78,8 @@ pdu.elem =
 
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
-           set-request | inform-request | snmpV2-trap | response | report) { 
+           set-request | inform-request | snmpV2-trap | 
+	   response | report) { 
     length.attrs,
     element request-id        { length.attrs, xsd:int },
     element error-status      { length.attrs, xsd:int },
@@ -107,9 +108,9 @@ value.elem =
   element no-such-instance  { length.attrs, empty } |
   element end-of-mib-view   { length.attrs, empty }
 
-# The blen attribute indicates the number of bytes used by the BER
+# The blen attribute indicates the number of octets used by the BER
 # encoded tag / length / value triple. The vlen attribute indicates
-# the number of bytes used by the BER encoded value alone.
+# the number of octets used by the BER encoded value alone.
 
 length.attrs =
   ( attribute blen { xsd:unsignedShort },
