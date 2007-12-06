@@ -246,10 +246,10 @@ xml_write_pdu(FILE *stream, snmp_pdu_t *pdu)
 	    name = "trap";
 	    break;
 	case SNMP_PDU_TRAP2:
-	    name = "trap2";
+	    name = "snmpV2-trap";
 	    break;
 	case SNMP_PDU_INFORM:
-	    name = "inform";
+	    name = "inform-request";
 	    break;
 	case SNMP_PDU_REPORT:
 	    name = "report";

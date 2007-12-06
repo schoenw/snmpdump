@@ -508,7 +508,7 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 			    &(packet->snmp.scoped_pdu.pdu.time_stamp.attr));
 	/*
 	 * get-request | get-next-request | get-bulk-request |
-         * set-request | inform | trap2 | response | report
+         * set-request | inform-request | snmpV2-trap | response | report
 	 */
 	} else if (name &&
 		   (xmlStrcmp(name, BAD_CAST("get-request")) == 0
@@ -516,7 +516,9 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 		    || xmlStrcmp(name, BAD_CAST("get-bulk-request")) == 0
 		    || xmlStrcmp(name, BAD_CAST("set-request")) == 0
 		    || xmlStrcmp(name, BAD_CAST("inform")) == 0
+		    || xmlStrcmp(name, BAD_CAST("inform-request")) == 0
 		    || xmlStrcmp(name, BAD_CAST("trap2")) == 0
+		    || xmlStrcmp(name, BAD_CAST("snmpV2-trap")) == 0
 		    || xmlStrcmp(name, BAD_CAST("response")) == 0
 		    || xmlStrcmp(name, BAD_CAST("report")) == 0
 		    )) {
@@ -533,10 +535,12 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    } else if (xmlStrcmp(name, BAD_CAST("set-request")) == 0) {
 		set_state(IN_SET_REQUEST);
 		packet->snmp.scoped_pdu.pdu.type = SNMP_PDU_SET;
-	    } else if (xmlStrcmp(name, BAD_CAST("inform")) == 0) {
+	    } else if (xmlStrcmp(name, BAD_CAST("inform")) == 0
+		|| xmlStrcmp(name, BAD_CAST("inform-request")) == 0) {
 		set_state(IN_INFORM);
 		packet->snmp.scoped_pdu.pdu.type = SNMP_PDU_INFORM;
-	    } else if (xmlStrcmp(name, BAD_CAST("trap2")) == 0) {
+	    } else if (xmlStrcmp(name, BAD_CAST("trap2")) == 0
+		|| xmlStrcmp(name, BAD_CAST("snmpV2-trap")) == 0) {
 		set_state(IN_TRAP2);
 		packet->snmp.scoped_pdu.pdu.type = SNMP_PDU_TRAP2;
 	    } else if (xmlStrcmp(name, BAD_CAST("response")) == 0) {

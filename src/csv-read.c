@@ -168,10 +168,12 @@ csv_read_type(char *s, snmp_pdu_t *v)
     } else if (strcmp(s, "trap") == 0) {
 	v->type = SNMP_PDU_TRAP1;
 	v->attr.flags |= SNMP_FLAG_VALUE;
-    } else if (strcmp(s, "trap2") == 0) {
+    } else if (strcmp(s, "trap2") == 0
+	|| strcmp(s, "snmpV2-trap") == 0) {
 	v->type = SNMP_PDU_TRAP2;
 	v->attr.flags |= SNMP_FLAG_VALUE;
-    } else if (strcmp(s, "inform") == 0) {
+    } else if (strcmp(s, "inform") == 0
+	|| strcmp(s, "inform-request") == 0) {
 	v->type = SNMP_PDU_INFORM;
 	v->attr.flags |= SNMP_FLAG_VALUE;
     } else if (strcmp(s, "report") == 0) {
