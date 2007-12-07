@@ -103,8 +103,9 @@
         patterns without having experimental evidence that the
         assumptions are correct. In fact, there are many speculations
         how SNMP is being used in real world production networks and
-        how it performs, but no systematic measurements have been
-        performed and published so far.
+        performance comparisons are based on limited test cases, but
+        no systematic measurements have been performed and published
+        so far.
       </t>
       <t>
         Many authors use the ifTable of the IF-MIB <xref
@@ -217,7 +218,10 @@
           and that the probe has access to all virtual LANs carrying
           management traffic. This usually requires to place the
           probe(s) close to the management system(s) and to configure
-          dedicated monitoring ports on bridged networks.
+          dedicated monitoring ports on bridged networks. Some bridges
+          have restrictions concerning their monitoring capabilities
+          and this should be investigated and documented where
+          necessary.
         </t>
         <t>
           It is recommended to capture at least a full week of data.
@@ -240,11 +244,11 @@
           of the raw pcap files.
         </t>
         <t>
-          It is important to note that the raw pcap files should be
-          kept in stable storage (e.g., compressed and encrypted on a
-          CD ROM or DVD). To verify measurements, it might be
-          necessary to go back to the original pcap files if for
-          example bugs in the tools described below have been
+          It is important to note that the raw pcap files should
+          ideally be kept in stable storage (e.g., compressed and
+          encrypted on a CD ROM or DVD). To verify measurements, it
+          might be necessary to go back to the original pcap files if,
+          for example, bugs in the tools described below have been
           detected and fixed.
         </t>
         <t>
@@ -263,11 +267,11 @@
       <section title="Converting Traffic Traces">
         <t>
           Raw traces in pcap format must be converted into a format
-          that is (a) human readable and (b) machine readable for
-          efficient post-processing. Human readability makes it easy
-          for an operator to verify that no sensitive data is left in
-          a trace while machine readability is needed to efficiently
-          extract relevant information.
+          that is human readable while remaining also machine readable
+          for efficient post-processing. Human readability makes it
+          easy for an operator to verify that no sensitive data is
+          left in a trace while machine readability is needed to
+          efficiently extract relevant information.
         </t>
         <t>
           The natural choice here is to use an XML format since XML is
@@ -282,12 +286,12 @@
           large traces well.
         </t>
         <t>
-          <xref target="schema"/> of this document defines a <xref
-          target="OASISRNG"/> schema for representing SNMP traffic
-          traces in XML.  The schema captures all relevant details of
-          an SNMP messages in the XML format. Note that the XML format
-          retains some information about the original ASN.1/BER
-          encoding to support message size analysis.
+          <xref target="schema"/> of this document defines a RELAX NG
+          schema <xref target="OASISRNG"/> for representing SNMP
+          traffic traces in XML.  The schema captures all relevant
+          details of an SNMP messages in the XML format. Note that the
+          XML format retains some information about the original
+          ASN.1/BER encoding to support message size analysis.
         </t>
         <t>
           A lightweight alternative to the full blown XML
@@ -308,10 +312,10 @@
           The <eref
           target="https://subversion.eecs.jacobs-university.de/svn/schoenw/src/snmpdump">snmpdump</eref>
           package has been developed to convert raw pcap files into
-          XML and CSV format. The snmpdump program reads either pcap
-          files or XML files as input and produces XML files or CSV
-          files as output. Specific elements can be filtered if that
-          is required to protect sensitive data.
+          XML and CSV format. The snmpdump program reads pcap, XML, or
+          CSV files as input and produces XML files or CSV files as
+          output. Specific elements can be filtered as required to
+          protect sensitive data.
         </t>
       </section>
 
@@ -324,30 +328,44 @@
           used for this purpose. People familiar with Perl might also
           be interested in using the <eref
           target="http://www.cpan.org/">XML::LibXML</eref> Perl
-          package to manipulate XML documents from within Perl.
+          module to manipulate XML documents from within Perl.
         </t>
         <t>
-          The snmpdump program can filter out sensitive information,
-          e.g., by deleting or clearing all XML elements whose name
-          matches a regular expression. Work is in progress to provide
-          data type specific anonymization transformations that
-          maintain lexicographic ordering for values that appear in
-          instance identifiers <xref target="HS06"/>.
+          The snmpdump program, for example, can filter out sensitive
+          information, e.g., by deleting or clearing all XML elements
+          whose name matches a regular expression. In addition, data
+          type specific anonymization transformations that maintain
+          lexicographic ordering for values that appear in instance
+          identifiers <xref target="HS06"/> can be applied. Note that
+          anonymization transformations are often bound to an
+          initialization key and depend on the data being anonymized
+          in an anonymization run.  As a consequence, users must be
+          careful when they merge data from independently anonymized
+          traces.
         </t>
       </section>
 
       <section title="Storing Traffic Traces">
         <t>
-          The pcap traces together with the XML / CSV formatted traces
-          should be stored in a stable archive or repository. Such an
-          archive or repository might either be maintained by research
-          groups (e.g., the NMRG) or by network operators. It is of
-          key importance that captured traces are not lost or modified
-          as they may form the basis of future research projects and
-          may also be needed to verify published research results.
-          Access to the archive might be restricted to those who have
-          signed some sort of a non-disclosure agreement.
+          The raw pcap traces as well as the XML / CSV formatted
+          traces should be stored in a stable archive or repository.
+          Such an archive or repository might either be maintained by
+          research groups (e.g., the NMRG) or by network operators or
+          both. It is of key importance that captured traces are not
+          lost or modified as they may form the basis of future
+          research projects and may also be needed to verify published
+          research results.  Access to the archive might be restricted
+          to those who have signed some sort of a non-disclosure
+          agreement.
         </t>
+	<t>
+	  While this document recommends that raw traces should be
+	  kept, it must be noted that there are situations where this
+	  may not be feasible.  The recommendation to keep raw traces
+	  may be ignored for example to comply with data protection
+	  laws or to protect a network operator from being forced to
+	  provide the data to other organizations.
+	</t>
         <t>
           Lossless compression algorithms embodied in programs such as
           gzip or bzip2 can be used to compress even large trace files
@@ -384,7 +402,7 @@
           files, it is suggested that analysis scripts are written in
           the Perl programming language using the <eref
           target="http://www.cpan.org/">XML::LibXML</eref> Perl
-          package to read the XML format of the trace files. Using a
+          module to read the XML format of the trace files. Using a
           scripting language such as Perl instead of system
           programming languages such as C or C++ has the advantage to
           reduce development time and to make scripts more accessible
@@ -490,7 +508,7 @@
             normal polling would allow to do.
           </t>
           <t>
-            Analysis of SNMP traffic traces can identity whether
+            Analysis of SNMP traffic traces can identify whether
             trap-directed polling is actually deployed. In particular,
             the question that should be addressed is whether SNMP
             notifications lead to changes in the short-term polling
@@ -531,7 +549,7 @@
         <section title="Encoding Length Distributions">
           <t>
             It will be useful to understand the encoding length
-            distributions for various data types. Assumption about
+            distributions for various data types. Assumptions about
             encoding length distributions are sometimes used to
             estimate SNMP message sizes in order to meet transport and
             buffer size constraints.
@@ -571,14 +589,14 @@
             protocol operations. Instead, conceptual tables supporting
             row creation typically provide a control column which uses
             the RowStatus textual convention defined in the SNMPv2-TC
-            module. The RowStatus itself supports different row
-            creation modes, namely createAndWait (dribble-mode) and
-            createAndGo (one-shot mode).  In addition, different
-            approaches can be used to derive the instance identifier
-            if it does not have special semantics associated. It will
-            be useful to study which of the various row creation
-            approaches are actually used by management applications on
-            production networks.
+            <xref target="RFC2579"/> module. The RowStatus itself
+            supports different row creation modes, namely
+            createAndWait (dribble-mode) and createAndGo (one-shot
+            mode).  In addition, different approaches can be used to
+            derive the instance identifier if it does not have special
+            semantics associated. It will be useful to study which of
+            the various row creation approaches are actually used by
+            management applications on production networks.
           </t>
         </section>
 
@@ -824,9 +842,8 @@ ipaddress.type = ipv4address.type | ipv6address.type
                 rendered in the usual hexadecimal notation. An octet
                 string value is printed in hexadecimal format while an
                 object identifier value is printed in dotted decimal
-                notation. Exceptions are encoded by their name, that
-                is either no-such-object, no-such-instance, or
-                end-of-mib-view.
+                notation. In case of an exception, the object value is
+                an empty string.
               </t>
             </list>
           </t>
@@ -847,19 +864,19 @@ ipaddress.type = ipv4address.type | ipv6address.type
     <section title="Security Considerations">
       <t>
         SNMP traffic traces usually contain sensitive information. It
-        is therefore necessary to (a) remove unneeded information and
+        is therefore necessary to (a) remove unwanted information and
         (b) to anonymize the remaining necessary information before
         traces are made available for analysis.
       </t>
       <t>
         Implementations that generate XML traces from raw pcap files
-        should have an option to suppress values. Note that instance
-        identifiers of tables also include values and it might
-        therefore be necessary to suppress (parts of) the instance
-        identifiers. Similarly, the packet and message headers
-        typically contain sensitive information about the source and
-        destination of SNMP messages as well as authentication
-        information (community strings or user names).
+        should have an option to suppress or anonymize values. Note
+        that instance identifiers of tables also include values and it
+        might therefore be necessary to suppress or anonymize (parts
+        of) the instance identifiers. Similarly, the packet and
+        message headers typically contain sensitive information about
+        the source and destination of SNMP messages as well as
+        authentication information (community strings or user names).
       </t>
       <t>
         Anonymization techniques can be applied to keep information in
@@ -998,6 +1015,26 @@ ipaddress.type = ipv4address.type | ipv6address.type
           <date month="April" year="1998"/>
         </front>
         <seriesInfo name="RFC" value="1052"/>
+      </reference>
+
+      <reference anchor="RFC2579">
+        <front>
+          <title>
+            Textual Conventions for SMIv2
+          </title>
+          <author initials="K." surname="McCloghrie" fullname="Keith McCloghrie">
+            <organization>Cisco Systems, Inc.</organization>
+          </author>
+          <author initials="D." surname="Perkins" fullname="David Perkins">
+            <organization>SNMPinfo</organization>
+          </author>
+          <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
+            <organization>TU Braunschweig</organization>
+          </author>
+          <date month="April" year="1999"/>
+        </front>
+        <seriesInfo name="STD" value="58"/>
+        <seriesInfo name="RFC" value="2579"/>
       </reference>
 
       <reference anchor="RFC3418">

@@ -3,8 +3,8 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                                  Jacobs University Bremen
-Intended status: Informational                          December 6, 2007
-Expires: June 8, 2008
+Intended status: Informational                          December 7, 2007
+Expires: June 9, 2008
 
 
           SNMP Traffic Measurements and Trace Exchange Formats
@@ -33,7 +33,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on June 8, 2008.
+   This Internet-Draft will expire on June 9, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 1]
+Schoenwaelder             Expires June 9, 2008                  [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -108,7 +108,7 @@ Abstract
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 2]
+Schoenwaelder             Expires June 9, 2008                  [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -164,7 +164,7 @@ Table of Contents
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 3]
+Schoenwaelder             Expires June 9, 2008                  [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -189,8 +189,9 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    foundation because authors typically assume certain SNMP interaction
    patterns without having experimental evidence that the assumptions
    are correct.  In fact, there are many speculations how SNMP is being
-   used in real world production networks and how it performs, but no
-   systematic measurements have been performed and published so far.
+   used in real world production networks and performance comparisons
+   are based on limited test cases, but no systematic measurements have
+   been performed and published so far.
 
    Many authors use the ifTable of the IF-MIB [RFC2863] or the
    tcpConnTable of the TCP-MIB [RFC4022] as a starting point for their
@@ -219,8 +220,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
-Schoenwaelder             Expires June 8, 2008                  [Page 4]
+Schoenwaelder             Expires June 9, 2008                  [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -276,7 +276,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 5]
+Schoenwaelder             Expires June 9, 2008                  [Page 5]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -291,7 +291,9 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    traffic is captured and that the probe has access to all virtual LANs
    carrying management traffic.  This usually requires to place the
    probe(s) close to the management system(s) and to configure dedicated
-   monitoring ports on bridged networks.
+   monitoring ports on bridged networks.  Some bridges have restrictions
+   concerning their monitoring capabilities and this should be
+   investigated and documented where necessary.
 
    It is recommended to capture at least a full week of data.  Operators
    are encouraged to capture traces over even longer periods of time.
@@ -308,11 +310,11 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    correct or ignore checksums during the subsequent analysis of the raw
    pcap files.
 
-   It is important to note that the raw pcap files should be kept in
-   stable storage (e.g., compressed and encrypted on a CD ROM or DVD).
-   To verify measurements, it might be necessary to go back to the
-   original pcap files if for example bugs in the tools described below
-   have been detected and fixed.
+   It is important to note that the raw pcap files should ideally be
+   kept in stable storage (e.g., compressed and encrypted on a CD ROM or
+   DVD).  To verify measurements, it might be necessary to go back to
+   the original pcap files if, for example, bugs in the tools described
+   below have been detected and fixed.
 
    For each captured trace, some meta data should be recorded and made
    available.  The meta data should include information such as where
@@ -325,18 +327,18 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 2.2.  Converting Traffic Traces
 
-   Raw traces in pcap format must be converted into a format that is (a)
-   human readable and (b) machine readable for efficient post-
-   processing.  Human readability makes it easy for an operator to
-   verify that no sensitive data is left in a trace while machine
+   Raw traces in pcap format must be converted into a format that is
+   human readable while remaining also machine readable for efficient
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 6]
+Schoenwaelder             Expires June 9, 2008                  [Page 6]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
+   post-processing.  Human readability makes it easy for an operator to
+   verify that no sensitive data is left in a trace while machine
    readability is needed to efficiently extract relevant information.
 
    The natural choice here is to use an XML format since XML is human as
@@ -349,7 +351,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    require an in memory representation of XML documents do not handle
    large traces well.
 
-   Section 4.1 of this document defines a [OASISRNG] schema for
+   Section 4.1 of this document defines a RELAX NG schema [OASISRNG] for
    representing SNMP traffic traces in XML.  The schema captures all
    relevant details of an SNMP messages in the XML format.  Note that
    the XML format retains some information about the original ASN.1/BER
@@ -367,42 +369,55 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    reassembly for SNMP messages that got fragmented at the IP layer.
 
    The snmpdump [5] package has been developed to convert raw pcap files
-   into XML and CSV format.  The snmpdump program reads either pcap
-   files or XML files as input and produces XML files or CSV files as
-   output.  Specific elements can be filtered if that is required to
-   protect sensitive data.
+   into XML and CSV format.  The snmpdump program reads pcap, XML, or
+   CSV files as input and produces XML files or CSV files as output.
+   Specific elements can be filtered as required to protect sensitive
+   data.
 
 2.3.  Filtering Traffic Traces
 
    Filtering sensitive data can be achieved by manipulating the XML
    representation of an SNMP trace.  Standard XSLT processors such as
    xsltproc [6] can be used for this purpose.  People familiar with Perl
-   might also be interested in using the XML::LibXML [7] Perl package to
+   might also be interested in using the XML::LibXML [7] Perl module to
    manipulate XML documents from within Perl.
 
-   The snmpdump program can filter out sensitive information, e.g., by
-   deleting or clearing all XML elements whose name matches a regular
-   expression.  Work is in progress to provide data type specific
-   anonymization transformations that maintain lexicographic ordering
-   for values that appear in instance identifiers [HS06].
+   The snmpdump program, for example, can filter out sensitive
+   information, e.g., by deleting or clearing all XML elements whose
+   name matches a regular expression.  In addition, data type specific
 
 
 
-Schoenwaelder             Expires June 8, 2008                  [Page 7]
+Schoenwaelder             Expires June 9, 2008                  [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
+   anonymization transformations that maintain lexicographic ordering
+   for values that appear in instance identifiers [HS06] can be applied.
+   Note that anonymization transformations are often bound to an
+   initialization key and depend on the data being anonymized in an
+   anonymization run.  As a consequence, users must be careful when they
+   merge data from independently anonymized traces.
+
 2.4.  Storing Traffic Traces
 
-   The pcap traces together with the XML / CSV formatted traces should
+   The raw pcap traces as well as the XML / CSV formatted traces should
    be stored in a stable archive or repository.  Such an archive or
    repository might either be maintained by research groups (e.g., the
-   NMRG) or by network operators.  It is of key importance that captured
-   traces are not lost or modified as they may form the basis of future
-   research projects and may also be needed to verify published research
-   results.  Access to the archive might be restricted to those who have
-   signed some sort of a non-disclosure agreement.
+   NMRG) or by network operators or both.  It is of key importance that
+   captured traces are not lost or modified as they may form the basis
+   of future research projects and may also be needed to verify
+   published research results.  Access to the archive might be
+   restricted to those who have signed some sort of a non-disclosure
+   agreement.
+
+   While this document recommends that raw traces should be kept, it
+   must be noted that there are situations where this may not be
+   feasible.  The recommendation to keep raw traces may be ignored for
+   example to comply with data protection laws or to protect a network
+   operator from being forced to provide the data to other
+   organizations.
 
    Lossless compression algorithms embodied in programs such as gzip or
    bzip2 can be used to compress even large trace files down to a size
@@ -426,10 +441,18 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    Due to the availability of XML parsers and the simplicity of the CSV
    format, trace files can be processed with tools written in almost any
+
+
+
+Schoenwaelder             Expires June 9, 2008                  [Page 8]
+
+Internet-Draft          SNMP Traffic Measurements          December 2007
+
+
    programming language.  However, in order to facilitate a common
    vocabulary and to allow operators to easily read scripts they execute
    on trace files, it is suggested that analysis scripts are written in
-   the Perl programming language using the XML::LibXML [7] Perl package
+   the Perl programming language using the XML::LibXML [7] Perl module
    to read the XML format of the trace files.  Using a scripting
    language such as Perl instead of system programming languages such as
    C or C++ has the advantage to reduce development time and to make
@@ -441,14 +464,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    process SNMP messages in C/C++.  While the coding of trace analysis
    programs in C/C++ should in general be avoided for code readability,
    verifiability and portability reasons, using C/C++ might be the only
-
-
-
-Schoenwaelder             Expires June 8, 2008                  [Page 8]
-
-Internet-Draft          SNMP Traffic Measurements          December 2007
-
-
    option to deal with very large traces efficiently.
 
 
@@ -485,22 +500,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Schoenwaelder             Expires June 8, 2008                  [Page 9]
+Schoenwaelder             Expires June 9, 2008                  [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -556,7 +556,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 10]
+Schoenwaelder             Expires June 9, 2008                 [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -580,7 +580,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    adopt their polling strategy and basically react faster than normal
    polling would allow to do.
 
-   Analysis of SNMP traffic traces can identity whether trap-directed
+   Analysis of SNMP traffic traces can identify whether trap-directed
    polling is actually deployed.  In particular, the question that
    should be addressed is whether SNMP notifications lead to changes in
    the short-term polling behavior of management stations.  In
@@ -612,7 +612,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 11]
+Schoenwaelder             Expires June 9, 2008                 [Page 11]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -620,7 +620,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 3.9.  Encoding Length Distributions
 
    It will be useful to understand the encoding length distributions for
-   various data types.  Assumption about encoding length distributions
+   various data types.  Assumptions about encoding length distributions
    are sometimes used to estimate SNMP message sizes in order to meet
    transport and buffer size constraints.
 
@@ -647,13 +647,13 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    Row creation is an operation not natively supported by the protocol
    operations.  Instead, conceptual tables supporting row creation
    typically provide a control column which uses the RowStatus textual
-   convention defined in the SNMPv2-TC module.  The RowStatus itself
-   supports different row creation modes, namely createAndWait (dribble-
-   mode) and createAndGo (one-shot mode).  In addition, different
-   approaches can be used to derive the instance identifier if it does
-   not have special semantics associated.  It will be useful to study
-   which of the various row creation approaches are actually used by
-   management applications on production networks.
+   convention defined in the SNMPv2-TC [RFC2579] module.  The RowStatus
+   itself supports different row creation modes, namely createAndWait
+   (dribble-mode) and createAndGo (one-shot mode).  In addition,
+   different approaches can be used to derive the instance identifier if
+   it does not have special semantics associated.  It will be useful to
+   study which of the various row creation approaches are actually used
+   by management applications on production networks.
 
 
 
@@ -668,7 +668,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 12]
+Schoenwaelder             Expires June 9, 2008                 [Page 12]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -691,7 +691,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
  # seems to restrict it to IETF documents (and this specification is
  # originating from the IRTF).
  #
- # $Id: measure.xml 2374 2007-06-28 20:01:18Z schoenw $
+ # $Id: measure.xml 2624 2007-12-06 21:10:45Z schoenw $
 
  default namespace = "http://www.nosuchname.net/nmrg/snmptrace"
 
@@ -724,7 +724,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 13]
+Schoenwaelder             Expires June 9, 2008                 [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -780,7 +780,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 14]
+Schoenwaelder             Expires June 9, 2008                 [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -836,7 +836,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 15]
+Schoenwaelder             Expires June 9, 2008                 [Page 15]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -892,7 +892,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 16]
+Schoenwaelder             Expires June 9, 2008                 [Page 16]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -920,9 +920,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
             dotted quad notation and an IPv6 address is rendered in the
             usual hexadecimal notation.  An octet string value is
             printed in hexadecimal format while an object identifier
-            value is printed in dotted decimal notation.  Exceptions are
-            encoded by their name, that is either no-such-object, no-
-            such-instance, or end-of-mib-view.
+            value is printed in dotted decimal notation.  In case of an
+            exception, the object value is an empty string.
 
    Note that the format does not preserve the information needed to
    understand SNMPv1 traps.  It is therefore recommended that
@@ -948,7 +947,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 17]
+
+Schoenwaelder             Expires June 9, 2008                 [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -956,17 +956,18 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 5.  Security Considerations
 
    SNMP traffic traces usually contain sensitive information.  It is
-   therefore necessary to (a) remove unneeded information and (b) to
+   therefore necessary to (a) remove unwanted information and (b) to
    anonymize the remaining necessary information before traces are made
    available for analysis.
 
    Implementations that generate XML traces from raw pcap files should
-   have an option to suppress values.  Note that instance identifiers of
-   tables also include values and it might therefore be necessary to
-   suppress (parts of) the instance identifiers.  Similarly, the packet
-   and message headers typically contain sensitive information about the
-   source and destination of SNMP messages as well as authentication
-   information (community strings or user names).
+   have an option to suppress or anonymize values.  Note that instance
+   identifiers of tables also include values and it might therefore be
+   necessary to suppress or anonymize (parts of) the instance
+   identifiers.  Similarly, the packet and message headers typically
+   contain sensitive information about the source and destination of
+   SNMP messages as well as authentication information (community
+   strings or user names).
 
    Anonymization techniques can be applied to keep information in traces
    which could otherwise reveal sensitive information.  When using
@@ -1003,8 +1004,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
-Schoenwaelder             Expires June 8, 2008                 [Page 18]
+Schoenwaelder             Expires June 9, 2008                 [Page 18]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1060,7 +1060,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 19]
+Schoenwaelder             Expires June 9, 2008                 [Page 19]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1092,6 +1092,10 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
               Internet Network Management Standards", RFC 1052,
               April 1998.
 
+   [RFC2579]  McCloghrie, K., Perkins, D., and J. Schoenwaelder,
+              "Textual Conventions for SMIv2", STD 58, RFC 2579,
+              April 1999.
+
    [RFC3418]  Presuhn, R., Case, J., McCloghrie, K., Rose, M., and S.
               Waldbusser, "Management Information Base (MIB) for the
               Simple Network Management Protocol (SNMP)", STD 62,
@@ -1109,17 +1113,17 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
               March 2005.
 
    [PDMQ04]   Pras, A., Drevers, T., van de Meent, R., and D. Quartel,
-              "Comparing the Performance of SNMP and Web Services based
-              Management", IEEE electronic Transactions on Network and
-              Service Management 1(2), November 2004.
 
 
 
-
-Schoenwaelder             Expires June 8, 2008                 [Page 20]
+Schoenwaelder             Expires June 9, 2008                 [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
+
+              "Comparing the Performance of SNMP and Web Services based
+              Management", IEEE electronic Transactions on Network and
+              Service Management 1(2), November 2004.
 
    [Pat01]    Pattinson, C., "A Study of the Behaviour of the Simple
               Network Management Protocol", Proc. 12th IFIP/IEEE
@@ -1168,11 +1172,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
-
-
-
-Schoenwaelder             Expires June 8, 2008                 [Page 21]
+Schoenwaelder             Expires June 9, 2008                 [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1228,7 +1228,7 @@ URIs
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 22]
+Schoenwaelder             Expires June 9, 2008                 [Page 22]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1284,7 +1284,7 @@ Author's Address
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 23]
+Schoenwaelder             Expires June 9, 2008                 [Page 23]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1340,5 +1340,5 @@ Acknowledgment
 
 
 
-Schoenwaelder             Expires June 8, 2008                 [Page 24]
+Schoenwaelder             Expires June 9, 2008                 [Page 24]
 
