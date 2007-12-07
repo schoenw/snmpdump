@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Relax NG grammar for the XML SNMP trace format.
+  
+  Published as part of RFC XXXX.
+  
+  Note that we do not use the IANA namespace registry since RFC 3688
+  seems to restrict it to IETF documents (and this specification is
+  originating from the IRTF).
+  
+  $Id: snmptrace.rnc 2624 2007-12-06 21:10:45Z schoenw $
+-->
+<grammar ns="http://www.nosuchname.net/nmrg/snmptrace" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <element name="snmptrace">
+      <zeroOrMore>
+        <ref name="packet.elem"/>
+      </zeroOrMore>
+    </element>
+  </start>
+  <define name="packet.elem">
+    <element name="packet">
+      <element name="time-sec">
+        <data type="unsignedInt"/>
+      </element>
+      <element name="time-usec">
+        <data type="unsignedInt"/>
+      </element>
+      <element name="src-ip">
+        <ref name="ipaddress.type"/>
+      </element>
+      <element name="src-port">
+        <data type="unsignedInt"/>
+      </element>
+      <element name="dst-ip">
+        <ref name="ipaddress.type"/>
+      </element>
+      <element name="dst-port">
+        <data type="unsignedInt"/>
+      </element>
+      <ref name="snmp.elem"/>
+    </element>
+  </define>
+  <define name="snmp.elem">
+    <element name="snmp">
+      <optional>
+        <ref name="length.attrs"/>
+      </optional>
+      <ref name="message.elem"/>
+    </element>
+  </define>
+  <define name="message.elem">
+    <element name="version">
+      <ref name="length.attrs"/>
+      <data type="int"/>
+    </element>
+    <element name="community">
+      <ref name="length.attrs"/>
+      <data type="hexBinary"/>
+    </element>
+    <ref name="pdu.elem"/>
+  </define>
+  <define name="message.elem" combine="choice">
+    <element name="version">
+      <ref name="length.attrs"/>
+      <data type="int"/>
+    </element>
+    <element name="message">
+      <ref name="length.attrs"/>
+      <element name="msg-id">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="max-size">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="flags">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="security-model">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+    </element>
+    <optional>
+      <ref name="usm.elem"/>
+    </optional>
+    <element name="scoped-pdu">
+      <ref name="length.attrs"/>
+      <element name="context-engine-id">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="context-name">
+        <ref name="length.attrs"/>
+        <data type="string"/>
+      </element>
+      <ref name="pdu.elem"/>
+    </element>
+  </define>
+  <define name="usm.elem">
+    <element name="usm">
+      <ref name="length.attrs"/>
+      <element name="auth-engine-id">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="auth-engine-boots">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="auth-engine-time">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="user">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="auth-params">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="priv-params">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+    </element>
+  </define>
+  <define name="pdu.elem">
+    <element name="trap">
+      <ref name="length.attrs"/>
+      <element name="enterprise">
+        <ref name="length.attrs"/>
+        <ref name="oid.type"/>
+      </element>
+      <element name="agent-addr">
+        <ref name="length.attrs"/>
+        <ref name="ipv4address.type"/>
+      </element>
+      <element name="generic-trap">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="specific-trap">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="time-stamp">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="variable-bindings">
+        <ref name="length.attrs"/>
+        <zeroOrMore>
+          <ref name="varbind.elem"/>
+        </zeroOrMore>
+      </element>
+    </element>
+  </define>
+  <define name="pdu.elem" combine="choice">
+    <element>
+      <choice>
+        <name>get-request</name>
+        <name>get-next-request</name>
+        <name>get-bulk-request</name>
+        <name>set-request</name>
+        <name>inform-request</name>
+        <name>snmpV2-trap</name>
+        <name>response</name>
+        <name>report</name>
+      </choice>
+      <ref name="length.attrs"/>
+      <element name="request-id">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="error-status">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="error-index">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="variable-bindings">
+        <ref name="length.attrs"/>
+        <zeroOrMore>
+          <ref name="varbind.elem"/>
+        </zeroOrMore>
+      </element>
+    </element>
+  </define>
+  <define name="varbind.elem">
+    <element name="varbind">
+      <ref name="length.attrs"/>
+      <ref name="name.elem"/>
+      <ref name="value.elem"/>
+    </element>
+  </define>
+  <define name="name.elem">
+    <element name="name">
+      <ref name="length.attrs"/>
+      <ref name="oid.type"/>
+    </element>
+  </define>
+  <define name="value.elem">
+    <choice>
+      <element name="null">
+        <ref name="length.attrs"/>
+        <empty/>
+      </element>
+      <element name="integer32">
+        <ref name="length.attrs"/>
+        <data type="int"/>
+      </element>
+      <element name="unsigned32">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="counter32">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="counter64">
+        <ref name="length.attrs"/>
+        <data type="unsignedLong"/>
+      </element>
+      <element name="timeticks">
+        <ref name="length.attrs"/>
+        <data type="unsignedInt"/>
+      </element>
+      <element name="ipaddress">
+        <ref name="length.attrs"/>
+        <ref name="ipv4address.type"/>
+      </element>
+      <element name="octet-string">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="object-identifier">
+        <ref name="length.attrs"/>
+        <ref name="oid.type"/>
+      </element>
+      <element name="opaque">
+        <ref name="length.attrs"/>
+        <data type="hexBinary"/>
+      </element>
+      <element name="no-such-object">
+        <ref name="length.attrs"/>
+        <empty/>
+      </element>
+      <element name="no-such-instance">
+        <ref name="length.attrs"/>
+        <empty/>
+      </element>
+      <element name="end-of-mib-view">
+        <ref name="length.attrs"/>
+        <empty/>
+      </element>
+    </choice>
+  </define>
+  <!--
+    The blen attribute indicates the number of octets used by the BER
+    encoded tag / length / value triple. The vlen attribute indicates
+    the number of octets used by the BER encoded value alone.
+  -->
+  <define name="length.attrs">
+    <optional>
+      <attribute name="blen">
+        <data type="unsignedShort"/>
+      </attribute>
+      <attribute name="vlen">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+  </define>
+  <define name="oid.type">
+    <data type="string">
+      <param name="pattern">[0-2](\.[0-9]+)+</param>
+    </data>
+  </define>
+  <!--
+    The types below are for IP addresses. Note that SNMP's buildin
+    IpAddress type only supports IPv4 addresses; IPv6 addresses are only
+    introduced to cover SNMP over IPv6 endpoints.
+  -->
+  <define name="ipv4address.type">
+    <data type="string">
+      <param name="pattern">[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*</param>
+    </data>
+  </define>
+  <define name="ipv6address.type">
+    <data type="string">
+      <param name="pattern">(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?</param>
+    </data>
+  </define>
+  <define name="ipaddress.type">
+    <choice>
+      <ref name="ipv4address.type"/>
+      <ref name="ipv6address.type"/>
+    </choice>
+  </define>
+</grammar>

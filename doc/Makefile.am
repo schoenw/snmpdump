@@ -1,4 +1,4 @@
-EXTRA_DIST		= snmptrace.rnc
+EXTRA_DIST		= snmptrace.rnc snmptrace.rng snmptrace.xsd
 
 test: snmptrace.rng snmptrace.xsd
 

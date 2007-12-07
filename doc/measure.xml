@@ -132,6 +132,16 @@
         management interactions.
       </t>
       <t>
+	While the SNMP trace collection and analysis effort was
+	initiated by the research community, it should be noted that
+	network operators can benefit from the SNMP measurements too.
+	Several new tools are being developed as part of this effort
+	that can be used to capture and analyze the traffic generated
+	by management stations. This resulting information can then be
+	used to improve the efficiency and scalability of management
+	systems.
+      </t>
+      <t>
         This is an informational document, produced within the IRTF's
         Network Management Research Group (NMRG) and represents the
         consensus of all of the active contributors to this group.
