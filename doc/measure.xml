@@ -300,7 +300,7 @@
           large traces well.
         </t>
         <t>
-          <xref target="schema"/> of this document defines a RELAX NG
+          <xref target="xml"/> of this document defines a RELAX NG
           schema <xref target="OASISRNG"/> for representing SNMP
           traffic traces in XML.  The schema captures all relevant
           details of an SNMP messages in the XML format. Note that the
@@ -356,7 +356,10 @@
           initialization key and depend on the data being anonymized
           in an anonymization run.  As a consequence, users must be
           careful when they merge data from independently anonymized
-          traces.
+          traces. More information about network traffic trace
+          anonymization techniques can be found in <xref
+          target="XFA02"/>, <xref target="FXAM04"/>, <xref
+          target="PAPL06"/>, and <xref target="RW07"/>.
         </t>
       </section>
 
@@ -628,7 +631,7 @@
 
     <section title="Trace Exchange Formats">
 
-    <section anchor="schema" title="RELAX NG Schema Definition">
+    <section anchor="xml" title="XML Representation">
       <t>
         The XML format has been designed to keep all information
         associated with SNMP messages. The format is specified in
@@ -783,9 +786,70 @@ ipv6address.type =
 ipaddress.type = ipv4address.type | ipv6address.type
         ]]></artwork>
       </figure>
+
+      <t>
+	The following example shows an SNMP trace file in XML format
+	containing an SNMPv1 get-next-request message for the OID
+	1.3.6.1.2.1.1.3 (sysUpTime) and the response message returned
+	by the agent.
+      </t>
+
+      <figure>
+        <artwork><![CDATA[
+<snmptrace>
+  <packet>
+    <time-sec>1147212206</time-sec>
+    <time-usec>739609</time-usec>
+    <src-ip>192.0.2.1</src-ip>
+    <src-port>60371</src-port>
+    <dst-ip>192.0.2.2</dst-ip>
+    <dst-port>12345</dst-port>
+    <snmp blen="42" vlen="40">
+      <version blen="3" vlen="1">1</version>
+      <community blen="8" vlen="6">7075626c6963</community>
+      <get-next-request blen="29" vlen="27">
+        <request-id blen="6" vlen="4">1804289383</request-id>
+        <error-status blen="3" vlen="1">0</error-status>
+        <error-index blen="3" vlen="1">0</error-index>
+        <variable-bindings blen="15" vlen="13">
+          <varbind blen="13" vlen="11">
+            <name blen="9" vlen="7">1.3.6.1.2.1.1.3</name>
+            <null blen="2" vlen="0"/>
+          </varbind>
+        </variable-bindings>
+      </get-next-request>
+    </snmp>
+  </packet>
+  <packet>
+    <time-sec>1147212206</time-sec>
+    <time-usec>762891</time-usec>
+    <src-ip>192.0.2.2</src-ip>
+    <src-port>12345</src-port>
+    <dst-ip>192.0.2.1</dst-ip>
+    <dst-port>60371</dst-port>
+    <snmp blen="47" vlen="45">
+      <version blen="3" vlen="1">1</version>
+      <community blen="8" vlen="6">7075626c6963</community>
+      <response blen="34" vlen="32">
+        <request-id blen="6" vlen="4">1804289383</request-id>
+        <error-status blen="3" vlen="1">0</error-status>
+        <error-index blen="3" vlen="1">0</error-index>
+        <variable-bindings blen="20" vlen="18">
+          <varbind blen="18" vlen="16">
+            <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
+            <unsigned32 blen="6" vlen="4">26842224</unsigned32>
+          </varbind>
+        </variable-bindings>
+      </response>
+    </snmp>
+  </packet>
+</snmptrace>
+]]></artwork>
+      </figure>
+
     </section>
 
-    <section anchor="csv" title="CSV Format Definition">
+    <section anchor="csv" title="CSV Representation">
       <t>
         The comma separated values (CSV) format has been designed to
         capture only the most relevant information about an SNMP
@@ -883,6 +947,24 @@ ipaddress.type = ipv4address.type | ipv6address.type
         the rules defined in <xref target="RFC3584"/>. The activation
         of trap format conversion should be the user's choice.
       </t>
+      <t>
+	The following example shows an SNMP trace file in CSV format
+	containing an SNMPv1 get-next-request message for the OID
+	1.3.6.1.2.1.1.3 (sysUpTime) and the response message returned
+	by the agent. (Note that the example uses backslash line
+	continuation marks in order to fit the example into the RFC
+	format. Backslash line continuations are not part of the CSV
+	format.)
+      </t>
+      <figure>
+	<artwork><![CDATA[
+1147212206.739609,192.0.2.1,60371,192.0.2.2,12345,42,1,\
+  get-next-request,1804289383,0,0,1,1.3.6.1.2.1.1.3,null,
+1147212206.762891,192.0.2.2,12345,192.0.2.1,60371,47,1,\
+  response,1804289383,0,0,1,1.3.6.1.2.1.1.3.0,timeticks,26842224
+	]]></artwork>
+      </figure>
+
     </section>
 
     </section>
@@ -931,7 +1013,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
         the readability of this document.
       </t>
       <t>
-	Last call reviews have been provided by Bert Wijnen, Aiko
+	Last call reviews have been received from Bert Wijnen, Aiko
 	Pras, Frank Strauss, Remco van de Meent, Giorgio Nunzi, Wes
 	Hardacker, Liam Fallon, Sharon Chisholm, David Perkins, Deep
 	Medhi, Randy Bush, David Harrington, Dan Romascanu, Luca Deri,
@@ -1280,6 +1362,89 @@ ipaddress.type = ipv4address.type | ipv6address.type
           <date month="April" year="2006"/>
         </front>
         <seriesInfo name="IEEE/IFIP Network Operations and Management Symposium" value="NOMS 2006"/>
+      </reference>
+
+      <reference anchor="XFA02">
+        <front>
+          <title>
+            Prefix-Preserving IP Address Anonymization:
+            Measurement-based Security Evaluation and a New
+            Cryptography-based Scheme
+          </title>
+          <author initials="J." surname="Xu" fullname="Jun Xu">
+            <organization></organization>
+          </author>
+          <author initials="J." surname="Fan" fullname="Jinliang Fan">
+            <organization></organization>
+          </author>
+          <author initials="M.H." surname="Ammar" fullname="Mostafa H. Ammar">
+            <organization></organization>
+          </author>
+          <date month="November" year="2002"/>
+        </front>
+        <seriesInfo name="10th IEEE International Conference on
+			  Network Protocols" value="ICNP'02"/>
+      </reference>
+
+      <reference anchor="FXAM04">
+        <front>
+          <title>
+	    Prefix-Preserving IP Address Anonymization
+          </title>
+          <author initials="J." surname="Fan" fullname="Jinliang Fan">
+            <organization></organization>
+          </author>
+          <author initials="J." surname="Xu" fullname="Jun Xu">
+            <organization></organization>
+          </author>
+          <author initials="M.H." surname="Ammar" fullname="Mostafa H. Ammar">
+            <organization></organization>
+          </author>
+          <author initials="S." surname="Moon" fullname="Sue Moon">
+            <organization></organization>
+          </author>
+          <date month="October" year="2004"/>
+        </front>
+        <seriesInfo name="Computer Networks" value="46(2)"/>
+      </reference>
+
+      <reference anchor="PAPL06">
+        <front>
+          <title>
+	    The Devil and Packet Trace Anonymization
+          </title>
+          <author initials="R." surname="Pang" fullname="R. Pang">
+            <organization></organization>
+          </author>
+          <author initials="M." surname="Allman" fullname="M. Allman">
+            <organization></organization>
+          </author>
+          <author initials="V" surname="Paxson" fullname="V. Paxson">
+            <organization></organization>
+          </author>
+          <author initials="J." surname="Lee" fullname="J. Lee">
+            <organization></organization>
+          </author>
+          <date month="January" year="2006"/>
+        </front>
+        <seriesInfo name="Computer Communication Review" value="36(1)"/>
+      </reference>
+
+      <reference anchor="RW07">
+        <front>
+          <title>
+	    High-Speed Prefix-Preserving {IP} Address Anonymization
+	    for Passive Measurement Systems
+          </title>
+          <author initials="R." surname="Ramaswamy" fullname="R. Ramaswamy">
+            <organization></organization>
+          </author>
+          <author initials="T." surname="Wolf" fullname="T. Wolf">
+            <organization></organization>
+          </author>
+          <date month="February" year="2007"/>
+        </front>
+        <seriesInfo name="IEEE Transactions on Networking" value="15(1)"/>
       </reference>
 
     </references>

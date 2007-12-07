@@ -136,15 +136,15 @@ Table of Contents
      3.11. Spin Locks . . . . . . . . . . . . . . . . . . . . . . . . 13
      3.12. Row Creation . . . . . . . . . . . . . . . . . . . . . . . 13
    4.  Trace Exchange Formats . . . . . . . . . . . . . . . . . . . . 14
-     4.1.  RELAX NG Schema Definition . . . . . . . . . . . . . . . . 14
-     4.2.  CSV Format Definition  . . . . . . . . . . . . . . . . . . 17
-   5.  Security Considerations  . . . . . . . . . . . . . . . . . . . 19
-   6.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 20
-   7.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 21
-     7.1.  Normative References . . . . . . . . . . . . . . . . . . . 21
-     7.2.  Informative References . . . . . . . . . . . . . . . . . . 21
-   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 24
-   Intellectual Property and Copyright Statements . . . . . . . . . . 25
+     4.1.  XML Representation . . . . . . . . . . . . . . . . . . . . 14
+     4.2.  CSV Representation . . . . . . . . . . . . . . . . . . . . 19
+   5.  Security Considerations  . . . . . . . . . . . . . . . . . . . 21
+   6.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 22
+   7.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+     7.1.  Normative References . . . . . . . . . . . . . . . . . . . 23
+     7.2.  Informative References . . . . . . . . . . . . . . . . . . 23
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 27
+   Intellectual Property and Copyright Statements . . . . . . . . . . 28
 
 
 
@@ -455,7 +455,9 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    Note that anonymization transformations are often bound to an
    initialization key and depend on the data being anonymized in an
    anonymization run.  As a consequence, users must be careful when they
-   merge data from independently anonymized traces.
+   merge data from independently anonymized traces.  More information
+   about network traffic trace anonymization techniques can be found in
+   [XFA02], [FXAM04], [PAPL06], and [RW07].
 
 2.4.  Storing Traffic Traces
 
@@ -496,8 +498,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    A common versioned repository for analysis scripts might be useful to
    establish.
 
-   Due to the availability of XML parsers and the simplicity of the CSV
-
 
 
 Schoenwaelder             Expires June 9, 2008                  [Page 9]
@@ -505,6 +505,7 @@ Schoenwaelder             Expires June 9, 2008                  [Page 9]
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
+   Due to the availability of XML parsers and the simplicity of the CSV
    format, trace files can be processed with tools written in almost any
    programming language.  However, in order to facilitate a common
    vocabulary and to allow operators to easily read scripts they execute
@@ -528,7 +529,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    events that happened while the trace was collected clearly influence
    the result.  It is therefore important to be careful with drawing
    general conclusions based on a potentially limited data set.
-
 
 
 
@@ -731,7 +731,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 4.  Trace Exchange Formats
 
-4.1.  RELAX NG Schema Definition
+4.1.  XML Representation
 
    The XML format has been designed to keep all information associated
    with SNMP messages.  The format is specified in RELAX NG compact
@@ -747,7 +747,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
  # seems to restrict it to IETF documents (and this specification is
  # originating from the IRTF).
  #
- # $Id: measure.xml 2627 2007-12-07 10:45:02Z schoenw $
+ # $Id: measure.xml 2628 2007-12-07 11:49:36Z schoenw $
 
  default namespace = "http://www.nosuchname.net/nmrg/snmptrace"
 
@@ -905,7 +905,111 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
  ipaddress.type = ipv4address.type | ipv6address.type
 
-4.2.  CSV Format Definition
+   The following example shows an SNMP trace file in XML format
+   containing an SNMPv1 get-next-request message for the OID
+   1.3.6.1.2.1.1.3 (sysUpTime) and the response message returned by the
+   agent.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder             Expires June 9, 2008                 [Page 17]
+
+Internet-Draft          SNMP Traffic Measurements          December 2007
+
+
+   <snmptrace>
+     <packet>
+       <time-sec>1147212206</time-sec>
+       <time-usec>739609</time-usec>
+       <src-ip>192.0.2.1</src-ip>
+       <src-port>60371</src-port>
+       <dst-ip>192.0.2.2</dst-ip>
+       <dst-port>12345</dst-port>
+       <snmp blen="42" vlen="40">
+         <version blen="3" vlen="1">1</version>
+         <community blen="8" vlen="6">7075626c6963</community>
+         <get-next-request blen="29" vlen="27">
+           <request-id blen="6" vlen="4">1804289383</request-id>
+           <error-status blen="3" vlen="1">0</error-status>
+           <error-index blen="3" vlen="1">0</error-index>
+           <variable-bindings blen="15" vlen="13">
+             <varbind blen="13" vlen="11">
+               <name blen="9" vlen="7">1.3.6.1.2.1.1.3</name>
+               <null blen="2" vlen="0"/>
+             </varbind>
+           </variable-bindings>
+         </get-next-request>
+       </snmp>
+     </packet>
+     <packet>
+       <time-sec>1147212206</time-sec>
+       <time-usec>762891</time-usec>
+       <src-ip>192.0.2.2</src-ip>
+       <src-port>12345</src-port>
+       <dst-ip>192.0.2.1</dst-ip>
+       <dst-port>60371</dst-port>
+       <snmp blen="47" vlen="45">
+         <version blen="3" vlen="1">1</version>
+         <community blen="8" vlen="6">7075626c6963</community>
+         <response blen="34" vlen="32">
+           <request-id blen="6" vlen="4">1804289383</request-id>
+           <error-status blen="3" vlen="1">0</error-status>
+           <error-index blen="3" vlen="1">0</error-index>
+           <variable-bindings blen="20" vlen="18">
+             <varbind blen="18" vlen="16">
+               <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
+               <unsigned32 blen="6" vlen="4">26842224</unsigned32>
+             </varbind>
+           </variable-bindings>
+         </response>
+       </snmp>
+     </packet>
+   </snmptrace>
+
+
+
+Schoenwaelder             Expires June 9, 2008                 [Page 18]
+
+Internet-Draft          SNMP Traffic Measurements          December 2007
+
+
+4.2.  CSV Representation
 
    The comma separated values (CSV) format has been designed to capture
    only the most relevant information about an SNMP message.  In
@@ -944,15 +1048,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    9.   SNMP request-id in decimal notation, for example "1511411010".
 
-
-
-
-
-Schoenwaelder             Expires June 9, 2008                 [Page 17]
-
-Internet-Draft          SNMP Traffic Measurements          December 2007
-
-
    10.  SNMP error-status in decimal notation, for example "0".
 
    11.  SNMP error-index in decimal notation, for example "0".
@@ -962,6 +1057,13 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    13.  For each varbind in the varbind list, three output elements are
         generated
+
+
+
+Schoenwaelder             Expires June 9, 2008                 [Page 19]
+
+Internet-Draft          SNMP Traffic Measurements          December 2007
+
 
         1.  Object name given as object identifier in dotted decimal
             notation, for example "1.3.6.1.2.1.1.3.0".  Object names are
@@ -988,6 +1090,17 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    defined in [RFC3584].  The activation of trap format conversion
    should be the user's choice.
 
+   The following example shows an SNMP trace file in CSV format
+   containing an SNMPv1 get-next-request message for the OID
+   1.3.6.1.2.1.1.3 (sysUpTime) and the response message returned by the
+   agent.  (Note that the example uses backslash line continuation marks
+   in order to fit the example into the RFC format.  Backslash line
+   continuations are not part of the CSV format.)
+
+   1147212206.739609,192.0.2.1,60371,192.0.2.2,12345,42,1,\
+     get-next-request,1804289383,0,0,1,1.3.6.1.2.1.1.3,null,
+   1147212206.762891,192.0.2.2,12345,192.0.2.1,60371,47,1,\
+     response,1804289383,0,0,1,1.3.6.1.2.1.1.3.0,timeticks,26842224
 
 
 
@@ -1003,8 +1116,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
-Schoenwaelder             Expires June 9, 2008                 [Page 18]
+Schoenwaelder             Expires June 9, 2008                 [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1060,7 +1172,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 19]
+Schoenwaelder             Expires June 9, 2008                 [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1075,8 +1187,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    Aiko Pras contributed ideas to Section 3 while David Harrington
    helped to improve the readability of this document.
 
-   Last call reviews have been provided by Bert Wijnen, Aiko Pras, Frank
-   Strauss, Remco van de Meent, Giorgio Nunzi, Wes Hardacker, Liam
+   Last call reviews have been received from Bert Wijnen, Aiko Pras,
+   Frank Strauss, Remco van de Meent, Giorgio Nunzi, Wes Hardacker, Liam
    Fallon, Sharon Chisholm, David Perkins, Deep Medhi, Randy Bush, David
    Harrington, Dan Romascanu, Luca Deri, and Marc Burgess.
 
@@ -1116,7 +1228,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 20]
+Schoenwaelder             Expires June 9, 2008                 [Page 22]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1172,7 +1284,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 21]
+Schoenwaelder             Expires June 9, 2008                 [Page 23]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1210,6 +1322,32 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
               Anonymization", IEEE/IFIP Network Operations and
               Management Symposium NOMS 2006, April 2006.
 
+   [XFA02]    Xu, J., Fan, J., and M. Ammar, "Prefix-Preserving IP
+              Address Anonymization: Measurement-based Security
+              Evaluation and a New Cryptography-based Scheme", 10th IEEE
+              International Conference on Network Protocols ICNP'02,
+              November 2002.
+
+   [FXAM04]   Fan, J., Xu, J., Ammar, M., and S. Moon, "Prefix-
+              Preserving IP Address Anonymization", Computer
+              Networks 46(2), October 2004.
+
+   [PAPL06]   Pang, R., Allman, M., Paxson, V., and J. Lee, "The Devil
+              and Packet Trace Anonymization", Computer Communication
+              Review 36(1), January 2006.
+
+   [RW07]     Ramaswamy, R. and T. Wolf, "High-Speed Prefix-Preserving
+
+
+
+Schoenwaelder             Expires June 9, 2008                 [Page 24]
+
+Internet-Draft          SNMP Traffic Measurements          December 2007
+
+
+              {IP} Address Anonymization for Passive Measurement
+              Systems", IEEE Transactions on Networking 15(1),
+              February 2007.
 
 
 
@@ -1228,7 +1366,37 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 22]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder             Expires June 9, 2008                 [Page 25]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1284,7 +1452,7 @@ URIs
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 23]
+Schoenwaelder             Expires June 9, 2008                 [Page 26]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1340,7 +1508,7 @@ Author's Address
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 24]
+Schoenwaelder             Expires June 9, 2008                 [Page 27]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
@@ -1396,5 +1564,5 @@ Acknowledgment
 
 
 
-Schoenwaelder             Expires June 9, 2008                 [Page 25]
+Schoenwaelder             Expires June 9, 2008                 [Page 28]
 
