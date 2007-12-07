@@ -83,11 +83,11 @@
         in the late 1980s <xref target="RFC1052"/> and has since then
         evolved to what is known today as the SNMP version 3 Framework
         (SNMPv3) <xref target="RFC3410"/>. While SNMP is widely
-        deployed, it is not clear which features are being used, how
-        SNMP usage differs in different types of networks or
-        organizations, which information is frequently queried, and
-        what typical SNMP interactions patterns are in real world
-        production networks.
+        deployed, it is not clear what protocol versions are being
+        used, which protocol features are being used, how SNMP usage
+        differs in different types of networks or organizations, which
+        information is frequently queried, and what typical SNMP
+        interactions patterns are in real world production networks.
       </t>
       <t>
         There have been several publications in the recent past
@@ -120,8 +120,9 @@
         Furthermore, we do not generally understand how much traffic
         is devoted to standardized MIB objects and how much traffic
         deals with proprietary MIB objects and whether the operation
-        mix differs between these object classes or between different
-        operational environments.
+        mix between these object classes differs between different
+        operational environments (e.g., backbone networks, access
+        networks, enterprise networks).
       </t>
       <t>
         This document describes an effort to collect SNMP traffic
@@ -160,8 +161,8 @@
         <list style="numbers">
           <t>
             Capture raw SNMP traffic traces in <eref
-            target="http://en.wikipedia.org/wiki/Pcap">pcap capture
-            files</eref>.
+            target="http://en.wikipedia.org/wiki/Pcap">pcap packet
+            capture files</eref>.
           </t>
           <t>
             Convert the raw traffic traces into a structured machine
@@ -257,7 +258,7 @@
         </t>
         <t>
           It is important to note that the raw pcap files should
-          ideally be kept in stable storage (e.g., compressed and
+          ideally be kept in permanent storage (e.g., compressed and
           encrypted on a CD ROM or DVD). To verify measurements, it
           might be necessary to go back to the original pcap files if,
           for example, bugs in the tools described below have been
@@ -464,8 +465,10 @@
             trace. In addition, a rough classification of the data
             manipulated into 'standardized', 'proprietary', and
             'experimental' data can be done. Finally, general trace
-            characteristics such as message size distributions or the
-            periodicity of traces can be analyzed.
+            characteristics such as message size distributions, PDU
+            type distributions, error message frequency, usage of
+            authentication and encryption mechanisms, or the
+            periodicity of messages can be analyzed.
           </t>
         </section>
 
@@ -514,7 +517,7 @@
           <t>
             Tables can be read in several different ways. The simplest
             and most inefficient approach is to retrieve tables
-            cell-by-cell in column-by-column order. More advanced
+            object-by-object in column-by-column order. More advanced
             approaches try to read tables row-by-row or even
             multiple-rows-by-multiple-rows. In addition, the retrieval
             of index elements can be suppressed in most cases or only
@@ -974,7 +977,8 @@ ipaddress.type = ipv4address.type | ipv6address.type
         SNMP traffic traces usually contain sensitive information. It
         is therefore necessary to (a) remove unwanted information and
         (b) to anonymize the remaining necessary information before
-        traces are made available for analysis.
+        traces are made available for analysis. In addition, it is
+        recommended to encrypt traces when they are archived.
       </t>
       <t>
         Implementations that generate XML traces from raw pcap files
