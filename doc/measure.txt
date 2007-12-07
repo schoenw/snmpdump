@@ -121,7 +121,7 @@ Table of Contents
      2.2.  Converting Traffic Traces  . . . . . . . . . . . . . . . .  7
      2.3.  Filtering Traffic Traces . . . . . . . . . . . . . . . . .  8
      2.4.  Storing Traffic Traces . . . . . . . . . . . . . . . . . .  9
-     2.5.  Processing Traffic Traces  . . . . . . . . . . . . . . . .  9
+     2.5.  Analyzing Traffic Traces . . . . . . . . . . . . . . . . .  9
    3.  Analysis of Traffic Traces . . . . . . . . . . . . . . . . . . 11
      3.1.  Basic Statistics . . . . . . . . . . . . . . . . . . . . . 11
      3.2.  Periodic vs. Aperiodic Traffic . . . . . . . . . . . . . . 11
@@ -287,7 +287,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    and analysis.  The process consists of the following five basic
    steps:
 
-   1.  Capture raw SNMP traffic traces in pcap capture files.
+   1.  Capture raw SNMP traffic traces in pcap capture files [1].
 
    2.  Convert the raw traffic traces into a structured machine and
        human readable format.  A suitable XML schema has been developed
@@ -328,7 +328,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 2.1.  Capturing Traffic Traces
 
    Capturing SNMP traffic traces can be done using packet sniffers such
-   as tcpdump [1], ethereal [2], or similar applications.  Some care
+   as tcpdump [2], wireshark [3], or similar applications.  Some care
 
 
 
@@ -345,7 +345,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    the placement of the capturing probe within the network.  Especially
    on bridged LANs, it is important to ensure that all management
    traffic is captured and that the probe has access to all virtual LANs
-   carrying management traffic.  This usually requires to place the
+   carrying management traffic.  This usually requires placing the
    probe(s) close to the management system(s) and to configure dedicated
    monitoring ports on bridged networks.  Some bridges have restrictions
    concerning their monitoring capabilities and this should be
@@ -353,7 +353,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    It is recommended to capture at least a full week of data.  Operators
    are encouraged to capture traces over even longer periods of time.
-   Tools such as tcpslice [1] or pcapmerge [3] can be used to split or
+   Tools such as tcpslice [2] or pcapmerge [4] can be used to split or
    merge pcap trace files as needed.
 
    Several operating systems can offload some of the TCP/IP processing
@@ -363,8 +363,8 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    transport layer checksums.  The simplest solution is of course to
    turn checksum offloading off while capturing traces (if that is
    feasible without loosing too many packets).  The other solution is to
-   correct or ignore checksums during the subsequent analysis of the raw
-   pcap files.
+   correct or ignore checksums during the subsequent conversion of the
+   raw pcap files.
 
    It is important to note that the raw pcap files should ideally be
    kept in stable storage (e.g., compressed and encrypted on a CD ROM or
@@ -375,11 +375,11 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    For each captured trace, some meta data should be recorded and made
    available.  The meta data should include information such as where
    the trace was collected, when it was collected, contact information,
-   the size of the trace, any known special events during the data
-   collection period and so on.  It is also extremely useful to provide
-   a unique identification.  There are special online services such as
-   DatCat [4] where meta data can be stored and which provide unique
-   identifiers.
+   the size of the trace, any known special events, equipment failures,
+   or major infrastructure changes during the data collection period and
+   so on.  It is also extremely useful to provide a unique
+   identification.  There are special online services such as DatCat [5]
+   where meta data can be stored and which provide unique identifiers.
 
 2.2.  Converting Traffic Traces
 
@@ -424,7 +424,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    programs which process raw pcap files should be able to perform IP
    reassembly for SNMP messages that got fragmented at the IP layer.
 
-   The snmpdump [5] package has been developed to convert raw pcap files
+   The snmpdump [6] package has been developed to convert raw pcap files
    into XML and CSV format.  The snmpdump program reads pcap, XML, or
    CSV files as input and produces XML files or CSV files as output.
    Specific elements can be filtered as required to protect sensitive
@@ -432,15 +432,15 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 2.3.  Filtering Traffic Traces
 
-   Filtering sensitive data can be achieved by manipulating the XML
-   representation of an SNMP trace.  Standard XSLT processors such as
-   xsltproc [6] can be used for this purpose.  People familiar with Perl
-   might also be interested in using the XML::LibXML [7] Perl module to
-   manipulate XML documents from within Perl.
+   Filtering sensitive data (e.g., access control lists or community
+   strings) can be achieved by manipulating the XML representation of an
+   SNMP trace.  Standard XSLT processors (e.g., xsltproc [7]) can be
+   used for this purpose.  People familiar with the scripting language
+   Perl might be interested in choosing a suitable Perl module to
+   manipulate XML documents [8].
 
    The snmpdump program, for example, can filter out sensitive
    information, e.g., by deleting or clearing all XML elements whose
-   name matches a regular expression.  In addition, data type specific
 
 
 
@@ -449,6 +449,7 @@ Schoenwaelder             Expires June 9, 2008                  [Page 8]
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
+   name matches a regular expression.  In addition, data type specific
    anonymization transformations that maintain lexicographic ordering
    for values that appear in instance identifiers [HS06] can be applied.
    Note that anonymization transformations are often bound to an
@@ -477,7 +478,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    Lossless compression algorithms embodied in programs such as gzip or
    bzip2 can be used to compress even large trace files down to a size
-   where they can be burned on DVDs for cheap longterm storage.
+   where they can be burned on DVDs for cheap long-term storage.
 
    It must be stressed again that it is important to keep the original
    pcap traces in addition to the XML / CSV formatted traces since the
@@ -485,7 +486,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    Improvements in the tool chain may require to go back to the original
    pcap traces and to rebuild all intermediate formats from them.
 
-2.5.  Processing Traffic Traces
+2.5.  Analyzing Traffic Traces
 
    Scripts that analyze traffic traces must be verified for correctness.
    Ideally, all scripts used to analyze traffic traces would be
@@ -496,7 +497,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    establish.
 
    Due to the availability of XML parsers and the simplicity of the CSV
-   format, trace files can be processed with tools written in almost any
 
 
 
@@ -505,16 +505,16 @@ Schoenwaelder             Expires June 9, 2008                  [Page 9]
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
+   format, trace files can be processed with tools written in almost any
    programming language.  However, in order to facilitate a common
    vocabulary and to allow operators to easily read scripts they execute
    on trace files, it is suggested that analysis scripts are written in
-   the Perl programming language using the XML::LibXML [7] Perl module
-   to read the XML format of the trace files.  Using a scripting
-   language such as Perl instead of system programming languages such as
-   C or C++ has the advantage to reduce development time and to make
-   scripts more accessible to operators who may want to verify scripts
-   before running them on trace files which potentially contain
-   sensitive data.
+   scripting languages such as Perl using suitable Perl modules to
+   manipulate XML documents [8].  Using a scripting language such as
+   Perl instead of system programming languages such as C or C++ has the
+   advantage to reduce development time and to make scripts more
+   accessible to operators who may want to verify scripts before running
+   them on trace files which potentially contain sensitive data.
 
    It should be noted here that the snmpdump tool provides an API to
    process SNMP messages in C/C++.  While the coding of trace analysis
@@ -522,12 +522,12 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    verifiability and portability reasons, using C/C++ might be the only
    option to deal with very large traces efficiently.
 
-
-
-
-
-
-
+   I should be noted that any results produced by analyzing a trace must
+   be interpreted in the context of the trace.  The nature of the
+   network, the attachment point used to collect the trace, or the
+   events that happened while the trace was collected clearly influence
+   the result.  It is therefore important to be careful with drawing
+   general conclusions based on a potentially limited data set.
 
 
 
@@ -623,9 +623,9 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    inefficient approach is to retrieve tables cell-by-cell in column-by-
    column order.  More advanced approaches try to read tables row-by-row
    or even multiple-rows-by-multiple-rows.  In addition, the retrieval
-   of index elements can be suppressed in most cases.  It will be useful
-   to know which of these approaches are actually used on production
-   networks.
+   of index elements can be suppressed in most cases or only a subset of
+   columns of a table are retrieved.  It will be useful to know which of
+   these approaches are actually used on production networks.
 
 3.6.  Trap-Directed Polling - Myths or Reality?
 
@@ -682,13 +682,14 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 3.10.  Counters and Discontinuities
 
-   Counters can experience discontinuities [RFC2578].  The default
+   Counters can experience discontinuities [RFC2578].  A widely used
    discontinuity indicator is the sysUpTime scalar of the SNMPv2-MIB
-   [RFC3418], which can also be used to detect counter roll-overs.  Some
-   MIB modules introduce more specific discontinuity indicators, e.g.,
-   the ifCounterDiscontinuityTime of the IF-MIB [RFC2863].  It will be
-   interesting to study to what extent these objects are actually used
-   by management applications to handle discontinuity events.
+   [RFC3418], which can be reset through a warm start to indicate
+   counter discontinuities.  Some MIB modules introduce more specific
+   discontinuity indicators, e.g., the ifCounterDiscontinuityTime of the
+   IF-MIB [RFC2863].  It will be interesting to study to what extent
+   these objects are actually used by management applications to handle
+   discontinuity events.
 
 3.11.  Spin Locks
 
@@ -723,7 +724,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 
 
-
 Schoenwaelder             Expires June 9, 2008                 [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
@@ -735,7 +735,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    The XML format has been designed to keep all information associated
    with SNMP messages.  The format is specified in RELAX NG compact
-   notation [OASISRNC].  Freely available tools such as trang [8] can be
+   notation [OASISRNC].  Freely available tools such as trang [9] can be
    used to convert RELAX NG compact syntax to other XML schema
    notations.
 
@@ -747,7 +747,7 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
  # seems to restrict it to IETF documents (and this specification is
  # originating from the IRTF).
  #
- # $Id: measure.xml 2626 2007-12-07 08:48:57Z schoenw $
+ # $Id: measure.xml 2627 2007-12-07 10:45:02Z schoenw $
 
  default namespace = "http://www.nosuchname.net/nmrg/snmptrace"
 
@@ -908,8 +908,10 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 4.2.  CSV Format Definition
 
    The comma separated values (CSV) format has been designed to capture
-   only the most relevant information about an SNMP message.  The CSV
-   format uses the following fields:
+   only the most relevant information about an SNMP message.  In
+   situation where all information about an SNMP message must be
+   captured, the XML format defined above must be used.  The CSV format
+   uses the following fields:
 
    1.   Time-stamp in the format seconds.microseconds since 1970, for
         example "1137764769.425484".
@@ -942,8 +944,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
    9.   SNMP request-id in decimal notation, for example "1511411010".
 
-   10.  SNMP error-status in decimal notation, for example "0".
-
 
 
 
@@ -952,6 +952,8 @@ Schoenwaelder             Expires June 9, 2008                 [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements          December 2007
 
+
+   10.  SNMP error-status in decimal notation, for example "0".
 
    11.  SNMP error-index in decimal notation, for example "0".
 
@@ -985,8 +987,6 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
    trap format used by SNMPv2c and SNMPv3, according to the rules
    defined in [RFC3584].  The activation of trap format conversion
    should be the user's choice.
-
-
 
 
 
@@ -1235,24 +1235,24 @@ Internet-Draft          SNMP Traffic Measurements          December 2007
 
 URIs
 
-   [1]  <http://www.tcpdump.org/>
+   [1]  <http://en.wikipedia.org/wiki/Pcap>
 
-   [2]  <http://www.ethereal.com/>
+   [2]  <http://www.tcpdump.org/>
 
-   [3]  <http://indev.insu.com/Fwctl/pcapmerge.html>
+   [3]  <http://www.wireshark.org/>
 
-   [4]  <http://www.datcat.org/>
+   [4]  <http://indev.insu.com/Fwctl/pcapmerge.html>
 
-   [5]  <https://subversion.eecs.jacobs-university.de/svn/schoenw/src/
+   [5]  <http://www.datcat.org/>
+
+   [6]  <https://subversion.eecs.jacobs-university.de/svn/schoenw/src/
         snmpdump>
 
-   [6]  <http://xmlsoft.org/XSLT/>
+   [7]  <http://xmlsoft.org/XSLT/>
 
-   [7]  <http://www.cpan.org/>
+   [8]  <http://perl-xml.sourceforge.net/faq/>
 
-   [8]  <http://www.relaxng.org/>
-
-
+   [9]  <http://www.relaxng.org/>
 
 
 

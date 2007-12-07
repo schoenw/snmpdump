@@ -159,7 +159,9 @@
       <t>
         <list style="numbers">
           <t>
-            Capture raw SNMP traffic traces in pcap capture files.
+            Capture raw SNMP traffic traces in <eref
+            target="http://en.wikipedia.org/wiki/Pcap">pcap capture
+            files</eref>.
           </t>
           <t>
             Convert the raw traffic traces into a structured machine
@@ -215,7 +217,7 @@
           Capturing SNMP traffic traces can be done using packet
           sniffers such as <eref
           target="http://www.tcpdump.org/">tcpdump</eref>, <eref
-          target="http://www.ethereal.com/">ethereal</eref>, or
+          target="http://www.wireshark.org/">wireshark</eref>, or
           similar applications.  Some care must be taken to specify
           pcap filter expressions that match the SNMP transport
           endpoints used to carry SNMP traffic (typically 'udp and
@@ -226,7 +228,7 @@
           probe within the network. Especially on bridged LANs, it is
           important to ensure that all management traffic is captured
           and that the probe has access to all virtual LANs carrying
-          management traffic. This usually requires to place the
+          management traffic. This usually requires placing the
           probe(s) close to the management system(s) and to configure
           dedicated monitoring ports on bridged networks. Some bridges
           have restrictions concerning their monitoring capabilities
@@ -250,7 +252,7 @@
           The simplest solution is of course to turn checksum
           offloading off while capturing traces (if that is feasible
           without loosing too many packets). The other solution is to
-          correct or ignore checksums during the subsequent analysis
+          correct or ignore checksums during the subsequent conversion
           of the raw pcap files.
         </t>
         <t>
@@ -266,11 +268,13 @@
           and made available. The meta data should include information
           such as where the trace was collected, when it was
           collected, contact information, the size of the trace, any
-          known special events during the data collection period and
+          known special events, equipment failures, or major
+          infrastructure changes during the data collection period and
           so on. It is also extremely useful to provide a unique
           identification. There are special online services such as
           <eref target="http://www.datcat.org/">DatCat</eref> where
-          meta data can be stored and which provide unique identifiers.
+          meta data can be stored and which provide unique
+          identifiers.
         </t>
       </section>
 
@@ -331,14 +335,15 @@
 
       <section title="Filtering Traffic Traces">
         <t>
-          Filtering sensitive data can be achieved by manipulating the
-          XML representation of an SNMP trace.  Standard XSLT
-          processors such as <eref
-          target="http://xmlsoft.org/XSLT/">xsltproc</eref> can be
-          used for this purpose. People familiar with Perl might also
-          be interested in using the <eref
-          target="http://www.cpan.org/">XML::LibXML</eref> Perl
-          module to manipulate XML documents from within Perl.
+          Filtering sensitive data (e.g., access control lists or
+          community strings) can be achieved by manipulating the XML
+          representation of an SNMP trace.  Standard XSLT processors
+          (e.g., <eref
+          target="http://xmlsoft.org/XSLT/">xsltproc</eref>) can be
+          used for this purpose. People familiar with the scripting
+          language Perl might be interested in choosing a suitable
+          <eref target="http://perl-xml.sourceforge.net/faq/">Perl
+          module to manipulate XML documents</eref>.
         </t>
         <t>
           The snmpdump program, for example, can filter out sensitive
@@ -380,7 +385,7 @@
           Lossless compression algorithms embodied in programs such as
           gzip or bzip2 can be used to compress even large trace files
           down to a size where they can be burned on DVDs for cheap
-          longterm storage.
+          long-term storage.
         </t>
         <t>
           It must be stressed again that it is important to keep the
@@ -392,7 +397,7 @@
         </t>
       </section>
 
-      <section title="Processing Traffic Traces">
+      <section title="Analyzing Traffic Traces">
         <t>
           Scripts that analyze traffic traces must be verified for
           correctness. Ideally, all scripts used to analyze traffic
@@ -410,15 +415,14 @@
           order to facilitate a common vocabulary and to allow
           operators to easily read scripts they execute on trace
           files, it is suggested that analysis scripts are written in
-          the Perl programming language using the <eref
-          target="http://www.cpan.org/">XML::LibXML</eref> Perl
-          module to read the XML format of the trace files. Using a
-          scripting language such as Perl instead of system
-          programming languages such as C or C++ has the advantage to
-          reduce development time and to make scripts more accessible
-          to operators who may want to verify scripts before running
-          them on trace files which potentially contain sensitive
-          data.
+          scripting languages such as Perl using suitable <eref
+          target="http://perl-xml.sourceforge.net/faq/">Perl modules
+          to manipulate XML documents</eref>. Using a scripting
+          language such as Perl instead of system programming
+          languages such as C or C++ has the advantage to reduce
+          development time and to make scripts more accessible to
+          operators who may want to verify scripts before running them
+          on trace files which potentially contain sensitive data.
         </t>
         <t>
           It should be noted here that the snmpdump tool provides an
@@ -428,6 +432,15 @@
           reasons, using C/C++ might be the only option to deal with
           very large traces efficiently.
         </t>
+	<t>
+	  I should be noted that any results produced by analyzing a
+	  trace must be interpreted in the context of the trace. The
+	  nature of the network, the attachment point used to collect
+	  the trace, or the events that happened while the trace was
+	  collected clearly influence the result. It is therefore
+	  important to be careful with drawing general conclusions
+	  based on a potentially limited data set.
+	</t>
       </section>
 
     </section>
@@ -501,9 +514,10 @@
             cell-by-cell in column-by-column order. More advanced
             approaches try to read tables row-by-row or even
             multiple-rows-by-multiple-rows. In addition, the retrieval
-            of index elements can be suppressed in most cases. It will
-            be useful to know which of these approaches are actually
-            used on production networks.
+            of index elements can be suppressed in most cases or only
+            a subset of columns of a table are retrieved. It will be
+            useful to know which of these approaches are actually used
+            on production networks.
           </t>
         </section>
 
@@ -569,12 +583,12 @@
         <section title="Counters and Discontinuities">
           <t>
             Counters can experience discontinuities <xref
-            target="RFC2578"/>. The default discontinuity indicator is
-            the sysUpTime scalar of the SNMPv2-MIB <xref
-            target="RFC3418"/>, which can also be used to detect
-            counter roll-overs. Some MIB modules introduce more
-            specific discontinuity indicators, e.g., the
-            ifCounterDiscontinuityTime of the IF-MIB <xref
+            target="RFC2578"/>. A widely used discontinuity indicator
+            is the sysUpTime scalar of the SNMPv2-MIB <xref
+            target="RFC3418"/>, which can be reset through a warm
+            start to indicate counter discontinuities. Some MIB
+            modules introduce more specific discontinuity indicators,
+            e.g., the ifCounterDiscontinuityTime of the IF-MIB <xref
             target="RFC2863"/>. It will be interesting to study to
             what extent these objects are actually used by management
             applications to handle discontinuity events.
@@ -775,7 +789,9 @@ ipaddress.type = ipv4address.type | ipv6address.type
       <t>
         The comma separated values (CSV) format has been designed to
         capture only the most relevant information about an SNMP
-        message. The CSV format uses the following fields:
+        message. In situation where all information about an SNMP
+        message must be captured, the XML format defined above must be
+        used. The CSV format uses the following fields:
       </t>
       <t>
         <list style="numbers">
