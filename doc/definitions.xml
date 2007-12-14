@@ -13,8 +13,8 @@
 
   <!--
       TODO:
-	- treat all traps (v1 and v2) in the same ways !?
-	- we currently ignore message versions - do we keep this?
+        - treat all traps (v1 and v2) in the same ways !?
+        - we currently ignore message versions - do we keep this?
   -->
 
   <front>
@@ -37,17 +37,17 @@
       </address>
     </author>
 
-    <author initials="M." surname="Harvan"
-            fullname="Matus Harvan">
-      <organization>ETH Zurich</organization>
+    <author initials="J." surname="Schoenwaelder"
+            fullname="Juergen Schoenwaelder">
+      <organization>Jacobs University Bremen</organization>
       <address>
         <postal>
-          <street>ETH Zentrum</street>
-          <city>8092 Zurich</city>
-          <country>Switzerland</country>
+          <street>Campus Ring 1</street>
+          <city>28725 Bremen</city>
+          <country>Germany</country>
         </postal>
-        <phone>+41 44 632 68 76</phone>
-        <email>mharvan@inf.ethz.ch</email>
+        <phone>+49 421 200-3587</phone>
+        <email>j.schoenwaelder@jacobs-university.de</email>
       </address>
     </author>
 
@@ -65,17 +65,17 @@
       </address>
     </author>
 
-    <author initials="J." surname="Schoenwaelder"
-            fullname="Juergen Schoenwaelder">
-      <organization>Jacobs University Bremen</organization>
+    <author initials="M." surname="Harvan"
+            fullname="Matus Harvan">
+      <organization>ETH Zurich</organization>
       <address>
         <postal>
-          <street>Campus Ring 1</street>
-          <city>28725 Bremen</city>
-          <country>Germany</country>
+          <street>ETH Zentrum</street>
+          <city>8092 Zurich</city>
+          <country>Switzerland</country>
         </postal>
-        <phone>+49 421 200-3587</phone>
-        <email>j.schoenwaelder@jacobs-university.de</email>
+        <phone>+41 44 632 68 76</phone>
+        <email>mharvan@inf.ethz.ch</email>
       </address>
     </author>
 
@@ -146,9 +146,8 @@
 
     <section anchor="overview" title="Overview">
       <t>
-	[TODO: The strict walk and prefix constrained walks do not
-	seem to be right because you can have a walk which is both at
-	the same time.]
+        The following diagram provides and overview over the following
+        definitions and how they are related to each other.
       </t>
       <figure>
       <artwork><![CDATA[
@@ -178,42 +177,43 @@
       ]]></artwork>
       </figure>
       <t>
- 	In this document are names assigned to SNMP messages containing
-	specific PDU types. These messages are part of a large set of
-	SNMP messages, called a trace. A trace contains SNMP messages
-	exchanged between possibly many different managers and agents.
-	Such a trace may consist of one or more flows which contain only
-	those messages that are exchanged between two network endpoints.
-	Even smaller are slices, which are part of a flow and contain
-	SNMP messages that are related to each other in time and referenced
-	information. [TODO: I find this text somewhat confusing; I think it
-	needs a rewrite. Shall we add Messages to the diagram?]
+        In this document are names assigned to SNMP messages containing
+        specific PDU types. These messages are part of a large set of
+        SNMP messages, called a trace. A trace contains SNMP messages
+        exchanged between possibly many different managers and agents.
+        Such a trace may consist of one or more flows which contain only
+        those messages that are exchanged between two network endpoints.
+        Even smaller are slices, which are part of a flow and contain
+        SNMP messages that are related to each other in time and referenced
+        information. [TODO: I find this text somewhat confusing; I think it
+        needs a rewrite. Shall we add Messages to the diagram?]
       </t>
       <t>
-	Slices can be of a specific form: a walk. Only some of all slices
-	match the criteria for these very specific slices. In some cases
-	a slice may not only be regarded as a walk, but also even as
-	a strict walk or a prefix constrained walk.
+        Slices can be of a specific form, e.g., a sequence of linked
+        getnext or getbulk requests commonly called a walk. Only a
+        subset of all slices will be walks. In some cases, a slice may
+        not only be regarded as a walk, but also even as a strict walk
+        or a prefix constrained walk.
       </t>
       <t>
-	On or more individual slices which are part of on or more flows
-	may all be related to each other as a result of, for example,
-	a polling configuration of a manager which polls a number of
-	agents every few minutes. All slices making up such a polling
-	instance would form a slice set. In turn, comparable slice sets
-	will be of the same slice set type.
+        On or more individual slices, which are part of one or more
+        flows, may all be related to each other as a result of, for
+        example, a manager polling a number of agents every few
+        minutes. All slices making up such a polling instance would
+        form a slice set. In turn, comparable slice sets will be of
+        the same slice set type.
       </t>
     </section>
 
     <section anchor="messages" title="Messages">
 
       <t>
-	SNMP messages carry PDUs associated with well defined specific
-	protocol operations <xref target="RFC3416"/>. The PDUs can be
-	used to classify SNMP messages. Following are a number of
-	definitions that help to classify SNMP messages based on the
-	PDU contained in them. These definitions will be used later on
-	in this document.
+        SNMP messages carry PDUs associated with well defined specific
+        protocol operations <xref target="RFC3416"/>. The PDUs can be
+        used to classify SNMP messages. Following are a number of
+        definitions that help to classify SNMP messages based on the
+        PDU contained in them. These definitions will be used later on
+        in this document.
       </t>
       <t>
         Notation: Let M be a message. We denote the properties of M as
@@ -268,24 +268,24 @@
       </t>
       
       <t>
-	Definition (response message): A response message is a message
-	M containing a PDU of type Response or of type Report.
+        Definition (response message): A response message is a message
+        M containing a PDU of type Response or of type Report.
       </t>
 
       <t>
-	Note that Report messages are treated like Response messages
-	since the SNMPv3 specifications currently use Report messages
-	only as an error reporting mechanism, always triggered by the
-	processing of some request messages. In case future SNMP
-	versions or extensions use Report messages without having a
-	request triggering the generation of Report messages, we may
-	have to revisit the definition above.
+        Note that Report messages are treated like Response messages
+        since the SNMPv3 specifications currently use Report messages
+        only as an error reporting mechanism, always triggered by the
+        processing of some request messages. In case future SNMP
+        versions or extensions use Report messages without having a
+        request triggering the generation of Report messages, we may
+        have to revisit the definition above.
       </t>
 
       <t>
-	Definition (non-response message): A non-response message is a
-	message M which is either a read request message, a write
-	request message, or a notification message.
+        Definition (non-response message): A non-response message is a
+        message M which is either a read request message, a write
+        request message, or a notification message.
       </t>
 
       <t>
@@ -304,7 +304,7 @@
           <t>M is a command message</t>
           <t>M is a response message and there exists a command
           message C such that the following holds:
-	  <figure>
+          <figure>
             <artwork><![CDATA[
           M.reqid = C.reqid
           M.tdst  = C.tsrc
@@ -320,26 +320,26 @@
       </t>
 
       <t>
-	Note that this definition requires that the response message
-	originates from the transport endpoint over which the request
-	message has been received. This is not strictly required by
-	SNMP transport mappings and in particular the UDP transport
-	mapping allows to send responses from different transport
-	endpoints. While sending response messages from a different
-	transport endpoint is legal, it is also considered bad
-	practice causing interoperability problems since several
-	management systems do not accept such messages.
+        Note that this definition requires that the response message
+        originates from the transport endpoint over which the request
+        message has been received. This is not strictly required by
+        SNMP transport mappings and in particular the UDP transport
+        mapping allows to send responses from different transport
+        endpoints. While sending response messages from a different
+        transport endpoint is legal, it is also considered bad
+        practice causing interoperability problems since several
+        management systems do not accept such messages.
       </t>
       <t>
-	It was decided to require matching transport endpoints since
-	doing so significantly simplifies the procedures below and
-	avoids accidentally confusing requests and responses.
-	Implementations responding from different transport endpoints
-	will lead to (a) a larger number of requests without related
-	responses (and likely no retries) and (b) a similarly large
-	number of response messages without a matching request. If
-	such behavior can be detected, the traces should be
-	investigated and if needed the transport endpoints corrected.
+        It was decided to require matching transport endpoints since
+        doing so significantly simplifies the procedures below and
+        avoids accidentally confusing requests and responses.
+        Implementations responding from different transport endpoints
+        will lead to (a) a larger number of requests without related
+        responses (and likely no retries) and (b) a similarly large
+        number of response messages without a matching request. If
+        such behavior can be detected, the traces should be
+        investigated and if needed the transport endpoints corrected.
       </t>
 
       <t>
@@ -368,37 +368,37 @@
       </t>
 
       <t>
-	Note that we again require that the transport endpoints match
-	for notification group messages.
+        Note that we again require that the transport endpoints match
+        for notification group messages.
       </t>
 
     </section>
 
     <section anchor="traces" title="Traces">
       <t>
-	Traces are (large) sets of SNMP messages that are the result
-	of recording SNMP traffic using a single traffic recording
-	unit (e.g., using tcpdump) on a network segment carrying
-	traffic of one or more managers and agents. Traces being used
-	in the remainder of this document may be altered as a result
-	of anonymization, which may result in some message information
-	loss.
+        Traces are (large) sets of SNMP messages that are the result
+        of recording SNMP traffic using a single traffic recording
+        unit (e.g., using tcpdump) on a network segment carrying
+        traffic of one or more managers and agents. Traces being used
+        in the remainder of this document may be altered as a result
+        of anonymization, which may result in some message information
+        loss.
       </t>
       <t>
-	Definition (trace): An SNMP trace (or short trace) T is an
-	ordered set of zero or more SNMP messages M for which the
-	following holds:
+        Definition (trace): An SNMP trace (or short trace) T is an
+        ordered set of zero or more SNMP messages M for which the
+        following holds:
       </t>
       <t>
         <list style='format (T%d) ' counter='notification'>
-	  <t>
-	    Each messages M in T is either a non-response message or a
-	    response message.
-	  </t>
-	  <t>
-	    All messages M in T are chronologically ordered according
-	    to the capture time stamp M.time.
-	  </t>
+          <t>
+            Each messages M in T is either a non-response message or a
+            response message.
+          </t>
+          <t>
+            All messages M in T are chronologically ordered according
+            to the capture time stamp M.time.
+          </t>
         </list>
       </t>
     </section>
@@ -430,13 +430,13 @@
         only notification group messages notification flows.
       </t>
       <t>
-	Note that it is possible that response messages of a trace
-	cannot be classified to belong to any flow. This can happen if
-	request messages triggering the response messages were not
-	recorded (for example due to asymmetric routing) or because
-	response messages were originating from transport endpoints
-	different from the endpoint used to receive the associated
-	request message.
+        Note that it is possible that response messages of a trace
+        cannot be classified to belong to any flow. This can happen if
+        request messages triggering the response messages were not
+        recorded (for example due to asymmetric routing) or because
+        response messages were originating from transport endpoints
+        different from the endpoint used to receive the associated
+        request message.
       </t>
       <t>
         Definition (flow initiator): A flow initiator is the network
@@ -470,9 +470,9 @@
     <section anchor="slices" title="Slices">
 
       <t>
-	Flows are made up of smaller sets of messages that are related
-	to each other. Such a subset of messages from a single flow
-	will be considered a slice of a flow.
+        Flows are made up of smaller sets of messages that are related
+        to each other. Such a subset of messages from a single flow
+        will be considered a slice of a flow.
       </t>
       <t>
         Definition (slice): A slice S is a subset of messages in a
@@ -505,24 +505,24 @@
             message that is part of the same slice.
           </t>
           <t>
-	    For any two subsequent request messages Q1 and Q2 with
-	    Q1.time &lt; Q2.time, the following condition must hold:
-	    <figure>
+            For any two subsequent request messages Q1 and Q2 with
+            Q1.time &lt; Q2.time, the following condition must hold:
+            <figure>
               <artwork><![CDATA[
-	    (Q2.time - Q1.time) < e
-	    ]]></artwork>
-	    </figure>
+            (Q2.time - Q1.time) < e
+            ]]></artwork>
+            </figure>
           </t>
         </list>
       </t>
 
       <t>
-	The parameter e defines a maximum time between two request
-	messages that belong to a slice.  This parameter should be
-	chosen such that unrelated requests within a flow are
-	considered to be of the same slice. This might, for example,
-	be the case where an agent never responds to requests from a
-	manager that is set to poll that agent on a periodic basis.
+        The parameter e defines a maximum time between two request
+        messages that belong to a slice.  This parameter should be
+        chosen such that unrelated requests within a flow are
+        considered to be of the same slice. This might, for example,
+        be the case where an agent never responds to requests from a
+        manager that is set to poll that agent on a periodic basis.
       </t>
 
       <t>
@@ -530,33 +530,6 @@
         two transport endpoints involved in a slice, which is
         responsible for sending the chronologically first non-response
         class message.
-      </t>
-
-      <t>
-	Definition (slice prefix): A slice prefix P is a set of OID
-	prefixes derived from the OIDs containted in the non-response
-	messages of a slice.  This set P consists of the following
-	OIDs:
-	<list style='format (SP%d) ' counter='sliceprefix'>
-	  <t>
-	    Each OID x in a non-response message C2 of a slice that is
-	    not in any of the response messages R of the previous
-	    non-response message C1, where R.time &lt; C2.time for
-	    each of these response messages, must hold that x is not
-	    already in P and there exists no OID in P that makes up a
-	    part (starting from the beginning) of x.
-	  </t>
-	</list>
-      </t>
-      
-      <t>
-	[I am not sure this is clear yet. Do we need some examples?
-	 Or shall we specify this with some pseudo code?]
-      </t>
-
-      <t>
-	The slice prefix allows for comparing/differentiating between
-	individual slices.
       </t>
 
       <t>
@@ -570,10 +543,9 @@
    S.tdst     = transport layer endpoint of non-initiator of S
    S.start    = time stamp of the chronologically first message in S
    S.end      = time stamp of the chronologically last message in S
-   S.prefix   = prefix of S
+   S.prefix   = prefix of S (see below)
    ]]></artwork>
       </figure>
-      <t><vspace blankLines="100"/></t>
       <t>
         Definition (concurrency): Two slides A and B of a given flow F
         are concurrent at time t if A.start &lt;= t &lt;= A.end and
@@ -589,6 +561,38 @@
         flow F are called delta time serial if (B.start - A.end) &lt;
         delta.
       </t>
+
+    </section>
+
+    <section anchor="slice-prefix" title="Slice Prefix - (more thoughts needed)">
+
+      <t>
+        Definition (slice prefix): A slice prefix P is a set of OID
+        prefixes derived from the OIDs containted in the non-response
+        messages of a slice.  This set P consists of the following
+        OIDs:
+        <list style='format (SP%d) ' counter='sliceprefix'>
+          <t>
+            Each OID x in a non-response message C2 of a slice that is
+            not in any of the response messages R of the previous
+            non-response message C1, where R.time &lt; C2.time for
+            each of these response messages, must hold that x is not
+            already in P and there exists no OID in P that makes up a
+            part (starting from the beginning) of x.
+          </t>
+        </list>
+      </t>
+      
+      <t>
+        [I am not sure this is clear yet. Do we need some examples?
+         Or shall we specify this with some pseudo code?]
+      </t>
+
+      <t>
+        The slice prefix allows for comparing/differentiating between
+        individual slices.
+      </t>
+
     </section>
 
     <section anchor="slice-sets" title="Slice Sets - (more thoughts needed)">
@@ -726,8 +730,8 @@
       <reference anchor="RFC3416">
         <front>
           <title>
-	    Version 2 of the Protocol Operations for
-	    the Simple Network Management Protocol (SNMP)
+            Version 2 of the Protocol Operations for
+            the Simple Network Management Protocol (SNMP)
           </title>
           <author initials="R." surname="Presuhn" fullname="R. Presuhn">
             <organization>BMC Software, Inc.</organization>
