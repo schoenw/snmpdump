@@ -32,7 +32,7 @@
           <city>7500 AE Enschede</city>
           <country>Netherlands</country>
         </postal>
-        <phone></phone>
+        <phone>+31 6 13506591</phone>
         <email>j.g.vandenbroek@student.utwente.nl</email>
       </address>
     </author>
@@ -119,89 +119,120 @@
 
     <section anchor="introduction" title="Introduction">
       <t>
-        The Network Management Research Group (NMRG) started an
-        activity to collect traces of the Simple Network Management
-        Protocol (SNMP) <xref target="RFC3410"/>
-        <xref target="RFC3411"/> from operational networks. To analyze
-        these traces, it is necessary to split potentially large
-        traces into more manageable pieces that make it easier to
-        deal with large data sets and simplify the analysis of the
-        data.
+	The Simple Network Management Protocol (SMMP) was introduced
+	in the late 1980s. Since then, several protocol changes have
+	taken place, which have eventually led to what is known today
+	as the SNMP version 3 framework (SNMPv3) <xref
+	target="RFC3410"/><xref target="RFC3411"/>. Extensive use of
+	SNMP has led to significant practical experience by both
+	network operators and researchers. However, up until now only
+	little research has been done on characterizing and modeling
+	SNMP traffic.
       </t>
       <t>
-        This document provides some common definitions that have been
-        found useful for implementing tools to support trace
-        analysis. This document mainly serves as a reference for the
-        definitions underlying these tools and it is not meant to
-        explain all the motivation and reasoning behind the
-        definitions. Some of this background information can be found
-        in other research papers.
+	Since recently, network researchers are in the possession of
+	network traces, including SNMP traces captured on operational
+	networks. The availability of SNMP traces enables research on
+	characterizing and modeling real world SNMP traffic. However,
+	experience with SNMP traces has shown that the traces must be
+	large enough in order to make proper observations. A more
+	detailed motivation for collecting SNMP traces and guidelines
+	how to capture SNMP traces can be found in <xref
+	target="ID-IRTF-NMRG-SNMP-MEASURE"/>.
       </t>
       <t>
-        More information and the motivation for SNMP trace collection
-        and analysis can be found in RFC XXXX <xref
-        target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
-      </t>
-    </section>
-
-    <section anchor="overview" title="Overview">
-      <t>
-        The following diagram provides and overview over the following
-        definitions and how they are related to each other.
+	Unfortunately, the analysis of large SNMP traces can take a
+	large amount of processing time. Therefore, it is often
+	desirable to focus the analysis on smaller, relevant sections
+	of a trace.  This in turn requires a proper way to identify
+	these smaller sections of a trace. This document describes a
+	number of identifiable sections within a trace which make
+	specific research on these smaller sections more practical.
+	The following figure shows the various sections of traces and
+	how they relate to each other.
       </t>
       <figure>
       <artwork><![CDATA[
-        +----------------+ 1     1..* +-----------+
-        | Slice Set Type |------------| Slice Set |
-        +----------------+  <of_type  +-----------+
-                                             | 1
-                                             |
-                                             | ^belongs_to
-                                             |
-                                             | 1..*
-+-------+ 1     0..* +------+ 1     0..* +-------+
-| Trace |------------| Flow |------------| Slice | 
-+-------+  contains> +------+  contains> +-------+
-                                             ^
-                                             | ^is_a
-                                             |
-                                         +-------+
-                                         | Walk  |
-                                         +-------+
-                                           ^   ^
-                   +-----------------------+   |
-                   |                           |
-            +-------------+     +-------------------------+
-            | Strict Walk |     | Prefix Constrained Walk |
-            +-------------+     +-------------------------+      
+           +----------------+ 1     1..* +-----------+
+           | Slice Set Type |------------| Slice Set |
+           +----------------+  <of_type  +-----------+
+                                                | 1
+                                                |
+                                                | ^belongs_to
+                                                |
+                                                | 1..*
+   +-------+ 1     0..* +------+ 1     0..* +-------+
+   | Trace |------------| Flow |------------| Slice | 
+   +-------+  contains> +------+  contains> +-------+
+       | 1                                      ^
+       |                                        |
+       | ^belongs_to                            | ^is_a
+       |                                        |
+       | 0..*                                   |
+  +---------+                               +-------+
+  | Message |                               | Walk  |
+  +---------+                               +-------+
       ]]></artwork>
       </figure>
       <t>
-        In this document are names assigned to SNMP messages containing
-        specific PDU types. These messages are part of a large set of
-        SNMP messages, called a trace. A trace contains SNMP messages
-        exchanged between possibly many different managers and agents.
-        Such a trace may consist of one or more flows which contain only
-        those messages that are exchanged between two network endpoints.
-        Even smaller are slices, which are part of a flow and contain
-        SNMP messages that are related to each other in time and referenced
-        information. [TODO: I find this text somewhat confusing; I think it
-        needs a rewrite. Shall we add Messages to the diagram?]
+	This document defines the various entities (boxes) shown in
+	the above figure. These definitions can be implemented by
+	tools that can split SNMP traces into smaller sections for
+	further analysis.
       </t>
       <t>
-        Slices can be of a specific form, e.g., a sequence of linked
-        getnext or getbulk requests commonly called a walk. Only a
-        subset of all slices will be walks. In some cases, a slice may
-        not only be regarded as a walk, but also even as a strict walk
-        or a prefix constrained walk.
+	The most central entity in the figure above is an SNMP trace,
+	consisting of a potentially large set of SNMP messages. An
+	SNMP trace is the result of recording SNMP traffic on a
+	specific network for a specific time duration. Such a trace
+	may, depending on the number of hosts in the respective
+	network, contain SNMP messages exchanged between possibly many
+	different SNMP engines. The messages contained in a trace may
+	be represented in different formats. For the purpose of this
+	document, the simple comma separated values (CSV) format
+	defined in <xref target="ID-IRTF-NMRG-SNMP-MEASURE"/> contains
+	sufficient information to split a trace into smaller sections.
       </t>
       <t>
-        On or more individual slices, which are part of one or more
-        flows, may all be related to each other as a result of, for
-        example, a manager polling a number of agents every few
-        minutes. All slices making up such a polling instance would
-        form a slice set. In turn, comparable slice sets will be of
-        the same slice set type.
+	The SNMP messages belonging to an SNMP trace may have been
+	exchanged between many different SNMP engines running on
+	different hosts. Therefore, a first obvious way of separating
+	a trace into smaller sets of SNMP messages is the separation
+	of a trace into flows. Each flow contains only those SNMP
+	messages of an SNMP trace that have been exchanged between two
+	network endpoints. Such a separation may be necessary in case
+	one wants to analyze specific SNMP traffic characteristics
+	(e.g., number of agents managed by a management station) and
+	wants to rule out network endpoint specific behaviour (e.g.,
+	different SNMP management stations may have different polling
+	configurations).
+      </t>
+      <t>
+	Flows within traces can still be quite large in terms of the
+	number of messages they contain. Therefore, it is necessary to
+	split a flow into even smaller sections called slices. A slice
+	contains all SNMP messages of a given flow that are related to
+	each other in time and referenced information. Splitting a
+	flow into slices makes it possible to separate SNMP messages
+	within traces that belong to each other, like for example all
+	messages that belong to a single polling instance involving a
+	single manager and a single agent.
+      </t>
+      <t>
+	A slice may contain, for instance, the exchanged SNMP messages
+	between an agent and a manager which polls that agent in a
+	single polling instance. The manager may even be set to poll
+	multiple agents on a periodic basis. Therefore, multiple
+	slices, which are possibly part of multiple flows, may all be
+	related to each other, because they comprise a single polling
+	instance, initiated by a single manager. The combined set of
+	these related slices form slice sets.
+      </t>
+      <t>
+	Slices can be of a specific form. For example, slices
+	containing a sequence of linked GetNext or GetBulk requests
+	are commonly called an SNMP walk. Note that only a subset of
+	all slices will be walks.
       </t>
     </section>
 
@@ -236,7 +267,7 @@
       <t>
         Note that the properties of a message can be easily extracted
         from the exchange formats defined in RFC XXXX
-        <xref target="ID-IRTF-NMRG-SNMP-MEASURE-01"/>.
+        <xref target="ID-IRTF-NMRG-SNMP-MEASURE"/>.
       </t>
 
       <t>
@@ -390,7 +421,7 @@
         following holds:
       </t>
       <t>
-        <list style='format (T%d) ' counter='notification'>
+        <list style='format (T%d) ' counter='trace'>
           <t>
             Each messages M in T is either a non-response message or a
             response message.
@@ -769,7 +800,7 @@
         <seriesInfo name="RFC" value="3410"/>
       </reference>
 
-      <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE-01">
+      <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE">
         <front>
           <title>
             An Architecture for Describing Simple Network Management
@@ -778,9 +809,9 @@
           <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
             <organization>TU Braunschweig</organization>
           </author>
-          <date month="January" year="2007"/>
+          <date month="December" year="2007"/>
         </front>
-        <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure-01.txt"/>
+        <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure.txt"/>
       </reference>
 
       <reference anchor="SPHSM07">

@@ -4,12 +4,12 @@
 NMRG                                                    G. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                          J. Schoenwaelder
-Expires: June 16, 2008                          Jacobs University Bremen
+Expires: June 21, 2008                          Jacobs University Bremen
                                                                  A. Pras
                                                     University of Twente
                                                                M. Harvan
                                                               ETH Zurich
-                                                       December 14, 2007
+                                                       December 19, 2007
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on June 16, 2008.
+   This Internet-Draft will expire on June 21, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 1]
+van den Broek, et al.     Expires June 21, 2008                 [Page 1]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -77,21 +77,20 @@ Abstract
 Table of Contents
 
    1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
-   2.  Overview . . . . . . . . . . . . . . . . . . . . . . . . . . .  4
-   3.  Messages . . . . . . . . . . . . . . . . . . . . . . . . . . .  6
-   4.  Traces . . . . . . . . . . . . . . . . . . . . . . . . . . . .  9
-   5.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
-   6.  Slices . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
-   7.  Slice Prefix - (more thoughts needed)  . . . . . . . . . . . . 13
-   8.  Slice Sets - (more thoughts needed)  . . . . . . . . . . . . . 14
-   9.  Walks - (more thoughts needed) . . . . . . . . . . . . . . . . 15
-   10. Security Considerations  . . . . . . . . . . . . . . . . . . . 16
-   11. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 17
-   12. References . . . . . . . . . . . . . . . . . . . . . . . . . . 18
-     12.1.  Normative References  . . . . . . . . . . . . . . . . . . 18
-     12.2.  Informative References  . . . . . . . . . . . . . . . . . 18
-   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 19
-   Intellectual Property and Copyright Statements . . . . . . . . . . 20
+   2.  Messages . . . . . . . . . . . . . . . . . . . . . . . . . . .  5
+   3.  Traces . . . . . . . . . . . . . . . . . . . . . . . . . . . .  8
+   4.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  9
+   5.  Slices . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   6.  Slice Prefix - (more thoughts needed)  . . . . . . . . . . . . 12
+   7.  Slice Sets - (more thoughts needed)  . . . . . . . . . . . . . 13
+   8.  Walks - (more thoughts needed) . . . . . . . . . . . . . . . . 14
+   9.  Security Considerations  . . . . . . . . . . . . . . . . . . . 15
+   10. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 16
+   11. References . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+     11.1.  Normative References  . . . . . . . . . . . . . . . . . . 17
+     11.2.  Informative References  . . . . . . . . . . . . . . . . . 17
+   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 18
+   Intellectual Property and Copyright Statements . . . . . . . . . . 19
 
 
 
@@ -108,180 +107,125 @@ Table of Contents
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 2]
+
+van den Broek, et al.     Expires June 21, 2008                 [Page 2]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 1.  Introduction
 
-   The Network Management Research Group (NMRG) started an activity to
-   collect traces of the Simple Network Management Protocol (SNMP)
-   [RFC3410] [RFC3411] from operational networks.  To analyze these
-   traces, it is necessary to split potentially large traces into more
-   manageable pieces that make it easier to deal with large data sets
-   and simplify the analysis of the data.
+   The Simple Network Management Protocol (SMMP) was introduced in the
+   late 1980s.  Since then, several protocol changes have taken place,
+   which have eventually led to what is known today as the SNMP version
+   3 framework (SNMPv3) [RFC3410][RFC3411].  Extensive use of SNMP has
+   led to significant practical experience by both network operators and
+   researchers.  However, up until now only little research has been
+   done on characterizing and modeling SNMP traffic.
 
-   This document provides some common definitions that have been found
-   useful for implementing tools to support trace analysis.  This
-   document mainly serves as a reference for the definitions underlying
-   these tools and it is not meant to explain all the motivation and
-   reasoning behind the definitions.  Some of this background
-   information can be found in other research papers.
+   Since recently, network researchers are in the possession of network
+   traces, including SNMP traces captured on operational networks.  The
+   availability of SNMP traces enables research on characterizing and
+   modeling real world SNMP traffic.  However, experience with SNMP
+   traces has shown that the traces must be large enough in order to
+   make proper observations.  A more detailed motivation for collecting
+   SNMP traces and guidelines how to capture SNMP traces can be found in
+   [ID-IRTF-NMRG-SNMP-MEASURE].
 
-   More information and the motivation for SNMP trace collection and
-   analysis can be found in RFC XXXX [ID-IRTF-NMRG-SNMP-MEASURE-01].
+   Unfortunately, the analysis of large SNMP traces can take a large
+   amount of processing time.  Therefore, it is often desirable to focus
+   the analysis on smaller, relevant sections of a trace.  This in turn
+   requires a proper way to identify these smaller sections of a trace.
+   This document describes a number of identifiable sections within a
+   trace which make specific research on these smaller sections more
+   practical.  The following figure shows the various sections of traces
+   and how they relate to each other.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+              +----------------+ 1     1..* +-----------+
+              | Slice Set Type |------------| Slice Set |
+              +----------------+  <of_type  +-----------+
+                                                   | 1
+                                                   |
+                                                   | ^belongs_to
+                                                   |
+                                                   | 1..*
+      +-------+ 1     0..* +------+ 1     0..* +-------+
+      | Trace |------------| Flow |------------| Slice |
+      +-------+  contains> +------+  contains> +-------+
+          | 1                                      ^
+          |                                        |
+          | ^belongs_to                            | ^is_a
+          |                                        |
+          | 0..*                                   |
+     +---------+                               +-------+
+     | Message |                               | Walk  |
+     +---------+                               +-------+
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 3]
+
+
+van den Broek, et al.     Expires June 21, 2008                 [Page 3]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-2.  Overview
+   This document defines the various entities (boxes) shown in the above
+   figure.  These definitions can be implemented by tools that can split
+   SNMP traces into smaller sections for further analysis.
 
-   The following diagram provides and overview over the following
-   definitions and how they are related to each other.
+   The most central entity in the figure above is an SNMP trace,
+   consisting of a potentially large set of SNMP messages.  An SNMP
+   trace is the result of recording SNMP traffic on a specific network
+   for a specific time duration.  Such a trace may, depending on the
+   number of hosts in the respective network, contain SNMP messages
+   exchanged between possibly many different SNMP engines.  The messages
+   contained in a trace may be represented in different formats.  For
+   the purpose of this document, the simple comma separated values (CSV)
+   format defined in [ID-IRTF-NMRG-SNMP-MEASURE] contains sufficient
+   information to split a trace into smaller sections.
 
-           +----------------+ 1     1..* +-----------+
-           | Slice Set Type |------------| Slice Set |
-           +----------------+  <of_type  +-----------+
-                                                | 1
-                                                |
-                                                | ^belongs_to
-                                                |
-                                                | 1..*
-   +-------+ 1     0..* +------+ 1     0..* +-------+
-   | Trace |------------| Flow |------------| Slice |
-   +-------+  contains> +------+  contains> +-------+
-                                                ^
-                                                | ^is_a
-                                                |
-                                            +-------+
-                                            | Walk  |
-                                            +-------+
-                                              ^   ^
-                      +-----------------------+   |
-                      |                           |
-               +-------------+     +-------------------------+
-               | Strict Walk |     | Prefix Constrained Walk |
-               +-------------+     +-------------------------+
+   The SNMP messages belonging to an SNMP trace may have been exchanged
+   between many different SNMP engines running on different hosts.
+   Therefore, a first obvious way of separating a trace into smaller
+   sets of SNMP messages is the separation of a trace into flows.  Each
+   flow contains only those SNMP messages of an SNMP trace that have
+   been exchanged between two network endpoints.  Such a separation may
+   be necessary in case one wants to analyze specific SNMP traffic
+   characteristics (e.g., number of agents managed by a management
+   station) and wants to rule out network endpoint specific behaviour
+   (e.g., different SNMP management stations may have different polling
+   configurations).
 
-   In this document are names assigned to SNMP messages containing
-   specific PDU types.  These messages are part of a large set of SNMP
-   messages, called a trace.  A trace contains SNMP messages exchanged
-   between possibly many different managers and agents.  Such a trace
-   may consist of one or more flows which contain only those messages
-   that are exchanged between two network endpoints.  Even smaller are
-   slices, which are part of a flow and contain SNMP messages that are
-   related to each other in time and referenced information.  [TODO: I
-   find this text somewhat confusing; I think it needs a rewrite.  Shall
-   we add Messages to the diagram?]
+   Flows within traces can still be quite large in terms of the number
+   of messages they contain.  Therefore, it is necessary to split a flow
+   into even smaller sections called slices.  A slice contains all SNMP
+   messages of a given flow that are related to each other in time and
+   referenced information.  Splitting a flow into slices makes it
+   possible to separate SNMP messages within traces that belong to each
+   other, like for example all messages that belong to a single polling
+   instance involving a single manager and a single agent.
 
-   Slices can be of a specific form, e.g., a sequence of linked getnext
-   or getbulk requests commonly called a walk.  Only a subset of all
-   slices will be walks.  In some cases, a slice may not only be
-   regarded as a walk, but also even as a strict walk or a prefix
-   constrained walk.
+   A slice may contain, for instance, the exchanged SNMP messages
+   between an agent and a manager which polls that agent in a single
+   polling instance.  The manager may even be set to poll multiple
+   agents on a periodic basis.  Therefore, multiple slices, which are
+   possibly part of multiple flows, may all be related to each other,
+   because they comprise a single polling instance, initiated by a
+   single manager.  The combined set of these related slices form slice
+   sets.
 
-   On or more individual slices, which are part of one or more flows,
-   may all be related to each other as a result of, for example, a
+   Slices can be of a specific form.  For example, slices containing a
+   sequence of linked GetNext or GetBulk requests are commonly called an
+   SNMP walk.  Note that only a subset of all slices will be walks.
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 4]
+van den Broek, et al.     Expires June 21, 2008                 [Page 4]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-   manager polling a number of agents every few minutes.  All slices
-   making up such a polling instance would form a slice set.  In turn,
-   comparable slice sets will be of the same slice set type.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.     Expires June 16, 2008                 [Page 5]
-
-Internet-Draft       SNMP Trace Analysis Definitions       December 2007
-
-
-3.  Messages
+2.  Messages
 
    SNMP messages carry PDUs associated with well defined specific
    protocol operations [RFC3416].  The PDUs can be used to classify SNMP
@@ -304,8 +248,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
       M.values  = values listed in varbind list of message M
 
    Note that the properties of a message can be easily extracted from
-   the exchange formats defined in RFC XXXX
-   [ID-IRTF-NMRG-SNMP-MEASURE-01].
+   the exchange formats defined in RFC XXXX [ID-IRTF-NMRG-SNMP-MEASURE].
 
    Definition (read request message): A read request message is a
    message M containing a PDU of type GetRequest, GetNextRequest, or
@@ -329,15 +272,15 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
    Note that Report messages are treated like Response messages since
    the SNMPv3 specifications currently use Report messages only as an
+   error reporting mechanism, always triggered by the processing of some
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 6]
+van den Broek, et al.     Expires June 21, 2008                 [Page 5]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-   error reporting mechanism, always triggered by the processing of some
    request messages.  In case future SNMP versions or extensions use
    Report messages without having a request triggering the generation of
    Report messages, we may have to revisit the definition above.
@@ -385,15 +328,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
    Definition (notification group messages): A set of group notification
    messages consists of all messages M satisfying either of the
+   following two conditions:
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 7]
+van den Broek, et al.     Expires June 21, 2008                 [Page 6]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
-
-   following two conditions:
 
    (N1)   M is a notification message
 
@@ -444,12 +386,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 8]
+
+
+van den Broek, et al.     Expires June 21, 2008                 [Page 7]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-4.  Traces
+3.  Traces
 
    Traces are (large) sets of SNMP messages that are the result of
    recording SNMP traffic using a single traffic recording unit (e.g.,
@@ -461,10 +405,10 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
    Definition (trace): An SNMP trace (or short trace) T is an ordered
    set of zero or more SNMP messages M for which the following holds:
 
-   (T3)   Each messages M in T is either a non-response message or a
+   (T1)   Each messages M in T is either a non-response message or a
           response message.
 
-   (T4)   All messages M in T are chronologically ordered according to
+   (T2)   All messages M in T are chronologically ordered according to
           the capture time stamp M.time.
 
 
@@ -500,12 +444,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                 [Page 9]
+van den Broek, et al.     Expires June 21, 2008                 [Page 8]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-5.  Flows
+4.  Flows
 
    Definition (flow): A flow F is the set of messages of an SNMP trace T
    with the following properties:
@@ -556,12 +500,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 10]
+van den Broek, et al.     Expires June 21, 2008                 [Page 9]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-6.  Slices
+5.  Slices
 
    Flows are made up of smaller sets of messages that are related to
    each other.  Such a subset of messages from a single flow will be
@@ -612,7 +556,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 11]
+van den Broek, et al.     Expires June 21, 2008                [Page 10]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -668,12 +612,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 12]
+van den Broek, et al.     Expires June 21, 2008                [Page 11]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-7.  Slice Prefix - (more thoughts needed)
+6.  Slice Prefix - (more thoughts needed)
 
    Definition (slice prefix): A slice prefix P is a set of OID prefixes
    derived from the OIDs containted in the non-response messages of a
@@ -724,12 +668,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 13]
+van den Broek, et al.     Expires June 21, 2008                [Page 12]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-8.  Slice Sets - (more thoughts needed)
+7.  Slice Sets - (more thoughts needed)
 
    Definition (slice type): A slice type is a type mark identifying
    slices that share the following properties:
@@ -780,12 +724,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 14]
+van den Broek, et al.     Expires June 21, 2008                [Page 13]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-9.  Walks - (more thoughts needed)
+8.  Walks - (more thoughts needed)
 
    Definition (walk): A walk W is a slice S with the following
    properties:
@@ -836,12 +780,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 15]
+van den Broek, et al.     Expires June 21, 2008                [Page 14]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-10.  Security Considerations
+9.  Security Considerations
 
    This document provides definitions for the analysis of SNMP traces
    and does not impact the security of the Internet.
@@ -892,12 +836,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 16]
+van den Broek, et al.     Expires June 21, 2008                [Page 15]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-11.  Acknowledgements
+10.  Acknowledgements
 
    This document was influenced by discussions within the Network
    Management Research Group (NMRG).
@@ -948,14 +892,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 17]
+van den Broek, et al.     Expires June 21, 2008                [Page 16]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
-12.  References
+11.  References
 
-12.1.  Normative References
+11.1.  Normative References
 
    [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
               Architecture for Describing Simple Network Management
@@ -966,16 +910,16 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
               Simple Network Management Protocol (SNMP)", RFC 3416,
               December 2002.
 
-12.2.  Informative References
+11.2.  Informative References
 
    [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
               "Introduction and Applicability Statements for Internet
               Standard Management Framework", RFC 3410, December 2002.
 
-   [ID-IRTF-NMRG-SNMP-MEASURE-01]
+   [ID-IRTF-NMRG-SNMP-MEASURE]
               Schoenwaelder, J., "An Architecture for Describing Simple
               Network Management Protocol (SNMP) Management Frameworks",
-              ID draft-irtf-nmrg-snmp-measure-01.txt, January 2007.
+              ID draft-irtf-nmrg-snmp-measure.txt, December 2007.
 
    [SPHSM07]  Schoenwaelder, J., Pras, A., Harvan, M., Schippers, J.,
               and R. van de Meent, "SNMP Traffic Analysis: Approaches,
@@ -1004,7 +948,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 18]
+van den Broek, et al.     Expires June 21, 2008                [Page 17]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1017,7 +961,7 @@ Authors' Addresses
    7500 AE Enschede
    Netherlands
 
-   Phone:
+   Phone: +31 6 13506591
    Email: j.g.vandenbroek@student.utwente.nl
 
 
@@ -1060,7 +1004,7 @@ Authors' Addresses
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 19]
+van den Broek, et al.     Expires June 21, 2008                [Page 18]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1116,5 +1060,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.     Expires June 16, 2008                [Page 20]
+van den Broek, et al.     Expires June 21, 2008                [Page 19]
 
