@@ -170,8 +170,14 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	case SNMP_TYPE_UINT32:
 	    xml_write_uint32(stream, "unsigned32", &varbind->value.u32);
 	    break;
-	case SNMP_TYPE_UINT64:
-	    xml_write_uint64(stream, "unsigned64", &varbind->value.u64);
+	case SNMP_TYPE_COUNTER32:
+	    xml_write_uint32(stream, "counter32", &varbind->value.u32);
+	    break;
+	case SNMP_TYPE_TIMETICKS:
+	    xml_write_uint32(stream, "timeticks", &varbind->value.u32);
+	    break;
+	case SNMP_TYPE_COUNTER64:
+	    xml_write_uint64(stream, "counter64", &varbind->value.u64);
 	    break;
 	case SNMP_TYPE_IPADDR:
 	    xml_write_ipaddr(stream, "ipaddress", &varbind->value.ip);
@@ -193,9 +199,6 @@ xml_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	    break;
 	case SNMP_TYPE_END_MIB_VIEW:
 	    xml_write_null(stream, "end-of-mib-view", &varbind->value.null);
-	    break;
-	default:
-	    /* xxx */
 	    break;
 	}
     }

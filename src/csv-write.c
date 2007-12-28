@@ -183,9 +183,19 @@ csv_write_varbind(FILE *stream, snmp_varbind_t *varbind)
 	    fprintf(stream, "%c%s", sep, show ? "unsigned32" : "");
 	    csv_write_uint32(stream, &varbind->value.u32);
 	    break;
-	case SNMP_TYPE_UINT64:
+	case SNMP_TYPE_COUNTER32:
 	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
-	    fprintf(stream, "%c%s", sep, show ? "unsigned64" : "");
+	    fprintf(stream, "%c%s", sep, show ? "counter32" : "");
+	    csv_write_uint32(stream, &varbind->value.u32);
+	    break;
+	case SNMP_TYPE_TIMETICKS:
+	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "timeticks" : "");
+	    csv_write_uint32(stream, &varbind->value.u32);
+	    break;
+	case SNMP_TYPE_COUNTER64:
+	    show = (varbind->attr.flags & SNMP_FLAG_VALUE);
+	    fprintf(stream, "%c%s", sep, show ? "counter64" : "");
 	    csv_write_uint64(stream, &varbind->value.u64);
 	    break;
 	case SNMP_TYPE_IPADDR:

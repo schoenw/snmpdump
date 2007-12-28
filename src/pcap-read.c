@@ -280,11 +280,13 @@ struct be {
 #define BE_OID		3
 #define BE_INT		4
 #define BE_UNS		5
-#define BE_STR		6
-#define BE_SEQ		7
-#define BE_INETADDR	8
-#define BE_PDU		9
-#define BE_UNS64	10
+#define BE_COUNTER	6
+#define BE_TIMETICKS	7
+#define BE_STR		8
+#define BE_SEQ		9
+#define BE_INETADDR	10
+#define BE_PDU		11
+#define BE_UNS64	12
 #define BE_NOSUCHOBJECT	128
 #define BE_NOSUCHINST	129
 #define BE_ENDOFMIBVIEW	130
@@ -301,6 +303,8 @@ struct {
 	{ BE_OID,		"object-identifier" },
 	{ BE_INT,		"integer32" },
 	{ BE_UNS,		"unsigned32" },
+	{ BE_COUNTER,		"counter32" },
+	{ BE_TIMETICKS,		"timeticks" },
 	{ BE_STR,		"octet-string" },
 	{ BE_SEQ,		"sequence" },
 	{ BE_INETADDR,		"ipaddress" },
@@ -501,11 +505,29 @@ asn1_parse(register const u_char *p, u_int len, struct be *elem)
 				elem->data.raw = (caddr_t)p;
 				break;
 
-			case COUNTER:
-			case GAUGE:
-			case TIMETICKS: {
+			case COUNTER: {
+				register uint32_t data;
+				elem->type = BE_COUNTER;
+				data = 0;
+				for (i = elem->asnlen; i-- > 0; p++)
+					data = (data << 8) + *p;
+				elem->data.uns = data;
+				break;
+			}
+
+			case GAUGE: {
 				register uint32_t data;
 				elem->type = BE_UNS;
+				data = 0;
+				for (i = elem->asnlen; i-- > 0; p++)
+					data = (data << 8) + *p;
+				elem->data.uns = data;
+				break;
+			}
+ 
+			case TIMETICKS: {
+				register uint32_t data;
+				elem->type = BE_TIMETICKS;
 				data = 0;
 				for (i = elem->asnlen; i-- > 0; p++)
 					data = (data << 8) + *p;
@@ -661,6 +683,8 @@ asn1_print(struct be *elem)
 		return buffer;
 
 	case BE_UNS:
+	case BE_COUNTER:
+	case BE_TIMETICKS:
 		sprintf(buffer, "%"PRIu32, elem->data.uns);
 		return buffer;
 
@@ -940,8 +964,18 @@ varbind_print(u_char pduid, const u_char *np, u_int length, snmp_packet_t *pkt)
 		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_uint32(&vb->value.u32, count, &elem);
 		    break;
+		case BE_COUNTER:
+		    vb->type = SNMP_TYPE_COUNTER32;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
+		    set_uint32(&vb->value.u32, count, &elem);
+		    break;
+		case BE_TIMETICKS:
+		    vb->type = SNMP_TYPE_TIMETICKS;
+		    vb->attr.flags |= SNMP_FLAG_VALUE;
+		    set_uint32(&vb->value.u32, count, &elem);
+		    break;
 		case BE_UNS64:
-		    vb->type = SNMP_TYPE_UINT64;
+		    vb->type = SNMP_TYPE_COUNTER64;
 		    vb->attr.flags |= SNMP_FLAG_VALUE;
 		    set_uint64(&vb->value.u64, count, &elem);
 		    break;

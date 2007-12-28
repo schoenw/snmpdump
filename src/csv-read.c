@@ -315,8 +315,16 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
 	v->type = SNMP_TYPE_UINT32;
 	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint32(value, &v->value.u32);
-    } else if (strcmp(type, "unsigned64") == 0) {
-	v->type = SNMP_TYPE_UINT64;
+    } else if (strcmp(type, "counter32") == 0) {
+	v->type = SNMP_TYPE_COUNTER32;
+	v->attr.flags |= SNMP_FLAG_VALUE;
+	csv_read_uint32(value, &v->value.u32);
+    } else if (strcmp(type, "timeticks") == 0) {
+	v->type = SNMP_TYPE_TIMETICKS;
+	v->attr.flags |= SNMP_FLAG_VALUE;
+	csv_read_uint32(value, &v->value.u32);
+    } else if (strcmp(type, "counter64") == 0) {
+	v->type = SNMP_TYPE_COUNTER64;
 	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint64(value, &v->value.u64);
     } else if (strcmp(type, "ipaddress") == 0) {

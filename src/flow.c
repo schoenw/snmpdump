@@ -224,13 +224,13 @@ snmp_slice_name(snmp_slice_t *slice)
 
     type = slice_type_names[i].name ? slice_type_names[i].name : "UNKNOWN";
 
-    snprintf(name, SLICE_NAME_SIZE, "%08u-%s-%s:%u-%s:%u",
-	     slice->id,
+    snprintf(name, SLICE_NAME_SIZE, "%s-%s:%u-%s:%u-%u",
 	     type,
 	     src ? src : "xxx",
 	     slice->src_port.value,
 	     dst ? dst : "yyy",
-	     slice->dst_port.value);
+	     slice->dst_port.value,
+	     slice->id);
     
     return name;	
 }

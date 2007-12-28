@@ -85,15 +85,17 @@ typedef struct {
 #define SNMP_TYPE_NULL		0x0001
 #define SNMP_TYPE_INT32		0x0002
 #define SNMP_TYPE_UINT32	0x0004
-#define SNMP_TYPE_UINT64	0x0008
-#define SNMP_TYPE_IPADDR	0x0010
-#define SNMP_TYPE_OCTS		0x0020
-#define SNMP_TYPE_OID		0x0040
-#define SNMP_TYPE_OPAQUE	0x0080
-#define SNMP_TYPE_NO_SUCH_OBJ	0x0100
-#define SNMP_TYPE_NO_SUCH_INST	0x0200
-#define SNMP_TYPE_END_MIB_VIEW	0x0400
-#define SNMP_TYPE_VALUE		0x0800		/* what is this good for? */
+#define SNMP_TYPE_COUNTER32     0x0008
+#define SNMP_TYPE_TIMETICKS	0x0010
+#define SNMP_TYPE_COUNTER64	0x0020
+#define SNMP_TYPE_IPADDR	0x0040
+#define SNMP_TYPE_OCTS		0x0080
+#define SNMP_TYPE_OID		0x0100
+#define SNMP_TYPE_OPAQUE	0x0200
+#define SNMP_TYPE_NO_SUCH_OBJ	0x0400
+#define SNMP_TYPE_NO_SUCH_INST	0x0800
+#define SNMP_TYPE_END_MIB_VIEW	0x1000
+#define SNMP_TYPE_VALUE		0x2000		/* what is this good for? */
 
 typedef struct _snmp_varbind {
     uint32_t	          type;	/* type of value */

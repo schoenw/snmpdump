@@ -85,7 +85,9 @@ static enum {
 	IN_NULL,
 	IN_INTEGER32,
 	IN_UNSIGNED32,
-	IN_UNSIGNED64,
+	IN_COUNTER32,
+	IN_TIMETICKS,
+	IN_COUNTER64,
 	IN_IPADDRESS,
 	IN_OCTET_STRING,
 	IN_OBJECT_IDENTIFIER,
@@ -646,14 +648,38 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    /* attributes */
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
-	/* varbind (- value) - unsigned64 */
-	} else if (name && xmlStrcmp(name, BAD_CAST("unsigned64")) == 0) {
-	    DEBUG("in UNSIGNED64\n");
+	/* varbind (- value) - counter32 */
+	} else if (name && xmlStrcmp(name, BAD_CAST("counter32")) == 0) {
+	    DEBUG("in COUNTER32\n");
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
 	    /* we should also check if parrent is varbind */
-	    set_state(IN_UNSIGNED64); 
+	    set_state(IN_COUNTER32); 
 	    assert(*varbind);
-	    (*varbind)->type = SNMP_TYPE_UINT64;
+	    (*varbind)->type = SNMP_TYPE_COUNTER32;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
+	/* varbind (- value) - timeticks */
+	} else if (name && xmlStrcmp(name, BAD_CAST("timeticks")) == 0) {
+	    DEBUG("in TIMETICKS\n");
+	    assert(state == IN_NAME); /* maybe not needed/wanted */
+	    /* we should also check if parrent is varbind */
+	    set_state(IN_TIMETICKS); 
+	    assert(*varbind);
+	    (*varbind)->type = SNMP_TYPE_TIMETICKS;
+	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
+	    /* attributes */
+	    /* blen, vlen */
+	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
+	/* varbind (- value) - counter64 */
+	} else if (name && xmlStrcmp(name, BAD_CAST("counter64")) == 0) {
+	    DEBUG("in COUNTER64\n");
+	    assert(state == IN_NAME); /* maybe not needed/wanted */
+	    /* we should also check if parrent is varbind */
+	    set_state(IN_COUNTER64); 
+	    assert(*varbind);
+	    (*varbind)->type = SNMP_TYPE_COUNTER64;
 	    (*varbind)->attr.flags |= SNMP_FLAG_VALUE;
 	    /* attributes */
 	    /* blen, vlen */
@@ -938,9 +964,19 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    assert((*varbind)->type == SNMP_TYPE_UINT32);
 	    process_snmp_uint32(reader, &((*varbind)->value.u32));
 	    break;
-	case IN_UNSIGNED64:
+	case IN_COUNTER32:
 	    assert(*varbind);
-	    assert((*varbind)->type == SNMP_TYPE_UINT64);
+	    assert((*varbind)->type == SNMP_TYPE_COUNTER32);
+	    process_snmp_uint32(reader, &((*varbind)->value.u32));
+	    break;
+	case IN_TIMETICKS:
+	    assert(*varbind);
+	    assert((*varbind)->type == SNMP_TYPE_TIMETICKS);
+	    process_snmp_uint32(reader, &((*varbind)->value.u32));
+	    break;
+	case IN_COUNTER64:
+	    assert(*varbind);
+	    assert((*varbind)->type == SNMP_TYPE_COUNTER64);
 	    process_snmp_uint64(reader, &((*varbind)->value.u64));
 	    break;
 	case IN_IPADDRESS:
