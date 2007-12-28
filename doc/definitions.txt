@@ -4,12 +4,12 @@
 NMRG                                                    G. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                          J. Schoenwaelder
-Expires: June 21, 2008                          Jacobs University Bremen
+Expires: June 30, 2008                          Jacobs University Bremen
                                                                  A. Pras
                                                     University of Twente
                                                                M. Harvan
                                                               ETH Zurich
-                                                       December 19, 2007
+                                                       December 28, 2007
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on June 21, 2008.
+   This Internet-Draft will expire on June 30, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 1]
+van den Broek, et al.     Expires June 30, 2008                 [Page 1]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -77,20 +77,20 @@ Abstract
 Table of Contents
 
    1.  Introduction . . . . . . . . . . . . . . . . . . . . . . . . .  3
-   2.  Messages . . . . . . . . . . . . . . . . . . . . . . . . . . .  5
-   3.  Traces . . . . . . . . . . . . . . . . . . . . . . . . . . . .  8
-   4.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . .  9
-   5.  Slices . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
-   6.  Slice Prefix - (more thoughts needed)  . . . . . . . . . . . . 12
-   7.  Slice Sets - (more thoughts needed)  . . . . . . . . . . . . . 16
-   8.  Walks - (more thoughts needed) . . . . . . . . . . . . . . . . 17
-   9.  Security Considerations  . . . . . . . . . . . . . . . . . . . 18
-   10. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 19
-   11. References . . . . . . . . . . . . . . . . . . . . . . . . . . 20
-     11.1.  Normative References  . . . . . . . . . . . . . . . . . . 20
-     11.2.  Informative References  . . . . . . . . . . . . . . . . . 20
-   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 21
-   Intellectual Property and Copyright Statements . . . . . . . . . . 22
+   2.  Messages . . . . . . . . . . . . . . . . . . . . . . . . . . .  6
+   3.  Traces . . . . . . . . . . . . . . . . . . . . . . . . . . . .  9
+   4.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
+   5.  Slices . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
+   6.  Slice Prefix - (more thoughts needed)  . . . . . . . . . . . . 13
+   7.  Slice Sets - (more thoughts needed)  . . . . . . . . . . . . . 19
+   8.  Walks - (more thoughts needed) . . . . . . . . . . . . . . . . 20
+   9.  Security Considerations  . . . . . . . . . . . . . . . . . . . 21
+   10. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 22
+   11. References . . . . . . . . . . . . . . . . . . . . . . . . . . 23
+     11.1.  Normative References  . . . . . . . . . . . . . . . . . . 23
+     11.2.  Informative References  . . . . . . . . . . . . . . . . . 23
+   Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 24
+   Intellectual Property and Copyright Statements . . . . . . . . . . 25
 
 
 
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 2]
+van den Broek, et al.     Expires June 30, 2008                 [Page 2]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -164,7 +164,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 3]
+van den Broek, et al.     Expires June 30, 2008                 [Page 3]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -206,13 +206,26 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
    instance involving a single manager and a single agent.
 
    A slice may contain, for instance, the exchanged SNMP messages
-   between an agent and a manager which polls that agent in a single
-   polling instance.  The manager may even be set to poll multiple
+   between an agent and a manager, which polls that agent in a single
+   polling instance.  The manager may be configured to poll multiple
    agents on a periodic basis.  Therefore, multiple slices, which are
    possibly part of multiple flows, may all be related to each other,
    because they comprise a single polling instance, initiated by a
    single manager.  The combined set of these related slices form slice
    sets.
+
+   The described manager might poll the same agent(s) on a periodic
+   basis (e.g., every few minutes).  This would result in multiple
+   slices sets that are very similar to each other.  In such a case,
+
+
+
+van den Broek, et al.     Expires June 30, 2008                 [Page 4]
+
+Internet-Draft       SNMP Trace Analysis Definitions       December 2007
+
+
+   these slice sets will be considered to be of the same slice set type.
 
    Slices can be of a specific form.  For example, slices containing a
    sequence of linked GetNext or GetBulk requests are commonly called an
@@ -220,7 +233,50 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 4]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires June 30, 2008                 [Page 5]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -276,7 +332,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 5]
+van den Broek, et al.     Expires June 30, 2008                 [Page 6]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -332,7 +388,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 6]
+van den Broek, et al.     Expires June 30, 2008                 [Page 7]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -388,7 +444,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 7]
+van den Broek, et al.     Expires June 30, 2008                 [Page 8]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -444,7 +500,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 8]
+van den Broek, et al.     Expires June 30, 2008                 [Page 9]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -500,7 +556,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                 [Page 9]
+van den Broek, et al.     Expires June 30, 2008                [Page 10]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -556,7 +612,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 10]
+van den Broek, et al.     Expires June 30, 2008                [Page 11]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -612,7 +668,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 11]
+van den Broek, et al.     Expires June 30, 2008                [Page 12]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -631,11 +687,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
    The slice prefix will represent a set of referenced OID prefixes.
    Such a set is constructed based on the messages that make up a single
    slice.  So, for example, a slice that is the result of a manager
-   requesting the contents of a particular table (alpha) on an agent,
-   shall yield a slice prefix which consists of just alpha.  This,
-   because every referenced OID in that slice will have a single common
-   OID prefix: alpha.  [DISCUSS: This is ambiguous since I get retrieve
-   the table in a such a way that the prefix is not alpha.]
+   requesting the contents of a particular table (alpha) on an agent
+   using a simple GetNext walk starting at the table node alpha, shall
+   yield a slice prefix which consists of just alpha.
 
    Because we want to compare different slices using the slice prefix
    (along some other characteristics of a slice), we implicitly want to
@@ -668,7 +722,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 12]
+
+
+van den Broek, et al.     Expires June 30, 2008                [Page 13]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -718,19 +774,21 @@ getPrefix(Slice S)
  * message (if any)
  */
 
-getLinkedPreviousResponseMessages(Slice S, Message M, Message prevNonRespMsg)
+getLinkedPreviousResponseMessages(Slice S, Message M,
+                                  Message prevNonRespMsg)
 {
-   Message R[] = {};        // set of previous response messages
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 13]
+van den Broek, et al.     Expires June 30, 2008                [Page 14]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
+   Message R[] = {};        // set of previous response messages
+
    if (prevNonRespMsg) {
-       foreach Message M2 in S) {
+       foreach Message M2 in S {
            if (M2.time < M.time
                && M2.time > prevNonResponse.time
                && M2.reqid == prevNonResponse.reqid
@@ -778,9 +836,7 @@ addPrefix(Prefix p, OID o)
 
 
 
-
-
-van den Broek, et al.     Expires June 21, 2008                [Page 14]
+van den Broek, et al.     Expires June 30, 2008                [Page 15]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -822,6 +878,87 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
    This example slice would therefore result in a slice prefix
    consisting of the OID prefixes sysUpTime, alpha, beta.
 
+   Following is a more elaborate slice for which the slice prefix is
+   determined.  Consider again the case that a single manager A is set
+   to poll a specific agent B. Manager A is programmed to retrieve some
+   values from B. However, in this case the referenced tables do not
+   have an equal length.  Besides that, the manager also requests the
+   sysUpTime in every few requests the manager sends to B. The resulting
+   set of messages within a single slice of this flow may contain the
+   following messages:
+
+
+
+
+
+
+van den Broek, et al.     Expires June 30, 2008                [Page 16]
+
+Internet-Draft       SNMP Trace Analysis Definitions       December 2007
+
+
+    -------------------------------------------------------------------
+    Message | Direction | PDU type        | OIDs
+    -------------------------------------------------------------------
+       0        A -> B    GetNext Request   alpha.1, beta.1
+       1        B -> A    Response          alpha.1.0, beta.1.0
+       2        A -> B    GetNext Request   alpha, beta.1.0
+       3        B -> A    Response          alpha.0.0, beta.1.1
+       4        A -> B    GetNext Request   beta.1.1, alpha.0.0,
+                                            sysUpTime
+       5        B -> A    Response          beta.1.2, alpha.1.0,
+                                            sysUpTime.0
+       6        A -> B    GetNext Request   beta.1.2
+       7        B -> A    Response          delta.0
+    -------------------------------------------------------------------
+
+   These eight messages make up a single slice.  Determining the slice
+   prefix for this slice goes as follows:
+
+   At the start the set of found common OID prefixes P is still empty.
+   Just as in the previous example, the algorithm analyses the first
+   non-response (message 0) first.  Since P is empty at this point and
+   earlier response messages cannot be found that occurred before
+   message 0, the two OIDs of message 0 will be added to P.
+
+   The second non-response message (message 2) contains one OID
+   (beta.1.0) That can also be found in the response to the first
+   request; it is therefore not considered any further.  The other OID
+   in message 2 is newly introduced.  Also, this OID is a prefix of an
+   already listed OID in P: alpha.1.  As a result, alpha.1 will be
+   removed from P and OID alpha will be inserted into P. So, after the
+   algorithm has completed considering message 2, P will contain the
+   common OID prefixes alpha and beta.1.
+
+   Message 4 is the next non-response message.  This message contains
+   three OIDs, of which two are exactly the same, even though the order
+   is different, compared to the previous response message (message 3).
+   A third OID (sysUpTime) in this message cannot be found in message 3,
+   neither can it be found in P. Hence, OID sysUpTime is added to P.
+
+   Message 6 is the last non-response message and contains just a single
+   OID that can also be found in message 5, the response to the previous
+   non-response message.  Therefore, the single OID in message 6 is not
+   considered any further.
+
+   After message 6 have all non-response messages been considered in
+   this slice.  Even though the order of comparable OIDs within a
+   certain non-response and the previous response may be different (like
+   in non-response message 4 and response message 3), the listed
+
+
+
+van den Broek, et al.     Expires June 30, 2008                [Page 17]
+
+Internet-Draft       SNMP Trace Analysis Definitions       December 2007
+
+
+   messages still comprise a single slice.  The slice also shows the
+   possibility of a manager (A) referencing OIDs that are new compared
+   to a previous response message (like the sysUpTime OID in message 4).
+
+   This example slice would therefore result a slice prefix P consisting
+   of the OID prefixes alpha, beta.1 and sysUpTime.
 
 
 
@@ -836,7 +973,38 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 15]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.     Expires June 30, 2008                [Page 18]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -892,7 +1060,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 16]
+van den Broek, et al.     Expires June 30, 2008                [Page 19]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -948,7 +1116,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 17]
+van den Broek, et al.     Expires June 30, 2008                [Page 20]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1004,7 +1172,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 18]
+van den Broek, et al.     Expires June 30, 2008                [Page 21]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1060,7 +1228,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 19]
+van den Broek, et al.     Expires June 30, 2008                [Page 22]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1116,7 +1284,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 20]
+van den Broek, et al.     Expires June 30, 2008                [Page 23]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1172,7 +1340,7 @@ Authors' Addresses
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 21]
+van den Broek, et al.     Expires June 30, 2008                [Page 24]
 
 Internet-Draft       SNMP Trace Analysis Definitions       December 2007
 
@@ -1228,5 +1396,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.     Expires June 21, 2008                [Page 22]
+van den Broek, et al.     Expires June 30, 2008                [Page 25]
 

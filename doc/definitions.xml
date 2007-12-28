@@ -220,13 +220,20 @@
       </t>
       <t>
         A slice may contain, for instance, the exchanged SNMP messages
-        between an agent and a manager which polls that agent in a
-        single polling instance. The manager may even be set to poll
+        between an agent and a manager, which polls that agent in a
+        single polling instance. The manager may be configured to poll
         multiple agents on a periodic basis. Therefore, multiple
         slices, which are possibly part of multiple flows, may all be
         related to each other, because they comprise a single polling
         instance, initiated by a single manager. The combined set of
-        these related slices form slice sets.
+        these related slices form slice sets. 
+      </t>
+      <t>
+	The described manager might poll the same agent(s) on a
+	periodic basis (e.g., every few minutes). This would result in
+	multiple slices sets that are very similar to each other.  In
+	such a case, these slice sets will be considered to be of the
+	same slice set type.
       </t>
       <t>
         Slices can be of a specific form. For example, slices
@@ -613,12 +620,9 @@
         prefixes.  Such a set is constructed based on the messages
         that make up a single slice. So, for example, a slice that is
         the result of a manager requesting the contents of a
-        particular table (alpha) on an agent, shall yield a slice
-        prefix which consists of just alpha. This, because every
-        referenced OID in that slice will have a single common OID
-        prefix: alpha. [DISCUSS: This is ambiguous since I get
-        retrieve the table in a such a way that the prefix is not
-        alpha.]
+        particular table (alpha) on an agent using a simple GetNext
+        walk starting at the table node alpha, shall yield a slice
+        prefix which consists of just alpha.
       </t>
       <t>
         Because we want to compare different slices using the slice
@@ -709,12 +713,13 @@ getPrefix(Slice S)
  * message (if any)
  */
 
-getLinkedPreviousResponseMessages(Slice S, Message M, Message prevNonRespMsg)
+getLinkedPreviousResponseMessages(Slice S, Message M, 
+                                  Message prevNonRespMsg)
 {
    Message R[] = {};        // set of previous response messages
 
    if (prevNonRespMsg) {
-       foreach Message M2 in S) {
+       foreach Message M2 in S {
            if (M2.time < M.time 
                && M2.time > prevNonResponse.time 
                && M2.reqid == prevNonResponse.reqid 
@@ -805,6 +810,85 @@ addPrefix(Prefix p, OID o)
       <t>
         This example slice would therefore result in a slice prefix
         consisting of the OID prefixes sysUpTime, alpha, beta.
+      </t>
+      <t>
+	Following is a more elaborate slice for which the slice prefix
+	is determined. Consider again the case that a single manager A
+	is set to poll a specific agent B. Manager A is programmed to
+	retrieve some values from B. However, in this case the
+	referenced tables do not have an equal length. Besides that,
+	the manager also requests the sysUpTime in every few requests
+	the manager sends to B. The resulting set of messages within a
+	single slice of this flow may contain the following messages:
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Direction | PDU type        | OIDs
+ -------------------------------------------------------------------
+    0        A -> B    GetNext Request   alpha.1, beta.1
+    1        B -> A    Response          alpha.1.0, beta.1.0
+    2        A -> B    GetNext Request   alpha, beta.1.0
+    3        B -> A    Response          alpha.0.0, beta.1.1
+    4        A -> B    GetNext Request   beta.1.1, alpha.0.0,
+                                         sysUpTime
+    5        B -> A    Response          beta.1.2, alpha.1.0,
+                                         sysUpTime.0
+    6        A -> B    GetNext Request   beta.1.2
+    7        B -> A    Response          delta.0
+ -------------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	These eight messages make up a single slice.  Determining the
+	slice prefix for this slice goes as follows:
+      </t>
+      <t>
+	At the start the set of found common OID prefixes P is still
+	empty.  Just as in the previous example, the algorithm
+	analyses the first non-response (message 0) first. Since P is
+	empty at this point and earlier response messages cannot be
+	found that occurred before message 0, the two OIDs of message
+	0 will be added to P.
+      </t>
+      <t>
+	The second non-response message (message 2) contains one OID
+	(beta.1.0) That can also be found in the response to the first
+	request; it is therefore not considered any further. The other
+	OID in message 2 is newly introduced. Also, this OID is a
+	prefix of an already listed OID in P: alpha.1. As a result,
+	alpha.1 will be removed from P and OID alpha will be inserted
+	into P. So, after the algorithm has completed considering
+	message 2, P will contain the common OID prefixes alpha and
+	beta.1.
+      </t>
+      <t>
+	Message 4 is the next non-response message. This message
+	contains three OIDs, of which two are exactly the same, even
+	though the order is different, compared to the previous
+	response message (message 3).  A third OID (sysUpTime) in this
+	message cannot be found in message 3, neither can it be found
+	in P. Hence, OID sysUpTime is added to P.
+      </t>
+      <t>
+	Message 6 is the last non-response message and contains just a
+	single OID that can also be found in message 5, the response
+	to the previous non-response message. Therefore, the single
+	OID in message 6 is not considered any further.
+      </t>
+      <t>
+	After message 6 have all non-response messages been considered
+	in this slice. Even though the order of comparable OIDs within
+	a certain non-response and the previous response may be
+	different (like in non-response message 4 and response message
+	3), the listed messages still comprise a single slice. The
+	slice also shows the possibility of a manager (A) referencing
+	OIDs that are new compared to a previous response message
+	(like the sysUpTime OID in message 4).
+      </t>
+      <t>
+	This example slice would therefore result a slice prefix P
+	consisting of the OID prefixes alpha, beta.1 and sysUpTime.
       </t>
     </section>
 
