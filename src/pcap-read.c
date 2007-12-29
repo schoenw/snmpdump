@@ -1146,7 +1146,7 @@ trappdu_print(const u_char *np, u_int length, snmp_packet_t *pkt)
 	/* time-stamp (TimeTicks) */
 	if ((count = asn1_parse(np, length, &elem)) < 0)
 		return;
-	if (elem.type != BE_UNS) {
+	if (elem.type != BE_TIMETICKS) {
 		fputs("[time-stamp!=TIMETICKS]\n", stderr);
 		return;
 	}

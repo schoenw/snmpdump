@@ -1052,7 +1052,7 @@
         <variable-bindings blen="21" vlen="19">
           <varbind blen="19" vlen="17">
             <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
-            <unsigned32 blen="7" vlen="5">4135554939</unsigned32>
+            <timeticks blen="7" vlen="5">4135554939</timeticks>
           </varbind>
         </variable-bindings>
       </response>
@@ -1138,7 +1138,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1224,7 +1224,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.2</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1310,7 +1310,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.3</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1396,7 +1396,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.4</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1482,7 +1482,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.5</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1568,7 +1568,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.6</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1654,7 +1654,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.7</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1743,7 +1743,7 @@
         <variable-bindings blen="21" vlen="19">
           <varbind blen="19" vlen="17">
             <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
-            <unsigned32 blen="7" vlen="5">4135555739</unsigned32>
+            <timeticks blen="7" vlen="5">4135555739</timeticks>
           </varbind>
         </variable-bindings>
       </response>
@@ -1786,7 +1786,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.8</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -1938,7 +1938,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.9</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2024,7 +2024,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2090,7 +2090,7 @@
         <variable-bindings blen="20" vlen="18">
           <varbind blen="18" vlen="16">
             <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
-            <unsigned32 blen="6" vlen="4">146211699</unsigned32>
+            <timeticks blen="6" vlen="4">146211699</timeticks>
           </varbind>
         </variable-bindings>
       </response>
@@ -2133,7 +2133,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.2</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2262,7 +2262,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.3</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2348,7 +2348,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.10</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2434,7 +2434,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.4</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2520,7 +2520,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.5</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2606,7 +2606,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.11</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2692,7 +2692,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.6</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2778,7 +2778,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2864,7 +2864,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.7</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -2950,7 +2950,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.8</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3036,7 +3036,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.12</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3122,7 +3122,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.9</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3208,7 +3208,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.10</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3294,7 +3294,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.13</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3426,7 +3426,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.2</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3512,7 +3512,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.11</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3598,7 +3598,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.14</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3684,7 +3684,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.12</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3770,7 +3770,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.15</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3856,7 +3856,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.13</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -3942,7 +3942,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.3</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4028,7 +4028,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.16</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4114,7 +4114,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.14</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4200,7 +4200,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.17</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4286,7 +4286,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.15</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4372,7 +4372,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.4</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4458,7 +4458,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.18</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4544,7 +4544,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.16</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4630,7 +4630,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.19</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4716,7 +4716,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.17</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4802,7 +4802,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.5</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4888,7 +4888,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.20</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -4974,7 +4974,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.18</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5060,7 +5060,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.21</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5146,7 +5146,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.19</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5232,7 +5232,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.22</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5486,7 +5486,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
           <varbind blen="20" vlen="18">
             <name blen="14" vlen="12">1.3.6.1.2.1.25.3.2.1.1.769</name>
@@ -5576,7 +5576,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.20</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5658,7 +5658,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
           <varbind blen="20" vlen="18">
             <name blen="14" vlen="12">1.3.6.1.2.1.25.3.2.1.1.769</name>
@@ -5705,7 +5705,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.6</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5791,7 +5791,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.21</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5877,7 +5877,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.22</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -5963,7 +5963,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.23</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6049,7 +6049,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.24</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6135,7 +6135,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.25</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6221,7 +6221,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.26</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6307,7 +6307,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.27</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6393,7 +6393,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.28</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6479,7 +6479,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.7</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6565,7 +6565,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.29</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -6819,7 +6819,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
           <varbind blen="20" vlen="18">
             <name blen="14" vlen="12">1.3.6.1.2.1.25.3.2.1.1.769</name>
@@ -6905,7 +6905,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.1</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
           <varbind blen="20" vlen="18">
             <name blen="14" vlen="12">1.3.6.1.2.1.25.3.2.1.1.769</name>
@@ -6952,7 +6952,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.8</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -7084,7 +7084,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.9</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>
@@ -7170,7 +7170,7 @@
           </varbind>
           <varbind blen="18" vlen="16">
             <name blen="13" vlen="11">1.3.6.1.2.1.25.2.3.1.7.10</name>
-            <unsigned32 blen="3" vlen="1">0</unsigned32>
+            <counter32 blen="3" vlen="1">0</counter32>
           </varbind>
         </variable-bindings>
       </response>

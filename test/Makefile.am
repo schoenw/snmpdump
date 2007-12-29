@@ -1,4 +1,4 @@
-PCAP_FILES		= frags.pcap misc.pcap scli.pcap traps.pcap
+PCAP_FILES		= frags.pcap misc.pcap scli.pcap traps.pcap snmpv3.pcap
 
 EXTRA_DIST		= $(PCAP_FILES)
 
@@ -18,3 +18,9 @@ validate:
 	for f in $(PCAP_FILES:.pcap=.xml) ; do \
 		xmllint --relaxng ../doc/snmptrace.rng $$f > /dev/null; \
 	done
+
+clean-csv:
+	rm -f $(PCAP_FILES:.pcap=.csv)
+
+clean-xml:
+	rm -f $(PCAP_FILES:.pcap=.xml)

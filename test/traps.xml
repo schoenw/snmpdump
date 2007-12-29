@@ -15,8 +15,8 @@
         <agent-addr blen="6" vlen="4">127.0.0.1</agent-addr>
         <generic-trap blen="3" vlen="1">1</generic-trap>
         <specific-trap blen="3" vlen="1">0</specific-trap>
-        <time-stamp blen="4" vlen="2">1234</time-stamp>
-        <variable-bindings blen="2" vlen="0"/>
+        <time-stamp/>
+        <variable-bindings/>
       </trap>
     </snmp>
   </packet>
@@ -30,21 +30,21 @@
     <snmp blen="70" vlen="68">
       <version blen="3" vlen="1">1</version>
       <community blen="8" vlen="6">7075626c6963</community>
-      <trap2 blen="57" vlen="55">
+      <snmpV2-trap blen="57" vlen="55">
         <request-id blen="6" vlen="4">44158853</request-id>
         <error-status blen="3" vlen="1">0</error-status>
         <error-index blen="3" vlen="1">0</error-index>
         <variable-bindings blen="43" vlen="41">
           <varbind blen="16" vlen="14">
             <name blen="10" vlen="8">1.3.6.1.2.1.1.3.0</name>
-            <unsigned32 blen="4" vlen="2">1234</unsigned32>
+            <timeticks blen="4" vlen="2">1234</timeticks>
           </varbind>
           <varbind blen="25" vlen="23">
             <name blen="12" vlen="10">1.3.6.1.6.3.1.1.4.1.0</name>
             <object-identifier blen="11" vlen="9">1.3.6.1.6.3.1.1.5.1</object-identifier>
           </varbind>
         </variable-bindings>
-      </trap2>
+      </snmpV2-trap>
     </snmp>
   </packet>
 </snmptrace>
