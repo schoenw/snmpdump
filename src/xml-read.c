@@ -673,7 +673,8 @@ process_node(xmlTextReaderPtr reader, snmp_packet_t* packet,
 	    /* blen, vlen */
 	    process_snmp_attr(reader, &((*varbind)->value.u32.attr));
 	/* varbind (- value) - counter64 */
-	} else if (name && xmlStrcmp(name, BAD_CAST("counter64")) == 0) {
+	} else if (name && (xmlStrcmp(name, BAD_CAST("counter64")) == 0
+		       || xmlStrcmp(name, BAD_CAST("unsigned64")) == 0)) {
 	    DEBUG("in COUNTER64\n");
 	    assert(state == IN_NAME); /* maybe not needed/wanted */
 	    /* we should also check if parrent is varbind */

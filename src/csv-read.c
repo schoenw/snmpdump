@@ -323,7 +323,8 @@ csv_read_varbind(char **s, snmp_varbind_t *v)
 	v->type = SNMP_TYPE_TIMETICKS;
 	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint32(value, &v->value.u32);
-    } else if (strcmp(type, "counter64") == 0) {
+    } else if (strcmp(type, "counter64") == 0
+	|| strcmp(type, "unsigned64") == 0) {
 	v->type = SNMP_TYPE_COUNTER64;
 	v->attr.flags |= SNMP_FLAG_VALUE;
 	csv_read_uint64(value, &v->value.u64);
