@@ -17,7 +17,7 @@ use POSIX qw(strftime);
 
 my @snmp_ops = ("get-request", "get-next-request", "get-bulk-request",
 		"set-request", 
-		"trap", "trap2", "inform", 
+		"trap", "snmpV2-trap", "inform-request", 
 		"response", "report", "");
 
 my $meta_first = 0;
@@ -224,7 +224,7 @@ sub meta {
         if (/get-request|get-next-request|get-bulk-request|set-request/) {
             $meta_managers{$src}++;
             $meta_agents{$dst}++;
-        } elsif (/trap|trap2|inform/) {
+        } elsif (/trap|snmpV2-trap|inform-request/) {
             $meta_managers{$dst}++;
             $meta_agents{$src}++;
 	} elsif (/response|report/) {
@@ -316,7 +316,7 @@ sub basic {
 	$basic_bulk{"$err,$ind,$nvbs"}++;
 	$basic_bulk_total++;
     }
-    if ($op =~ /inform|trap|trap2/) {
+    if ($op =~ /inform-request|trap|snmpV2-trap/) {
         if ($nvbs > 1 
             && ${$aref}[12] eq "1.3.6.1.2.1.1.3.0"
             && ${$aref}[15] eq "1.3.6.1.6.3.1.1.4.1.0") {
