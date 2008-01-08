@@ -79,7 +79,7 @@
       </address>
     </author>
 
-    <date month="December" year="2007"/>
+    <date month="January" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -984,6 +984,12 @@ addPrefix(Prefix p, OID o)
       </t>
     </section>
 
+    <section anchor="iana" title="IANA Considerations">
+      <t>
+        This document has no actions for IANA.
+      </t>
+    </section>
+
     <section title="Acknowledgements">
       <t>
         This document was influenced by discussions within the Network
@@ -1069,15 +1075,14 @@ addPrefix(Prefix p, OID o)
       <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE">
         <front>
           <title>
-            An Architecture for Describing Simple Network Management
-            Protocol (SNMP) Management Frameworks
+            SNMP Traffic Measurements and Trace Exchange Formats
           </title>
           <author initials="J." surname="Schoenwaelder" fullname="Juergen Schoenwaelder">
             <organization>TU Braunschweig</organization>
           </author>
           <date month="December" year="2007"/>
         </front>
-        <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure.txt"/>
+        <seriesInfo name="ID" value="draft-irtf-nmrg-snmp-measure-02.txt"/>
       </reference>
 
       <reference anchor="SPHSM07">
