@@ -609,9 +609,11 @@ anon_pdu(snmp_pdu_t *pdu)
 	    anon_int32(tfp, &vb->value.i32);
 	    break;
 	case SNMP_TYPE_UINT32:
+	case SNMP_TYPE_COUNTER32:
+	case SNMP_TYPE_TIMETICKS:
  	    anon_uint32(tfp, &vb->value.u32);
 	    break;
-	case SNMP_TYPE_UINT64:
+	case SNMP_TYPE_COUNTER64:
  	    anon_uint64(tfp, &vb->value.u64);
 	    break;
 	case SNMP_TYPE_IPADDR:

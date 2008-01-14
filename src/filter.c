@@ -325,10 +325,12 @@ filter_pdu(snmp_filter_t *filter, snmp_pdu_t *pdu)
 	    filter_int32(filter, FLT_VALUE, &vb->value.i32);
 	    break;
 	case SNMP_TYPE_UINT32:
+	case SNMP_TYPE_COUNTER32:
+	case SNMP_TYPE_TIMETICKS:
 	    filter_uint32(filter, FLT_UNSIGNED32, &vb->value.u32);
 	    filter_uint32(filter, FLT_VALUE, &vb->value.u32);
 	    break;
-	case SNMP_TYPE_UINT64:
+	case SNMP_TYPE_COUNTER64:
 	    filter_uint64(filter, FLT_UNSIGNED64, &vb->value.u64);
 	    filter_uint64(filter, FLT_VALUE, &vb->value.u64);
 	    break;
