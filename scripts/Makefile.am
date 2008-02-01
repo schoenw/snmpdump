@@ -1,9 +1,6 @@
 EXTRA_DIST		= mib-identifiers.txt \
-			  snmpobjectstat.pl \
-			  snmpoidlookup.pl \
 			  snmpreg.pl \
 			  snmpseries.pl \
-			  snmpsizes.pl \
 			  snmpstats.pl \
 			  snmpwalks.pl 
 

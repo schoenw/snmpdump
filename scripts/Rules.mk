@@ -40,7 +40,7 @@ $(SNMPBASE)-flows: $(SNMPBASE).csv.gz
 $(SNMPBASE)-flowstats.txt: $(SNMPBASE)-flows
 	perl $(SNMPFLOWSTATS) $(SNMPBASE)-flows/$(BASE)-*.csv* > $@
 
-$(SNMPBASE)-oidstats.txt: $(SNMPBASE).csv
+$(SNMPBASE)-oidstats.txt: $(SNMPBASE).csv.gz
 	perl $(SNMPOIDSTATS) -m $(MIBIDENTIFIERS) $< > $@
 
 $(SNMPBASE).dot: $(SNMPBASE)-flowstats.txt
