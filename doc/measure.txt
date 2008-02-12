@@ -3,8 +3,8 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                                  Jacobs University Bremen
-Intended status: Informational                           January 8, 2008
-Expires: July 11, 2008
+Intended status: Informational                         February 12, 2008
+Expires: August 15, 2008
 
 
           SNMP Traffic Measurements and Trace Exchange Formats
@@ -33,7 +33,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on July 11, 2008.
+   This Internet-Draft will expire on August 15, 2008.
 
 Copyright Notice
 
@@ -52,9 +52,9 @@ Copyright Notice
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 1]
+Schoenwaelder            Expires August 15, 2008                [Page 1]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 Abstract
@@ -108,9 +108,9 @@ Abstract
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 2]
+Schoenwaelder            Expires August 15, 2008                [Page 2]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 Table of Contents
@@ -126,26 +126,26 @@ Table of Contents
      3.1.  Basic Statistics . . . . . . . . . . . . . . . . . . . . . 11
      3.2.  Periodic vs. Aperiodic Traffic . . . . . . . . . . . . . . 11
      3.3.  Message Size and Latency Distributions . . . . . . . . . . 11
-     3.4.  Concurrency Levels . . . . . . . . . . . . . . . . . . . . 11
+     3.4.  Concurrency Levels . . . . . . . . . . . . . . . . . . . . 12
      3.5.  Table Retrieval Approaches . . . . . . . . . . . . . . . . 12
      3.6.  Trap-Directed Polling - Myths or Reality?  . . . . . . . . 12
-     3.7.  Popular MIB Definitions  . . . . . . . . . . . . . . . . . 12
-     3.8.  Usage of Obsolete Objects  . . . . . . . . . . . . . . . . 12
+     3.7.  Popular MIB Definitions  . . . . . . . . . . . . . . . . . 13
+     3.8.  Usage of Obsolete Objects  . . . . . . . . . . . . . . . . 13
      3.9.  Encoding Length Distributions  . . . . . . . . . . . . . . 13
      3.10. Counters and Discontinuities . . . . . . . . . . . . . . . 13
-     3.11. Spin Locks . . . . . . . . . . . . . . . . . . . . . . . . 13
-     3.12. Row Creation . . . . . . . . . . . . . . . . . . . . . . . 13
-   4.  Trace Exchange Formats . . . . . . . . . . . . . . . . . . . . 14
-     4.1.  XML Representation . . . . . . . . . . . . . . . . . . . . 14
-     4.2.  CSV Representation . . . . . . . . . . . . . . . . . . . . 19
-   5.  Security Considerations  . . . . . . . . . . . . . . . . . . . 21
-   6.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 22
-   7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 23
-   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 24
-     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 24
-     8.2.  Informative References . . . . . . . . . . . . . . . . . . 24
-   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 28
-   Intellectual Property and Copyright Statements . . . . . . . . . . 29
+     3.11. Spin Locks . . . . . . . . . . . . . . . . . . . . . . . . 14
+     3.12. Row Creation . . . . . . . . . . . . . . . . . . . . . . . 14
+   4.  Trace Exchange Formats . . . . . . . . . . . . . . . . . . . . 15
+     4.1.  XML Representation . . . . . . . . . . . . . . . . . . . . 15
+     4.2.  CSV Representation . . . . . . . . . . . . . . . . . . . . 20
+   5.  Security Considerations  . . . . . . . . . . . . . . . . . . . 22
+   6.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 23
+   7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 24
+   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 25
+     8.2.  Informative References . . . . . . . . . . . . . . . . . . 25
+   Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 29
+   Intellectual Property and Copyright Statements . . . . . . . . . . 30
 
 
 
@@ -164,9 +164,9 @@ Table of Contents
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 3]
+Schoenwaelder            Expires August 15, 2008                [Page 3]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 1.  Introduction
@@ -177,7 +177,7 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    is widely deployed, it is not clear what protocol versions are being
    used, which protocol features are being used, how SNMP usage differs
    in different types of networks or organizations, which information is
-   frequently queried, and what typical SNMP interactions patterns are
+   frequently queried, and what typical SNMP interactions patterns occur
    in real world production networks.
 
    There have been several publications in the recent past dealing with
@@ -220,9 +220,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 4]
+Schoenwaelder            Expires August 15, 2008                [Page 4]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
    analyze the traffic generated by management stations.  This resulting
@@ -276,9 +276,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 5]
+Schoenwaelder            Expires August 15, 2008                [Page 5]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 2.  Measurement Approach
@@ -313,10 +313,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    Several of the steps listed above require the involvement of network
    operators supporting the SNMP measurement projects.  In many cases,
    the filtered XML and CSV representation of the SNMP traces will be
-   the binding interface between the researchers writing analysis
-   scripts and the operators involved in the measurement activity.  It
-   is therefore important to have a well defined specification of these
-   interfaces.
+   the interface between the researchers writing analysis scripts and
+   the operators involved in the measurement activity.  It is therefore
+   important to have a well defined specification of these interfaces.
 
    This section provides some advice and concrete hints how the steps
    listed above can be carried out efficiently.  Some special tools have
@@ -329,15 +328,15 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
    Capturing SNMP traffic traces can be done using packet sniffers such
    as tcpdump [2], wireshark [3], or similar applications.  Some care
-
-
-
-Schoenwaelder             Expires July 11, 2008                 [Page 6]
-
-Internet-Draft          SNMP Traffic Measurements           January 2008
-
-
    must be taken to specify pcap filter expressions that match the SNMP
+
+
+
+Schoenwaelder            Expires August 15, 2008                [Page 6]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
+
    transport endpoints used to carry SNMP traffic (typically 'udp and
    (port 161 or port 162)').  Furthermore, it is necessary to ensure
    that full packets are captured, that is packets are not truncated
@@ -385,15 +384,15 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
    Raw traces in pcap format must be converted into a format that is
    human readable while remaining also machine readable for efficient
-
-
-
-Schoenwaelder             Expires July 11, 2008                 [Page 7]
-
-Internet-Draft          SNMP Traffic Measurements           January 2008
-
-
    post-processing.  Human readability makes it easy for an operator to
+
+
+
+Schoenwaelder            Expires August 15, 2008                [Page 7]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
+
    verify that no sensitive data is left in a trace while machine
    readability is needed to efficiently extract relevant information.
 
@@ -409,14 +408,14 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
    Section 4.1 of this document defines a RELAX NG schema [OASISRNG] for
    representing SNMP traffic traces in XML.  The schema captures all
-   relevant details of an SNMP messages in the XML format.  Note that
-   the XML format retains some information about the original ASN.1/BER
+   relevant details of an SNMP message in the XML format.  Note that the
+   XML format retains some information about the original ASN.1/BER
    encoding to support message size analysis.
 
    A lightweight alternative to the full blown XML representation based
    on comma separated values (CSV) is defined in Section 4.2.  The CSV
-   format only captures the most essential parts of SNMP messages and is
-   thus more compact and faster to process.
+   format only captures selected parts of SNMP messages and is thus more
+   compact and faster to process.
 
    As explained in the previous sections, analysis programs which
    process raw pcap files should have an option to ignore incorrect
@@ -441,15 +440,15 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
    The snmpdump program, for example, can filter out sensitive
    information, e.g., by deleting or clearing all XML elements whose
-
-
-
-Schoenwaelder             Expires July 11, 2008                 [Page 8]
-
-Internet-Draft          SNMP Traffic Measurements           January 2008
-
-
    name matches a regular expression.  In addition, data type specific
+
+
+
+Schoenwaelder            Expires August 15, 2008                [Page 8]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
+
    anonymization transformations that maintain lexicographic ordering
    for values that appear in instance identifiers [HS06] can be applied.
    Note that anonymization transformations are often bound to an
@@ -500,9 +499,10 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                 [Page 9]
+
+Schoenwaelder            Expires August 15, 2008                [Page 9]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
    Due to the availability of XML parsers and the simplicity of the CSV
@@ -523,12 +523,13 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    verifiability and portability reasons, using C/C++ might be the only
    option to deal with very large traces efficiently.
 
-   I should be noted that any results produced by analyzing a trace must
-   be interpreted in the context of the trace.  The nature of the
-   network, the attachment point used to collect the trace, or the
-   events that happened while the trace was collected clearly influence
-   the result.  It is therefore important to be careful with drawing
-   general conclusions based on a potentially limited data set.
+   It should be noted that any results produced by analyzing a trace
+   must be interpreted in the context of the trace.  The nature of the
+   network, the attachment point used to collect the trace, the nature
+   of the applications generating SNMP traffic, or the events that
+   happened while the trace was collected clearly influence the result.
+   It is therefore important to be careful when drawing general
+   conclusions based on a potentially (too) limited data set.
 
 
 
@@ -555,10 +556,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-
-Schoenwaelder             Expires July 11, 2008                [Page 10]
+Schoenwaelder            Expires August 15, 2008               [Page 10]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 3.  Analysis of Traffic Traces
@@ -570,14 +570,21 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 3.1.  Basic Statistics
 
-   Basic statistics cover things such as the SNMP protocol versions used
-   or the protocol operations used in a traffic trace.  In addition, a
-   rough classification of the data manipulated into 'standardized',
-   'proprietary', and 'experimental' data can be done.  Finally, general
-   trace characteristics such as message size distributions, PDU type
-   distributions, error message frequency, usage of authentication and
-   encryption mechanisms, or the periodicity of messages can be
-   analyzed.
+   Basic statistics cover things such as
+
+   o  protocol version used,
+
+   o  protocol operations used,
+
+   o  message size distribution,
+
+   o  error message type frequency, or
+
+   o  usage of authentication and encryption mechanisms.
+
+   In addition, the OID names of the objects manipulated can be
+   categorized into OID subtrees, for example to identify
+   'standardized', 'proprietary', and 'experimental' objects.
 
 3.2.  Periodic vs. Aperiodic Traffic
 
@@ -590,17 +597,37 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    interesting to research whether there are multiple levels of
    periodicity at different time scales.
 
+   The periodic polling behavior may dependent on the application and
+   the polling engine it uses.  For example, some management platforms
+   allow applications to specify how long polled values may be kept in a
+   cache before it is polled again.  Such optimizations needs to be
+   considered when analyzing traces for periodic and aperiodic traffic.
+
 3.3.  Message Size and Latency Distributions
 
    SNMP messages are size constrained by the transport mappings used and
    the buffers provided by the SNMP engines.  For the further evolution
    of the SNMP framework, it would be useful to know what the actual
    message size distributions are.  In addition, it would be useful to
+
+
+
+Schoenwaelder            Expires August 15, 2008               [Page 11]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
+
    understand the latency distributions, especially the distribution of
    the processing times by SNMP command responders.  Some SNMP
    implementations approximate networking delays by measuring request-
    response times and it would be useful to understand to what extent
    this is a viable approach.
+
+   Some SNMP implementations update their counters from the underlying
+   instrumentation following adaptive algorthms, not necessarily
+   periodically, and not necessarily on-demand.  The granularity of
+   internal counter updates may impact latency measurements and should
+   be taken into account.
 
 3.4.  Concurrency Levels
 
@@ -610,12 +637,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    networks or whether management applications prefer more sequential
    ways of retrieving data.
 
-
-
-Schoenwaelder             Expires July 11, 2008                [Page 11]
-
-Internet-Draft          SNMP Traffic Measurements           January 2008
-
+   In addition, it will be interesting to analyze how many redundant
+   requests coming from applications are processed almost simultaneously
+   by a device.
 
 3.5.  Table Retrieval Approaches
 
@@ -641,6 +665,14 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    polling is actually deployed.  In particular, the question that
    should be addressed is whether SNMP notifications lead to changes in
    the short-term polling behavior of management stations.  In
+
+
+
+Schoenwaelder            Expires August 15, 2008               [Page 12]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
+
    particular, it should be investigated to what extent SNMP managers
    use automated procedures to track down the meaning of the event
    conveyed by an SNMP notification.
@@ -665,13 +697,11 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    or whether management applications have been updated to use the
    replacement objects.
 
-
-
-
-Schoenwaelder             Expires July 11, 2008                [Page 12]
-
-Internet-Draft          SNMP Traffic Measurements           January 2008
-
+   Depending on the data recorded in a trace, it might be possible to
+   determine the age of devices by looking at values of objects such as
+   sysObjectID and sysDecr [RFC3418].  The age of a device can then be
+   taken into consideration when analyzing the use of obsolete and
+   deprecated objects.
 
 3.9.  Encoding Length Distributions
 
@@ -690,6 +720,14 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    IF-MIB [RFC2863].  It will be interesting to study to what extent
    these objects are actually used by management applications to handle
    discontinuity events.
+
+
+
+
+Schoenwaelder            Expires August 15, 2008               [Page 13]
+
+Internet-Draft          SNMP Traffic Measurements          February 2008
+
 
 3.11.  Spin Locks
 
@@ -724,9 +762,27 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 13]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Schoenwaelder            Expires August 15, 2008               [Page 14]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 4.  Trace Exchange Formats
@@ -743,7 +799,7 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
  #
  # Published as part of RFC XXXX.
  #
- # $Id: measure.xml 2630 2007-12-07 15:33:03Z schoenw $
+ # $Id: measure.xml 2660 2008-01-08 11:55:28Z schoenw $
 
  default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -780,9 +836,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 14]
+Schoenwaelder            Expires August 15, 2008               [Page 15]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
      length.attrs,
@@ -836,9 +892,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 15]
+Schoenwaelder            Expires August 15, 2008               [Page 16]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
    element varbind { length.attrs, name.elem, value.elem }
@@ -892,9 +948,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 16]
+Schoenwaelder            Expires August 15, 2008               [Page 17]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
      (([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"""
@@ -948,9 +1004,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 17]
+Schoenwaelder            Expires August 15, 2008               [Page 18]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
    <snmptrace>
@@ -1004,9 +1060,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 18]
+Schoenwaelder            Expires August 15, 2008               [Page 19]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 4.2.  CSV Representation
@@ -1060,9 +1116,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 19]
+Schoenwaelder            Expires August 15, 2008               [Page 20]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
         1.  Object name given as object identifier in dotted decimal
@@ -1116,9 +1172,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 20]
+Schoenwaelder            Expires August 15, 2008               [Page 21]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 5.  Security Considerations
@@ -1172,9 +1228,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 21]
+Schoenwaelder            Expires August 15, 2008               [Page 22]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 6.  IANA Considerations
@@ -1186,7 +1242,7 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
    URI: Please assign the URI "urn:ietf:params:xml:ns:snmp-trace-1.0"
    for use by the SNMP trace format.
 
-   Registrant Contact: The IRSG.
+   Registrant Contact: The NMRG of the IRTF.
 
    XML: N/A, the requested URI is an XML namespace.
 
@@ -1228,9 +1284,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 22]
+Schoenwaelder            Expires August 15, 2008               [Page 23]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 7.  Acknowledgements
@@ -1284,9 +1340,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 23]
+Schoenwaelder            Expires August 15, 2008               [Page 24]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 8.  References
@@ -1340,9 +1396,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 24]
+Schoenwaelder            Expires August 15, 2008               [Page 25]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
               March 2005.
@@ -1396,9 +1452,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 25]
+Schoenwaelder            Expires August 15, 2008               [Page 26]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
               Review 36(1), January 2006.
@@ -1452,9 +1508,9 @@ Internet-Draft          SNMP Traffic Measurements           January 2008
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 26]
+Schoenwaelder            Expires August 15, 2008               [Page 27]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 URIs
@@ -1508,9 +1564,9 @@ URIs
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 27]
+Schoenwaelder            Expires August 15, 2008               [Page 28]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 Author's Address
@@ -1564,9 +1620,9 @@ Author's Address
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 28]
+Schoenwaelder            Expires August 15, 2008               [Page 29]
 
-Internet-Draft          SNMP Traffic Measurements           January 2008
+Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 Full Copyright Statement
@@ -1620,5 +1676,5 @@ Acknowledgment
 
 
 
-Schoenwaelder             Expires July 11, 2008                [Page 29]
+Schoenwaelder            Expires August 15, 2008               [Page 30]
 

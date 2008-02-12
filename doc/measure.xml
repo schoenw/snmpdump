@@ -36,7 +36,7 @@
       </address>
     </author>
 
-    <date month="January" year="2008"/>
+    <date month="February" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -87,7 +87,7 @@
         used, which protocol features are being used, how SNMP usage
         differs in different types of networks or organizations, which
         information is frequently queried, and what typical SNMP
-        interactions patterns are in real world production networks.
+        interactions patterns occur in real world production networks.
       </t>
       <t>
         There have been several publications in the recent past
@@ -197,11 +197,10 @@
         Several of the steps listed above require the involvement of
         network operators supporting the SNMP measurement projects.
         In many cases, the filtered XML and CSV representation of the
-        SNMP traces will be the binding interface between the
-        researchers writing analysis scripts and the operators
-        involved in the measurement activity. It is therefore
-        important to have a well defined specification of these
-        interfaces.
+        SNMP traces will be the interface between the researchers
+        writing analysis scripts and the operators involved in the
+        measurement activity. It is therefore important to have a well
+        defined specification of these interfaces.
       </t>
       <t>
         This section provides some advice and concrete hints how the
@@ -304,7 +303,7 @@
           <xref target="xml"/> of this document defines a RELAX NG
           schema <xref target="OASISRNG"/> for representing SNMP
           traffic traces in XML.  The schema captures all relevant
-          details of an SNMP messages in the XML format. Note that the
+          details of an SNMP message in the XML format. Note that the
           XML format retains some information about the original
           ASN.1/BER encoding to support message size analysis.
         </t>
@@ -312,8 +311,8 @@
           A lightweight alternative to the full blown XML
           representation based on comma separated values (CSV) is
           defined in <xref target="csv"/>. The CSV format only
-          captures the most essential parts of SNMP messages and is
-          thus more compact and faster to process.
+          captures selected parts of SNMP messages and is thus more
+          compact and faster to process.
         </t>
         <t>
           As explained in the previous sections, analysis programs
@@ -437,13 +436,14 @@
           very large traces efficiently.
         </t>
 	<t>
-	  I should be noted that any results produced by analyzing a
+	  It should be noted that any results produced by analyzing a
 	  trace must be interpreted in the context of the trace. The
 	  nature of the network, the attachment point used to collect
-	  the trace, or the events that happened while the trace was
+	  the trace, the nature of the applications generating SNMP
+	  traffic, or the events that happened while the trace was
 	  collected clearly influence the result. It is therefore
-	  important to be careful with drawing general conclusions
-	  based on a potentially limited data set.
+	  important to be careful when drawing general conclusions
+	  based on a potentially (too) limited data set.
 	</t>
       </section>
 
@@ -460,15 +460,17 @@
 
         <section title="Basic Statistics">
           <t>
-            Basic statistics cover things such as the SNMP protocol
-            versions used or the protocol operations used in a traffic
-            trace. In addition, a rough classification of the data
-            manipulated into 'standardized', 'proprietary', and
-            'experimental' data can be done. Finally, general trace
-            characteristics such as message size distributions, PDU
-            type distributions, error message frequency, usage of
-            authentication and encryption mechanisms, or the
-            periodicity of messages can be analyzed.
+	    Basic statistics cover things such as
+	    <list style="symbols">
+	      <t>protocol version used,</t>
+	      <t>protocol operations used,</t>
+	      <t>message size distribution,</t>
+	      <t>error message type frequency, or</t>
+	      <t>usage of authentication and encryption mechanisms.</t>
+	    </list>
+	    In addition, the OID names of the objects manipulated can
+	    be categorized into OID subtrees, for example to identify
+	    'standardized', 'proprietary', and 'experimental' objects.
           </t>
         </section>
 
@@ -484,6 +486,14 @@
             interesting to research whether there are multiple levels
             of periodicity at different time scales.
           </t>
+	  <t>
+	    The periodic polling behavior may dependent on the
+	    application and the polling engine it uses. For example,
+	    some management platforms allow applications to specify
+	    how long polled values may be kept in a cache before it is
+	    polled again. Such optimizations needs to be considered
+	    when analyzing traces for periodic and aperiodic traffic.
+	  </t>
         </section>
 
         <section title="Message Size and Latency Distributions">
@@ -500,6 +510,14 @@
             it would be useful to understand to what extent this is a
             viable approach.
           </t>
+	  <t>
+	    Some SNMP implementations update their counters from the
+	    underlying instrumentation following adaptive algorthms,
+	    not necessarily periodically, and not necessarily
+	    on-demand. The granularity of internal counter updates may
+	    impact latency measurements and should be taken into
+	    account.
+	  </t>
         </section>
 
         <section title="Concurrency Levels">
@@ -511,6 +529,11 @@
             applications prefer more sequential ways of retrieving
             data.
           </t>
+	  <t>
+	    In addition, it will be interesting to analyze how many
+	    redundant requests coming from applications are processed
+	    almost simultaneously by a device.
+	  </t>
         </section>
 
         <section title="Table Retrieval Approaches">
@@ -574,6 +597,14 @@
             applications have been updated to use the replacement
             objects.
           </t>
+	  <t>
+	    Depending on the data recorded in a trace, it might be
+	    possible to determine the age of devices by looking at
+	    values of objects such as sysObjectID and sysDecr <xref
+	    target="RFC3418"/>. The age of a device can then be taken
+	    into consideration when analyzing the use of obsolete and
+	    deprecated objects.
+	  </t>
         </section>
 
         <section title="Encoding Length Distributions">
@@ -1013,7 +1044,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
 	for use by the SNMP trace format.
       </t>
       <t>
-	Registrant Contact: The IRSG.
+	Registrant Contact: The NMRG of the IRTF.
       </t>
       <t>
 	XML: N/A, the requested URI is an XML namespace.
