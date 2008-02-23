@@ -949,27 +949,39 @@ addPrefix(Prefix p, OID o)
         of the slice initiator.
       </t>
       <t>
-        Definition (slice type): A slice type is a type mark
-        identifying slices that share the following properties:
+        Definition (slice equivalence): Two slices A and B satisfy the
+        binary slice equivalence relation A ~ B if the following
+        properties hold:
       </t>
       <t>
-        <list style='format (ST%d) ' counter='slicetype'>
+        <list style='format (EQ%d) ' counter='sliceequiv'>
           <t>
-            All messages have been exchanged between the same
-            network endpoints.
+            All messages in A and B have been exchanged between the
+            same network endpoints.
           </t>
           <t>
             All read request messages, write request messages, and
-            notification messages originate from the same network
-            endpoint.
+            notification messages in A and B originate from the same
+            network endpoint.
           </t>
           <t>
-            All non-response messages are of the same type
+            All non-response messages in A and B are of the same type.
           </t>
           <t>
-            Two slices have the same slice prefix.
+            The slices A and B have the same prefix, that is A.prefix
+            = B.prefix.
           </t>
         </list>
+      </t>
+      <t>
+	It can be easily seen that the relation ~ is reflexive,
+	symmetric, and transitive and thus forms an equivalence
+	relation between slices.
+      </t>
+      <t>
+	Definition (slice type): Let S be a set of slices, then all
+	slices in the equivalence class [A] = {s in S | s ~ A} with A
+	in S, are of the same slice type.
       </t>
 
     </section>

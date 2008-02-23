@@ -1073,27 +1073,27 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    considered to be the result of the same behaviour of the slice
    initiator.
 
-   Definition (slice type): A slice type is a type mark identifying
-   slices that share the following properties:
+   Definition (slice equivalence): Two slices A and B satisfy the binary
+   slice equivalence relation A ~ B if the following properties hold:
 
-   (ST1)   All messages have been exchanged between the same network
-           endpoints.
+   (EQ1)   All messages in A and B have been exchanged between the same
+           network endpoints.
 
-   (ST2)   All read request messages, write request messages, and
-           notification messages originate from the same network
-           endpoint.
+   (EQ2)   All read request messages, write request messages, and
+           notification messages in A and B originate from the same
+           network endpoint.
 
-   (ST3)   All non-response messages are of the same type
+   (EQ3)   All non-response messages in A and B are of the same type.
 
-   (ST4)   Two slices have the same slice prefix.
+   (EQ4)   The slices A and B have the same prefix, that is A.prefix =
+           B.prefix.
 
+   It can be easily seen that the relation ~ is reflexive, symmetric,
+   and transitive and thus forms an equivalence relation between slices.
 
-
-
-
-
-
-
+   Definition (slice type): Let S be a set of slices, then all slices in
+   the equivalence class [A] = {s in S | s ~ A} with A in S, are of the
+   same slice type.
 
 
 
