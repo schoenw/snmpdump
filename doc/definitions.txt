@@ -1,15 +1,15 @@
 
 
 
-NMRG                                                    G. van den Broek
+NMRG                                                    J. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                          J. Schoenwaelder
-Expires: August 24, 2008                        Jacobs University Bremen
+Expires: August 26, 2008                        Jacobs University Bremen
                                                                  A. Pras
                                                     University of Twente
                                                                M. Harvan
                                                               ETH Zurich
-                                                       February 21, 2008
+                                                       February 23, 2008
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on August 24, 2008.
+   This Internet-Draft will expire on August 26, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 1]
+van den Broek, et al.    Expires August 26, 2008                [Page 1]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 2]
+van den Broek, et al.    Expires August 26, 2008                [Page 2]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -164,7 +164,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 3]
+van den Broek, et al.    Expires August 26, 2008                [Page 3]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -220,7 +220,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 4]
+van den Broek, et al.    Expires August 26, 2008                [Page 4]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -276,7 +276,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 5]
+van den Broek, et al.    Expires August 26, 2008                [Page 5]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -332,7 +332,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 6]
+van den Broek, et al.    Expires August 26, 2008                [Page 6]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -364,14 +364,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
    The parameter t defines a maximum timeout for response messages.
 
-   Note that this definition requires that the response message
-   originates from the transport endpoint over which the request message
-   has been received.  This is not strictly required by SNMP transport
-   mappings and in particular the UDP transport mapping allows to send
-   responses from different transport endpoints.  While sending response
-   messages from a different transport endpoint is legal, it is also
-   considered bad practice causing interoperability problems since
-   several management systems do not accept such messages.
+   This definition requires that the response message originates from
+   the transport endpoint over which the request message has been
+   received.  This is not strictly required by SNMP transport mappings
+   and in particular the UDP transport mapping allows to send responses
+   from different transport endpoints.  While sending response messages
+   from a different transport endpoint is legal, it is also considered
+   bad practice causing interoperability problems since several
+   management systems do not accept such messages.
 
    It was decided to require matching transport endpoints since doing so
    significantly simplifies the procedures below and avoids accidentally
@@ -382,13 +382,13 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    request.  If such behavior can be detected, the traces should be
    investigated and if needed the transport endpoints corrected.
 
-   Definition (notification group messages): A set of group notification
+   Definition (notification group messages): A set of notification group
    messages consists of all messages M satisfying either of the
    following two conditions:
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 7]
+van den Broek, et al.    Expires August 26, 2008                [Page 7]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -405,8 +405,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
    The parameter t defines a maximum timeout for response messages.
 
-   Note that we again require that the transport endpoints match for
-   notification group messages.
+   We again require that the transport endpoints match for notification
+   group messages.
 
 
 
@@ -444,7 +444,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 8]
+van den Broek, et al.    Expires August 26, 2008                [Page 8]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -500,7 +500,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008                [Page 9]
+van den Broek, et al.    Expires August 26, 2008                [Page 9]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -556,7 +556,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 10]
+van den Broek, et al.    Expires August 26, 2008               [Page 10]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -612,7 +612,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 11]
+van den Broek, et al.    Expires August 26, 2008               [Page 11]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -668,7 +668,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 12]
+van den Broek, et al.    Expires August 26, 2008               [Page 12]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -724,7 +724,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 13]
+van den Broek, et al.    Expires August 26, 2008               [Page 13]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -733,7 +733,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
     Message | Direction | PDU type        | OIDs
     -------------------------------------------------------------------
        0        A -> B    GetNext Request   alpha, beta
-       1        B -> A    Response          alpha.0 beta.0
+       1        B -> A    Response          alpha.0, beta.0
        2        A -> B    GetNext Request   alpha.0, beta.0
        3        B -> A    Response          alpha.1, beta.1
        4        A -> B    GetNext Request   alpha.1, beta.1
@@ -780,7 +780,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 14]
+van den Broek, et al.    Expires August 26, 2008               [Page 14]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -836,7 +836,7 @@ getPrefix(Slice S)
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 15]
+van den Broek, et al.    Expires August 26, 2008               [Page 15]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -892,7 +892,7 @@ addPrefix(Prefix p, OID o)
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 16]
+van den Broek, et al.    Expires August 26, 2008               [Page 16]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -901,7 +901,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
     Message | Direction | PDU type        | OIDs
     -------------------------------------------------------------------
        0        A -> B    GetNext Request   sysUpTime, alpha, beta
-       1        B -> A    Response          sysUpTime.0, alpha.0 beta.0
+       1        B -> A    Response          sysUpTime.0, alpha.0, beta.0
        2        A -> B    GetNext Request   alpha.0, beta.0
        3        B -> A    Response          alpha.1, beta.1
        4        A -> B    GetNext Request   alpha.1, beta.1
@@ -948,7 +948,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 17]
+van den Broek, et al.    Expires August 26, 2008               [Page 17]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1004,7 +1004,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 18]
+van den Broek, et al.    Expires August 26, 2008               [Page 18]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1017,7 +1017,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    to a previous response message (like the sysUpTime OID in message 4).
 
    This example slice therefore has a slice prefix P consisting of the
-   OIDs alpha, beta.1 and sysUpTime.
+   OIDs alpha, beta and sysUpTime.
 
 
 
@@ -1060,7 +1060,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 19]
+van den Broek, et al.    Expires August 26, 2008               [Page 19]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1116,7 +1116,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 20]
+van den Broek, et al.    Expires August 26, 2008               [Page 20]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1140,10 +1140,10 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    identifiers at the same index of a response and a subsequent request
    must be identical.
 
-   Definition (prefix constrained walk): A walk W is prefix constrained
-   if all object identifiers at the same index have the same object
-   identifier prefix.  This prefix is established by the first request
-   within the walk.
+   Definition (prefix constrained walk): A walk W is a prefix
+   constrained walk if all object identifiers at the same index have the
+   same object identifier prefix.  This prefix is established by the
+   first request within the walk.
 
 
 
@@ -1172,7 +1172,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 21]
+van den Broek, et al.    Expires August 26, 2008               [Page 21]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1228,7 +1228,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 22]
+van den Broek, et al.    Expires August 26, 2008               [Page 22]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1284,7 +1284,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 23]
+van den Broek, et al.    Expires August 26, 2008               [Page 23]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1340,7 +1340,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 24]
+van den Broek, et al.    Expires August 26, 2008               [Page 24]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1396,7 +1396,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 25]
+van den Broek, et al.    Expires August 26, 2008               [Page 25]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1452,7 +1452,7 @@ Authors' Addresses
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 26]
+van den Broek, et al.    Expires August 26, 2008               [Page 26]
 
 Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
@@ -1508,5 +1508,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.    Expires August 24, 2008               [Page 27]
+van den Broek, et al.    Expires August 26, 2008               [Page 27]
 

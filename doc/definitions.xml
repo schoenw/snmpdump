@@ -23,7 +23,7 @@
       SNMP Trace Analysis Definitions
     </title>
     
-    <author initials="G." surname="van den Broek"
+    <author initials="J.G." surname="van den Broek"
             fullname="Gijs van den Broek">
       <organization>University of Twente</organization>
       <address>
@@ -356,15 +356,15 @@
       </t>
 
       <t>
-        Note that this definition requires that the response message
-        originates from the transport endpoint over which the request
-        message has been received. This is not strictly required by
-        SNMP transport mappings and in particular the UDP transport
-        mapping allows to send responses from different transport
-        endpoints. While sending response messages from a different
-        transport endpoint is legal, it is also considered bad
-        practice causing interoperability problems since several
-        management systems do not accept such messages.
+        This definition requires that the response message originates
+        from the transport endpoint over which the request message has
+        been received. This is not strictly required by SNMP transport
+        mappings and in particular the UDP transport mapping allows to
+        send responses from different transport endpoints. While
+        sending response messages from a different transport endpoint
+        is legal, it is also considered bad practice causing
+        interoperability problems since several management systems do
+        not accept such messages.
       </t>
       <t>
         It was decided to require matching transport endpoints since
@@ -379,9 +379,9 @@
       </t>
 
       <t>
-        Definition (notification group messages): A set of group
-        notification messages consists of all messages M satisfying
-        either of the following two conditions:
+        Definition (notification group messages): A set of
+        notification group messages consists of all messages M
+        satisfying either of the following two conditions:
       </t>
       <t>
         <list style='format (N%d) ' counter='notification'>
@@ -404,7 +404,7 @@
       </t>
 
       <t>
-        Note that we again require that the transport endpoints match
+        We again require that the transport endpoints match
         for notification group messages.
       </t>
 
@@ -657,7 +657,7 @@
  Message | Direction | PDU type        | OIDs
  -------------------------------------------------------------------
     0        A -> B    GetNext Request   alpha, beta
-    1        B -> A    Response          alpha.0 beta.0
+    1        B -> A    Response          alpha.0, beta.0
     2        A -> B    GetNext Request   alpha.0, beta.0
     3        B -> A    Response          alpha.1, beta.1
     4        A -> B    GetNext Request   alpha.1, beta.1
@@ -823,7 +823,7 @@ addPrefix(Prefix p, OID o)
  Message | Direction | PDU type        | OIDs
  -------------------------------------------------------------------
     0        A -> B    GetNext Request   sysUpTime, alpha, beta
-    1        B -> A    Response          sysUpTime.0, alpha.0 beta.0
+    1        B -> A    Response          sysUpTime.0, alpha.0, beta.0
     2        A -> B    GetNext Request   alpha.0, beta.0
     3        B -> A    Response          alpha.1, beta.1
     4        A -> B    GetNext Request   alpha.1, beta.1
@@ -935,7 +935,7 @@ addPrefix(Prefix p, OID o)
       </t>
       <t>
         This example slice therefore has a slice prefix P consisting
-        of the OIDs alpha, beta.1 and sysUpTime.
+        of the OIDs alpha, beta and sysUpTime.
       </t>
     </section>
 
@@ -1004,10 +1004,10 @@ addPrefix(Prefix p, OID o)
       </t>
 
       <t>
-        Definition (prefix constrained walk): A walk W is prefix
-        constrained if all object identifiers at the same index have
-        the same object identifier prefix.  This prefix is established
-        by the first request within the walk.
+        Definition (prefix constrained walk): A walk W is a prefix
+        constrained walk if all object identifiers at the same index
+        have the same object identifier prefix.  This prefix is
+        established by the first request within the walk.
       </t>
 
     </section>
