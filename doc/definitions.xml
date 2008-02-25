@@ -786,8 +786,8 @@ getLinkedPreviousResponseMessages(Slice S, Message M,
    if (prevNonRespMsg) {
        foreach Message M2 in S {
            if (M2.time < M.time 
-               && M2.time > prevNonResponse.time 
-               && M2.reqid == prevNonResponse.reqid 
+               && M2.time > prevNonRespMsg.time 
+               && M2.reqid == prevNonRespMsg.reqid 
                && M2.type == Response) R.add(M2);
        }
    }
