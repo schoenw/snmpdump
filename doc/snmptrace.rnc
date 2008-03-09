@@ -75,7 +75,7 @@ pdu.elem =
 pdu.elem |=
   element (get-request | get-next-request | get-bulk-request |
            set-request | inform-request | snmpV2-trap | 
-	   response | report) { 
+           response | report) { 
     length.attrs,
     element request-id        { length.attrs, xsd:int },
     element error-status      { length.attrs, xsd:int },
@@ -115,7 +115,7 @@ length.attrs =
 oid.type =
   xsd:string {
     pattern =
-      """[0-2](\.[0-9]+)+"""
+      """[0-2](\.[1-3]?[0-9])(\.(0|([1-9]\d*))){0,126}"""
   }
 
 # The types below are for IP addresses. Note that SNMP's buildin
@@ -125,7 +125,7 @@ oid.type =
 ipv4address.type =
   xsd:string {
     pattern =
-      """[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"""
+   """((0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)\.){3}(0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)"""
   }
 
 ipv6address.type = 

@@ -4,44 +4,40 @@
   
   Published as part of RFC XXXX.
   
-  Note that we do not use the IANA namespace registry since RFC 3688
-  seems to restrict it to IETF documents (and this specification is
-  originating from the IRTF).
-  
-  $Id: snmptrace.rnc 2624 2007-12-06 21:10:45Z schoenw $
+  $Id: snmptrace.rnc 2661 2008-01-08 11:56:50Z schoenw $
 -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://www.nosuchname.net/nmrg/snmptrace" xmlns:snmptrace="http://www.nosuchname.net/nmrg/snmptrace">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="urn:ietf:params:xml:ns:snmp-trace-1.0" xmlns:ns1="urn:ietf:params:xml:ns:snmp-trace-1.0">
   <xs:element name="snmptrace">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="snmptrace:packet"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:packet"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="packet">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:time-sec"/>
-        <xs:element ref="snmptrace:time-usec"/>
-        <xs:element ref="snmptrace:src-ip"/>
-        <xs:element ref="snmptrace:src-port"/>
-        <xs:element ref="snmptrace:dst-ip"/>
-        <xs:element ref="snmptrace:dst-port"/>
-        <xs:element ref="snmptrace:snmp"/>
+        <xs:element ref="ns1:time-sec"/>
+        <xs:element ref="ns1:time-usec"/>
+        <xs:element ref="ns1:src-ip"/>
+        <xs:element ref="ns1:src-port"/>
+        <xs:element ref="ns1:dst-ip"/>
+        <xs:element ref="ns1:dst-port"/>
+        <xs:element ref="ns1:snmp"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
   <xs:element name="time-sec" type="xs:unsignedInt"/>
   <xs:element name="time-usec" type="xs:unsignedInt"/>
-  <xs:element name="src-ip" type="snmptrace:ipaddress.type"/>
+  <xs:element name="src-ip" type="ns1:ipaddress.type"/>
   <xs:element name="src-port" type="xs:unsignedInt"/>
-  <xs:element name="dst-ip" type="snmptrace:ipaddress.type"/>
+  <xs:element name="dst-ip" type="ns1:ipaddress.type"/>
   <xs:element name="dst-port" type="xs:unsignedInt"/>
   <xs:element name="snmp">
     <xs:complexType>
       <xs:complexContent>
-        <xs:extension base="snmptrace:message.elem">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+        <xs:extension base="ns1:message.elem">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:complexContent>
     </xs:complexType>
@@ -49,15 +45,15 @@
   <xs:complexType name="message.elem">
     <xs:choice>
       <xs:sequence>
-        <xs:element ref="snmptrace:version"/>
-        <xs:element ref="snmptrace:community"/>
-        <xs:element ref="snmptrace:pdu.elem"/>
+        <xs:element ref="ns1:version"/>
+        <xs:element ref="ns1:community"/>
+        <xs:element ref="ns1:pdu.elem"/>
       </xs:sequence>
       <xs:sequence>
-        <xs:element ref="snmptrace:version"/>
-        <xs:element ref="snmptrace:message"/>
-        <xs:element minOccurs="0" ref="snmptrace:usm"/>
-        <xs:element ref="snmptrace:scoped-pdu"/>
+        <xs:element ref="ns1:version"/>
+        <xs:element ref="ns1:message"/>
+        <xs:element minOccurs="0" ref="ns1:usm"/>
+        <xs:element ref="ns1:scoped-pdu"/>
       </xs:sequence>
     </xs:choice>
   </xs:complexType>
@@ -65,7 +61,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -74,7 +70,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -82,19 +78,19 @@
   <xs:element name="message">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:msg-id"/>
-        <xs:element ref="snmptrace:max-size"/>
-        <xs:element ref="snmptrace:flags"/>
-        <xs:element ref="snmptrace:security-model"/>
+        <xs:element ref="ns1:msg-id"/>
+        <xs:element ref="ns1:max-size"/>
+        <xs:element ref="ns1:flags"/>
+        <xs:element ref="ns1:security-model"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="msg-id">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -103,7 +99,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -112,7 +108,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -121,7 +117,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -129,18 +125,18 @@
   <xs:element name="scoped-pdu">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:context-engine-id"/>
-        <xs:element ref="snmptrace:context-name"/>
-        <xs:element ref="snmptrace:pdu.elem"/>
+        <xs:element ref="ns1:context-engine-id"/>
+        <xs:element ref="ns1:context-name"/>
+        <xs:element ref="ns1:pdu.elem"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="context-engine-id">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -149,7 +145,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:string">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -157,21 +153,21 @@
   <xs:element name="usm">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:auth-engine-id"/>
-        <xs:element ref="snmptrace:auth-engine-boots"/>
-        <xs:element ref="snmptrace:auth-engine-time"/>
-        <xs:element ref="snmptrace:user"/>
-        <xs:element ref="snmptrace:auth-params"/>
-        <xs:element ref="snmptrace:priv-params"/>
+        <xs:element ref="ns1:auth-engine-id"/>
+        <xs:element ref="ns1:auth-engine-boots"/>
+        <xs:element ref="ns1:auth-engine-time"/>
+        <xs:element ref="ns1:user"/>
+        <xs:element ref="ns1:auth-params"/>
+        <xs:element ref="ns1:priv-params"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="auth-engine-id">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -180,7 +176,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -189,7 +185,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -198,7 +194,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -207,7 +203,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -216,30 +212,30 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="pdu.elem" abstract="true"/>
-  <xs:element name="trap" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="trap" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:enterprise"/>
-        <xs:element ref="snmptrace:agent-addr"/>
-        <xs:element ref="snmptrace:generic-trap"/>
-        <xs:element ref="snmptrace:specific-trap"/>
-        <xs:element ref="snmptrace:time-stamp"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:enterprise"/>
+        <xs:element ref="ns1:agent-addr"/>
+        <xs:element ref="ns1:generic-trap"/>
+        <xs:element ref="ns1:specific-trap"/>
+        <xs:element ref="ns1:time-stamp"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="enterprise">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="snmptrace:oid.type">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+        <xs:extension base="ns1:oid.type">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -247,8 +243,8 @@
   <xs:element name="agent-addr">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="snmptrace:ipv4address.type">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+        <xs:extension base="ns1:ipv4address.type">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -257,7 +253,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -266,7 +262,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -275,7 +271,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -283,27 +279,27 @@
   <xs:element name="variable-bindings">
     <xs:complexType>
       <xs:sequence>
-        <xs:element minOccurs="0" maxOccurs="unbounded" ref="snmptrace:varbind"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="ns1:varbind"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="get-request" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="get-request" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="request-id">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -312,7 +308,7 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
@@ -321,206 +317,206 @@
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="get-next-request" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="get-next-request" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="get-bulk-request" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="get-bulk-request" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="set-request" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="set-request" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="inform-request" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="inform-request" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="snmpV2-trap" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="snmpV2-trap" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="response" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="response" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="report" substitutionGroup="snmptrace:pdu.elem">
+  <xs:element name="report" substitutionGroup="ns1:pdu.elem">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:request-id"/>
-        <xs:element ref="snmptrace:error-status"/>
-        <xs:element ref="snmptrace:error-index"/>
-        <xs:element ref="snmptrace:variable-bindings"/>
+        <xs:element ref="ns1:request-id"/>
+        <xs:element ref="ns1:error-status"/>
+        <xs:element ref="ns1:error-index"/>
+        <xs:element ref="ns1:variable-bindings"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="varbind">
     <xs:complexType>
       <xs:sequence>
-        <xs:element ref="snmptrace:name"/>
-        <xs:element ref="snmptrace:value.elem"/>
+        <xs:element ref="ns1:name"/>
+        <xs:element ref="ns1:value.elem"/>
       </xs:sequence>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <xs:element name="name">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="snmptrace:oid.type">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+        <xs:extension base="ns1:oid.type">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
   <xs:element name="value.elem" abstract="true"/>
-  <xs:element name="null" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="null" substitutionGroup="ns1:value.elem">
     <xs:complexType>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
-  <xs:element name="integer32" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="integer32" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:int">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="unsigned32" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="unsigned32" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="counter32" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="counter32" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="counter64" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="counter64" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedLong">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="timeticks" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="timeticks" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:unsignedInt">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="ipaddress" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="ipaddress" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
-        <xs:extension base="snmptrace:ipv4address.type">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+        <xs:extension base="ns1:ipv4address.type">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="octet-string" substitutionGroup="snmptrace:value.elem">
-    <xs:complexType>
-      <xs:simpleContent>
-        <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
-        </xs:extension>
-      </xs:simpleContent>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="object-identifier" substitutionGroup="snmptrace:value.elem">
-    <xs:complexType>
-      <xs:simpleContent>
-        <xs:extension base="snmptrace:oid.type">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
-        </xs:extension>
-      </xs:simpleContent>
-    </xs:complexType>
-  </xs:element>
-  <xs:element name="opaque" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="octet-string" substitutionGroup="ns1:value.elem">
     <xs:complexType>
       <xs:simpleContent>
         <xs:extension base="xs:hexBinary">
-          <xs:attributeGroup ref="snmptrace:length.attrs"/>
+          <xs:attributeGroup ref="ns1:length.attrs"/>
         </xs:extension>
       </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="no-such-object" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="object-identifier" substitutionGroup="ns1:value.elem">
     <xs:complexType>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:simpleContent>
+        <xs:extension base="ns1:oid.type">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
+        </xs:extension>
+      </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="no-such-instance" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="opaque" substitutionGroup="ns1:value.elem">
     <xs:complexType>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:simpleContent>
+        <xs:extension base="xs:hexBinary">
+          <xs:attributeGroup ref="ns1:length.attrs"/>
+        </xs:extension>
+      </xs:simpleContent>
     </xs:complexType>
   </xs:element>
-  <xs:element name="end-of-mib-view" substitutionGroup="snmptrace:value.elem">
+  <xs:element name="no-such-object" substitutionGroup="ns1:value.elem">
     <xs:complexType>
-      <xs:attributeGroup ref="snmptrace:length.attrs"/>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="no-such-instance" substitutionGroup="ns1:value.elem">
+    <xs:complexType>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="end-of-mib-view" substitutionGroup="ns1:value.elem">
+    <xs:complexType>
+      <xs:attributeGroup ref="ns1:length.attrs"/>
     </xs:complexType>
   </xs:element>
   <!--
@@ -534,7 +530,7 @@
   </xs:attributeGroup>
   <xs:simpleType name="oid.type">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[0-2](\.[0-9]+)+"/>
+      <xs:pattern value="[0-2](\.[1-3]?[0-9])(\.(0|([1-9]\d*))){0,126}"/>
     </xs:restriction>
   </xs:simpleType>
   <!--
@@ -544,7 +540,7 @@
   -->
   <xs:simpleType name="ipv4address.type">
     <xs:restriction base="xs:string">
-      <xs:pattern value="[0-9]*\.[0-9]*\.[0-9]*\.[0-9]*"/>
+      <xs:pattern value="((0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)\.){3}(0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)"/>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ipv6address.type">
@@ -553,6 +549,6 @@
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ipaddress.type">
-    <xs:union memberTypes="snmptrace:ipv4address.type snmptrace:ipv6address.type"/>
+    <xs:union memberTypes="ns1:ipv4address.type ns1:ipv6address.type"/>
   </xs:simpleType>
 </xs:schema>
