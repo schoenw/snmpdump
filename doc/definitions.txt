@@ -4,12 +4,12 @@
 NMRG                                                    J. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                          J. Schoenwaelder
-Expires: August 28, 2008                        Jacobs University Bremen
+Expires: September 10, 2008                     Jacobs University Bremen
                                                                  A. Pras
                                                     University of Twente
                                                                M. Harvan
                                                               ETH Zurich
-                                                       February 25, 2008
+                                                           March 9, 2008
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on August 28, 2008.
+   This Internet-Draft will expire on September 10, 2008.
 
 Copyright Notice
 
@@ -52,9 +52,9 @@ Copyright Notice
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 1]
+van den Broek, et al.  Expires September 10, 2008               [Page 1]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 Abstract
@@ -82,14 +82,15 @@ Table of Contents
    4.  Flows  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 10
    5.  Slices . . . . . . . . . . . . . . . . . . . . . . . . . . . . 11
    6.  Slice Prefix . . . . . . . . . . . . . . . . . . . . . . . . . 13
-   7.  Slice Type . . . . . . . . . . . . . . . . . . . . . . . . . . 20
-   8.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
-   9.  Security Considerations  . . . . . . . . . . . . . . . . . . . 22
-   10. IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 23
-   11. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 24
-   12. References . . . . . . . . . . . . . . . . . . . . . . . . . . 25
-     12.1.  Normative References  . . . . . . . . . . . . . . . . . . 25
-     12.2.  Informative References  . . . . . . . . . . . . . . . . . 25
+   7.  Slice Type . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+   8.  Walks  . . . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+   9.  Concurrency  . . . . . . . . . . . . . . . . . . . . . . . . . 21
+   10. Security Considerations  . . . . . . . . . . . . . . . . . . . 22
+   11. IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 23
+   12. Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 24
+   13. References . . . . . . . . . . . . . . . . . . . . . . . . . . 25
+     13.1.  Normative References  . . . . . . . . . . . . . . . . . . 25
+     13.2.  Informative References  . . . . . . . . . . . . . . . . . 25
    Authors' Addresses . . . . . . . . . . . . . . . . . . . . . . . . 26
    Intellectual Property and Copyright Statements . . . . . . . . . . 27
 
@@ -107,10 +108,9 @@ Table of Contents
 
 
 
-
-van den Broek, et al.    Expires August 28, 2008                [Page 2]
+van den Broek, et al.  Expires September 10, 2008               [Page 2]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 1.  Introduction
@@ -129,8 +129,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    modeling real world SNMP traffic.  However, experience with SNMP
    traces has shown that the traces must be large enough in order to
    make proper observations.  A more detailed motivation for collecting
-   SNMP traces and guidelines how to capture SNMP traces can be found in
-   [ID-IRTF-NMRG-SNMP-MEASURE].
+   SNMP traces and guidelines on how to capture SNMP traces can be found
+   in [ID-IRTF-NMRG-SNMP-MEASURE].
 
    Unfortunately, the analysis of large SNMP traces can take a large
    amount of processing time.  Therefore, it is often desirable to focus
@@ -164,9 +164,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 3]
+van den Broek, et al.  Expires September 10, 2008               [Page 3]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
    This document defines the various entities (boxes) shown in the above
@@ -202,30 +202,29 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    SNMP messages of a given flow that are related to each other in time
    and referenced information.  Splitting a flow into slices makes it
    possible to separate SNMP messages within traces that belong to each
-   other, like for example all messages that belong to a single polling
-   instance involving a single manager and a single agent.
+   other.
 
-   A slice may contain, for instance, the exchanged SNMP messages
-   between an agent and a manager, which polls that agent in a single
-   polling instance.  The manager may be configured to poll that agent
-   every once in a while.  If the requested information from the agent
-   remains unchanged, then the respective slices of SNMP traffic
-   occurring between this manager and agent will be highly comparable.
-   In such a case the slices will be of the same slice type.  Similar
-   slices will thus be considered of the same slice type and
-   incomparable slices will not be of the same slice type.
+   For example, a slice may contain the exchanged SNMP messages between
+   an agent and a manager, which polls that agent in a single polling
+   instance.  The manager may be configured to poll that agent every
+   once in a while.  If the requested information from the agent remains
+   unchanged, then the respective slices of SNMP traffic occurring
+   between this manager and agent will be highly comparable.  In such a
+   case the slices will be of the same slice type.  Similar slices will
+   thus be considered of the same slice type and incomparable slices
+   will not be of the same slice type.
 
    Besides the fact that each slice is of specific slice type, slices
    can also be of a specific form with respect to the messages
-
-
-
-van den Broek, et al.    Expires August 28, 2008                [Page 4]
-
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
-
-
    encompassing a slice.  For example, slices containing a sequence of
+
+
+
+van den Broek, et al.  Expires September 10, 2008               [Page 4]
+
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
+
+
    linked GetNext or GetBulk requests are commonly called an SNMP walk.
    Note that only a subset of all slices will be walks.
 
@@ -276,9 +275,10 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 5]
+
+van den Broek, et al.  Expires September 10, 2008               [Page 5]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 2.  Messages
@@ -289,8 +289,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    classify SNMP messages based on the PDU contained in them.  These
    definitions will be used later on in this document.
 
-   Notation: Let M be an SNMP message.  We denote the properties of M as
-   follows:
+   Notation: Let M be an SNMP message.  The properties of M are denoted
+   as follows:
 
       M.type    = operation type of message M (get, getnext, ...)
       M.class   = class of message M (according to RFC 3411)
@@ -332,14 +332,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 6]
+van den Broek, et al.  Expires September 10, 2008               [Page 6]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
    request messages.  In case future SNMP versions or extensions use
    Report messages without having a request triggering the generation of
-   Report messages, we may have to revisit the definition above.
+   Report messages, the definition above may need to be revisted.
 
    Definition (non-response message): A non-response message is a
    message M which is either a read request message, a write request
@@ -370,17 +370,17 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    and in particular the UDP transport mapping allows to send responses
    from different transport endpoints.  While sending response messages
    from a different transport endpoint is legal, it is also considered
-   bad practice causing interoperability problems since several
-   management systems do not accept such messages.
+   bad practice causing interoperability problems since some management
+   systems do not accept such messages.
 
    It was decided to require matching transport endpoints since doing so
    significantly simplifies the procedures below and avoids accidentally
    confusing requests and responses.  Implementations responding from
    different transport endpoints will lead to (a) a larger number of
    requests without related responses (and likely no retries) and (b) a
-   similarly large number of response messages without a matching
-   request.  If such behavior can be detected, the traces should be
-   investigated and if needed the transport endpoints corrected.
+   similarly large number of responses without a matching request.  If
+   such behavior can be detected, the traces should be investigated and
+   if needed the transport endpoints corrected.
 
    Definition (notification group messages): A set of notification group
    messages consists of all messages M satisfying either of the
@@ -388,9 +388,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 7]
+van den Broek, et al.  Expires September 10, 2008               [Page 7]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
    (N1)   M is a notification message
@@ -444,9 +444,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 8]
+van den Broek, et al.  Expires September 10, 2008               [Page 8]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 3.  Traces
@@ -458,7 +458,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    document may be altered as a result of anonymization, which may
    result in some message information loss.
 
-   Definition (trace): An SNMP trace (or short trace) T is an ordered
+   Definition (trace): An SNMP trace (or short "trace") T is an ordered
    set of zero or more SNMP messages M. All messages M in T are
    chronologically ordered according to the capture time stamp M.time.
 
@@ -500,15 +500,15 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008                [Page 9]
+van den Broek, et al.  Expires September 10, 2008               [Page 9]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 4.  Flows
 
-   Definition (flow): A flow F is the set of messages of an SNMP trace T
-   with the following properties:
+   Definition (flow): A flow F with parameter t is the set of messages
+   of an SNMP trace T with the following properties:
 
    (F1)   All response messages originate from a single network
           endpoint.
@@ -516,8 +516,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    (F2)   All non-response messages originate from a single network
           endpoint.
 
-   (F3)   All messages are either command group messages or notification
-          group messages.
+   (F3)   All messages are either command group messages with parameter
+          t or notification group messages with parameter t.
 
    Subsequently, we call flows containing only command group messages
    command flows.  Similarly, we call flows containing only notification
@@ -542,6 +542,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
       F.ndst  = network layer destination endpoint of F
       F.start = time stamp of the first message in F
       F.end   = time stamp of the last message in F
+      F.t     = parameter t of F (maximum timeout for response messages)
 
    This definition of a flow is mostly consistent with the definition of
    a flow used in [SPHSM07].  The difference is that the tool used to
@@ -555,10 +556,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-
-van den Broek, et al.    Expires August 28, 2008               [Page 10]
+van den Broek, et al.  Expires September 10, 2008              [Page 10]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 5.  Slices
@@ -567,8 +567,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    each other.  Such a subset of messages from a single flow will be
    considered a slice of a flow.
 
-   Definition (slice): A slice S is a subset of messages in a flow F for
-   which the following properties hold:
+   Definition (slice): A slice S with parameter e is a subset of SNMP
+   messages in a flow F for which the following properties hold:
 
    (S1)   All messages are exchanged between the same two transport
           endpoints (a single transport endpoint pair).
@@ -585,26 +585,25 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
           (repeater) varbind list of the chronologically last response
           message of a previous request message.
 
-   (S5)   All Response messages must follow a previous request message
-          that is part of the same slice.
+   (S5)   All Response messages must follow a previous request message.
 
    (S6)   For any two subsequent request messages Q1 and Q2 with Q1.time
           < Q2.time, the following condition must hold:
 
                (Q2.time - Q1.time) < e
 
-   The parameter e defines the maximum time between two non-response
-   messages that belong to a slice.  This parameter should be chosen
-   such that unrelated requests within a flow are not considered to be
-   of the same slice.  Unrelated requests are those that, for instance,
-   belong to different polling instances.  The parameter e should
-   therefore be larger than the retransmission interval in order to keep
-   retransmissions within a slice and smaller than the polling interval
-   used by the slice initiator.
+   The parameter e in S6 defines the maximum time between two non-
+   response messages that belong to a slice.  This parameter should be
+   chosen such that unrelated requests within a flow are not considered
+   to be of the same slice.  Unrelated requests are those that, for
+   instance, belong to different polling instances.  The parameter e
+   should therefore be larger than the retransmission interval in order
+   to keep retransmissions within a slice and smaller than the polling
+   interval used by the slice initiator.
 
    Definition (slice initiator): A slice initiator is one of the two
    transport endpoints involved in a slice, which is responsible for
-   sending the chronologically first non-response class message.
+   sending the chronologically first non-response message.
 
    Notation: A slice S has several properties.  We introduce the
    following notation:
@@ -612,9 +611,10 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 11]
+
+van den Broek, et al.  Expires September 10, 2008              [Page 11]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
       S.type     = type of non-response messages in S
@@ -622,18 +622,10 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
       S.tdst     = transport layer endpoint of non-initiator of S
       S.start    = time stamp of the chronologically first message in S
       S.end      = time stamp of the chronologically last message in S
+      S.e        = parameter e of S (maximum time between two
+                   non-response messages)
       S.prefix   = prefix of S (see below)
-
-   Definition (concurrency): Two slides A and B of a given flow F are
-   concurrent at time t if A.start <= t <= A.end and B.start <= t <=
-   B.end.  The concurrency level F.clevel(t) of a flow F at time t is
-   given by the number of concurrent slices of F at time t.  The
-   concurrency level of a manager identified by the network address addr
-   at time t is given by the sum of the flow currency levels F.clevel(t)
-   for all flows originating from addr, that is F.nsrc = addr.
-
-   Definition (delta time serial): Two slides A and B of a given flow F
-   are called delta time serial if (B.start - A.end) < delta.
+      S.sig      = signature of S (see below)
 
 
 
@@ -668,9 +660,17 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 12]
+
+
+
+
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 12]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 6.  Slice Prefix
@@ -684,12 +684,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    considered 'equal' and which of them are incomparable.  This will
    assist in the process of finding potentially other relations.
 
-   The slice prefix is a set of OIDs.  This set is constructed based on
-   the messages that make up a single slice.  So, for example, a slice
-   that is the result of a manager requesting the contents of a
-   particular table (with OID alpha) on an agent using a simple single
-   varbind GetNext walk, starting at the table OID alpha, shall yield a
-   slice prefix which consists of the OID alpha.
+   The slice prefix is a set of OIDs.  This set is constructed from the
+   messages that make up a single slice.  So, for example, a slice that
+   is the result of a manager requesting the contents of a particular
+   table (with OID alpha) on an agent using a simple single varbind
+   GetNext walk, starting at the table OID alpha, shall yield a slice
+   prefix which consists of the OID alpha.
 
    Because the aim is to compare various slices using the slice prefix
    (along some other characteristics of a slice), this implicitly
@@ -724,9 +724,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 13]
+van den Broek, et al.  Expires September 10, 2008              [Page 13]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
     -------------------------------------------------------------------
@@ -761,141 +761,52 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    always illustrate the same behaviour of the initiating party.
 
    The previous example now makes it possible to give a more formal
-   definition of a slice prefix.
+   definition of a slice prefix.  This is accomplished by first defining
+   a slice signature which then leads to the definition of a slice
+   prefix.
 
-   Assume the following: Mnon_resp1 and Mnon_resp2 are two consecutive
-   non-response messages of a slice (which have unequal request
-   identifiers) and that Mresp1 and Mresp2 represent any response
-   message to each of the respective non-response messages.
-
-   Definition (slice prefix): A slice prefix P is a set of OID prefixes
-   derived from the OIDs contained in the non-response messages of a
-   single slice.  This set P consists of the following OIDs:
-
-   (SP1)   Each OID x in Mnon_resp2 of a slice that is not in any
-           response Mresp1 to the previous non-response message
-           Mnon_resp1 (where Mresp1.time < Mnon_resp2.time for each of
-           these response messages in Mnon_resp1) and x is not already
-           in P and there exists no OID in P that makes up a part
+   Definition (slice signature): A slice signature S.sig of a slice S is
+   a set of OIDs derived from the OIDs contained in the non-response
+   messages of a slice.  This set S.sig consists of the following OIDs:
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 14]
+
+
+
+
+
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 14]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-           (starting from the beginning) of x.
+   case S.type = GetNext or S.type = GetBulk:
 
-   TODO: The definition is not precise enough.  Gijs posted a proposal
-   for a better definition, however it also has some issues.  This needs
-   further discussion.  Ideally, we would find a way to define this
-   which allows us to get rid of the pseudo code.
+        S.sig =       U    (N.oids)  -      U    (R.oids)
+                    N in S                R in S
+                N is non-response      R is response
 
-   This definition states that all OIDs in the first non-response
-   message are considered part of the resulting slice prefix P. In
-   addition to that, P also contains those OIDs that have been newly
-   introduced in non-response messages (that occurred later than the
-   first one).  Newly introduced OIDs are considered as such if they
-   were not included in any of the responses (that occurred before the
-   non-response message in consideration) to the chronologically last
-   preceding non-response message.
+   otherwise:
 
-   The following outlines a few lines of pseudo-code in which the
-   algorithm for determining the slice prefix of a particular slice is
-   summarized.
+        S.sig =       U   (N.oids)
+                    N in S
+                N is non-response
 
-/*
- * compute the prefix of a given slice
- */
+   Definition (slice prefix): The slice prefix S.slice of a slice S is
+   the set of OID prefixes found in the slice signature S.sig. /* xxx */
 
-getPrefix(Slice S)
-{
-    Prefix p = {};          // prefix for this slice, initially empty
-    Message prevNonRespMsg; // previous non-response message
-    Message R[];
-
-    foreach Message M in S {
-
-      if (M.type == Response || M.type == Report) continue;
-
-      R = getLinkedPreviousResponseMessages(M, prevNonRespMsg);
-
-      foreach OID o in M.oids {
-         if (o NOT IN ANY R) {        // test whether o is in any of
-                                      // the selected response messages
-                                      // to the previous non-response
-                                      // message
-             addPrefix(p, o);
-         }
-      }
-
-      prevNonRespMsg = M;
-   }
-
-
-
-
-van den Broek, et al.    Expires August 28, 2008               [Page 15]
-
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
-
-
-   return p;
-}
-
-/*
- * Retrieves the linked response message(s) to the previous non-response
- * message (if any)
- */
-
-getLinkedPreviousResponseMessages(Slice S, Message M,
-                                  Message prevNonRespMsg)
-{
-   Message R[] = {};        // set of previous response messages
-
-   if (prevNonRespMsg) {
-       foreach Message M2 in S {
-           if (M2.time < M.time
-               && M2.time > prevNonRespMsg.time
-               && M2.reqid == prevNonRespMsg.reqid
-               && M2.type == Response) R.add(M2);
-       }
-   }
-
-   return R;
-}
-
-/*
- * add OID oto the prefix p if not yet present in the prefix p
- */
-
-addPrefix(Prefix p, OID o)
-{
-    foreach OID x in p {
-        if (x == o) return;
-    }
-    p.add(o);
-}
-
-   Following is an example to illustrate the algorithm just described:
+   Following is an example to illustrate the definitions just described:
    Consider the case that a single manager A polling an agent B. More
    specifically, the manager A is programmed to retrieve the complete
    contents of two single column tables alpha and beta.  Besides that,
    the manager now also requests the sysUpTime in the first request the
    manager sends to B. A resulting slice may contain the following
    messages:
-
-
-
-
-
-
-
-van den Broek, et al.    Expires August 28, 2008               [Page 16]
-
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
-
 
     -------------------------------------------------------------------
     Message | Direction | PDU type        | OIDs
@@ -908,161 +819,194 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
        5        B -> A    Response          gamma.0, delta.0
     -------------------------------------------------------------------
 
-   Determining the slice prefix for this slice goes as follows:
+   The slice prefix is determined as follows:
 
-   At the start, the slice prefix P is empty.  The algorithm starts
-   looking for the first non-response message, which is message 0.
-   Then, it tests the OIDs contained in message 0 for equality with any
-   OIDs in P. Since no matching OIDs can be found in P and the three
-   referenced OIDs in message 0 are all different, the algorithm adds
-   the three OIDs of message 0 to P.
+   1.  The union of all OIDs in non-response messages is the following
+       set:
 
-   The algorithm then goes on with the message 1, which is a response.
-   So it proceeds to look at message 2.  Since message 2 contains only
-   OIDs that can be found in message 1 (a response to the previous non-
-   response), the algorithm will not consider the OIDs in message 2 any
-   further.  The same goes for the remainder of the non-response
-   messages in this slice.
+          N = { sysUpTime, alpha, beta,
+                alpha.1, beta.1, alpha.2, beta.2 }
 
-   This example slice would therefore result in a slice prefix
-   consisting of the OID prefixes sysUpTime, alpha, beta.
+   2.  The union of the OIDs in response messages is the the following
+       set:
+
+          R = { sysUpTime.0, alpha.1, beta.1,
+                alpha.2, beta.2, gamma.1, delta.1 }
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 15]
+
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
+
+
+   3.  Substracting the two sets results in the slice signature S.sig:
+
+          S.sig = N - R = { sysUpTime, alpha, beta }
+
+   4.  Since none of the OIDs in S.sig is a prefix of any other OID in
+       S.sig, the slice prefix is equal to the slice signature:
+
+          S.prefix = { sysUpTime, alpha, beta }
+
+   This set of OIDs describes the behavior of the initiating party of
+   this particular slice.  Within the context of the described
+   configuration of the initiating party is it apparent that a
+   subsequent polling instance of the mentioned manager A polling agent
+   B will result in the same slice signature.
 
    Following is a more elaborate slice for which the slice prefix is
    determined.  Consider again the case that a single manager A is set
    to poll a specific agent B. Manager A is programmed to retrieve some
-   values from B. However, in this case the referenced tables do not
-   have an equal length.  Besides that, the manager also requests the
-   sysUpTime in every few requests the manager sends to B. The resulting
-   set of messages within a single slice of this flow may contain the
-   following messages:
-
-
-
-
-
-
-
-
-
-
-
-
-
-van den Broek, et al.    Expires August 28, 2008               [Page 17]
-
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
-
+   values from B. A single slice may contain the following messages:
 
     -------------------------------------------------------------------
     Message | Direction | PDU type        | OIDs
     -------------------------------------------------------------------
        0        A -> B    GetNext Request   alpha, beta
-       1        B -> A    Response          alpha.0, beta.0
-       2        A -> B    GetNext Request   alpha, beta
-       3        B -> A    Response          alpha.0, beta.1
-       4        A -> B    GetNext Request   beta.1, alpha.0,
+       1        B -> A    Response          alpha.1, beta.1
+       2        A -> B    GetNext Request   alpha.1, beta.1
+       3        B -> A    Response          alpha.2, beta.3
+       4        A -> B    GetNext Request   beta.2, alpha.2,
                                             sysUpTime
-       5        B -> A    Response          gamma.0, alpha.1
+       5        B -> A    Response          beta.3, alpha.3
                                             sysUpTime.0
-       6        A -> B    GetNext Request   alpha.1
-       7        B -> A    Response          delta.0
+       6        A -> B    GetNext Request   beta.3, alpha.3
+       7        B -> A    Response          gamma.1, alpha.4
+       8        A -> B    GetNext Response  alpha.4
+       9        B -> A    Response          delta.1
     -------------------------------------------------------------------
 
-   Determining the slice prefix for this slice goes as follows:
+   This slice has a number of interesting properties:
 
-   At the start, the slice prefix P is empty.  Just as in the previous
-   example, the algorithm analyses the first non-response message
-   (message 0) first.  Since P is empty at this point and the two OIDs
-   alpha and beta are different, the OIDs alpha and beta will be added
-   to P.
+   o  Not all columns in the table have an equal length.
 
-   The second non-response message (message 2) contains two OIDs that
-   cannot be found in the response to the first non-response; they may
-   therefore be added to P. However, P already contains both OIDs, so
-   they will not be added.  It should be noted here that this non-
-   response message is probably a retransmission of the first one.
-   Also, it appears that the response to this non-response yields a
-   different result compared to the response to the initial non-response
-   message.  This may be caused by a change in the data at the agent
-   side.
+   o  The manager is set to request the sysUpTime on an irregular basis
+      (i.e., every few requests).
 
-   Message 4 is the next non-response message.  It contains three OIDs,
-   of which two are exactly the same compared to the previous response
-   message (message 3), even though the order is different.  A third OID
-   (sysUpTime) in this message cannot be found in message 3, neither can
-   it be found in P. Hence, OID sysUpTime is added to P.
+   o  The manager attempts to 'fill' holes in the table.
 
-   Message 6 is the last non-response message and contains just a single
-   OID that can also be found in message 5, the response to the previous
-   non-response message.  Therefore, the single OID in message 6 is not
-   considered any further.  It should be noted here that the data
-   retrieval process has apparently reached the end of the table with
-   OID beta, which has resulted in a response containing the
-   lexicographically next data item gamma.0.
-
-   After message 6 have all non-response messages been considered in
+   o  The order of referenced OIDs in GetNext messages changes.
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 18]
+
+van den Broek, et al.  Expires September 10, 2008              [Page 16]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-   this slice.  Even though the order of comparable OIDs within a
-   certain non-response and the previous response may be different (like
-   in non-response message 4 and response message 3), the listed
-   messages still comprise a single slice.  The slice also shows the
-   possibility of a manager (A) referencing OIDs that are new compared
-   to a previous response message (like the sysUpTime OID in message 4).
+   All of these properties do not influence the process for determining
+   the slice signature.  The slice prefix is constructed as follows:
 
-   This example slice therefore has a slice prefix P consisting of the
-   OIDs alpha, beta and sysUpTime.
+   1.  The union of all OIDs in non-response messages is the following
+       set:
 
+          N = { alpha, beta, alpha.1, beta.1,
+                beta.2, alpha.2, sysUpTime, beta.3, alpha.3, alpha.4 }
 
+   2.  The union of the OIDs in response messages is the the following
+       set:
 
+          R = { alpha.1, beta.1, alpha.2, beta.3, alpha.3,
+                sysUpTime.0, gamma.1, alpha.4, delta.1 }
 
+   3.  Substracting the two sets results in the slice signature S.sig:
 
+          S.sig = N - R = { alpha, beta, beta.2, sysUpTime }
 
+       The element beta.2 exists because the manager was trying to
+       'fill' a 'hole' in a table.  Since these holes reside in the
+       tables on the agent side and may change dynamically, they do not
+       really help in describing the behavior of the initiating party.
 
+   4.  Since beta is a prefix of beta.2, the slice prefix becomes the
+       following set:
 
+          S.prefix = { alpha, beta, sysUpTime }
 
+       The slice prefix does not include beta.2 anymore and thus a
+       manager retrieving the same columns alpha and beta with and
+       without holes will produce slices with the same slice prefix.
 
+   Finally, consider a slice where s.type is not GetBulk or GetNext.
+   Manager A is programmed to poll some values from B. A single slice
+   may contain the following messages:
 
+    -------------------------------------------------------------------
+    Message | Direction | PDU type        | OIDs
+    -------------------------------------------------------------------
+       0        A -> B    Get Request       alpha.1, beta.1
+       1        B -> A    Response          alpha.1, beta.1
 
+   The slice prefix is determined as follows:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+   1.  The slice signature is the union of all OIDs in non-response
+       messages:
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 19]
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 17]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
+
+
+          S.sig = { alpha.1, beta.1 }
+
+   2.  Since none of the OIDs in S.sig is a prefix of any other OID in
+       S.sig, the slice prefix is equal to the slice signature:
+
+          S.prefix = { alpha.1, beta.1 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 18]
+
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 7.  Slice Type
@@ -1077,7 +1021,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    slice equivalence relation A ~ B if the following properties hold:
 
    (EQ1)   All messages in A and B have been exchanged between the same
-           network endpoints.
+           two network endpoints.
 
    (EQ2)   All read request messages, write request messages, and
            notification messages in A and B originate from the same
@@ -1116,9 +1060,9 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 20]
+van den Broek, et al.  Expires September 10, 2008              [Page 19]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 8.  Walks
@@ -1126,8 +1070,8 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
    Definition (walk): A walk W is a slice S with the following
    properties:
 
-   (W1)   The type of the slice S is either get-next-request or get-
-          bulk-request.
+   (W1)   The type of the slice S is either GetNext request or GetBulk
+          request.
 
    (W2)   At least one object identifier in the sequence of requests at
           the same varbind index must be increasing lexicographically
@@ -1172,12 +1116,68 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 21]
+van den Broek, et al.  Expires September 10, 2008              [Page 20]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-9.  Security Considerations
+9.  Concurrency
+
+   Definition (concurrency): Two slices A and B of a given flow F are
+   concurrent at time t if A.start <= t <= A.end and B.start <= t <=
+   B.end.
+
+   Definition (flow concurrency level): The concurrency level of a flow
+   F at time t is given by the number of concurrent slices of F at time
+   t.
+
+   Definition (slice initiator concurrency level): The concurrency level
+   of a slice initiator I at time t is given by the number of concurrent
+   slices initiated by the slice initiator I at time t.
+
+   Definition (overlapping): Two slices A and B of a given flow F are
+   called overlapping if there exists a time t where A and B are
+   concurrent.
+
+   Definition (delta time serial): Two slices A and B of a given flow F
+   with B.start > A.end are called delta time serial if (B.start -
+   A.end) < delta.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 21]
+
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
+
+
+10.  Security Considerations
 
    This document provides definitions for the analysis of SNMP traces
    and does not impact the security of the Internet.
@@ -1228,12 +1228,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 22]
+van den Broek, et al.  Expires September 10, 2008              [Page 22]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-10.  IANA Considerations
+11.  IANA Considerations
 
    This document has no actions for IANA.
 
@@ -1284,12 +1284,12 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 23]
+van den Broek, et al.  Expires September 10, 2008              [Page 23]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-11.  Acknowledgements
+12.  Acknowledgements
 
    This document was influenced by discussions within the Network
    Management Research Group (NMRG).
@@ -1340,14 +1340,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 24]
+van den Broek, et al.  Expires September 10, 2008              [Page 24]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
-12.  References
+13.  References
 
-12.1.  Normative References
+13.1.  Normative References
 
    [RFC3411]  Harrington, D., Presuhn, R., and B. Wijnen, "An
               Architecture for Describing Simple Network Management
@@ -1358,7 +1358,7 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
               Simple Network Management Protocol (SNMP)", RFC 3416,
               December 2002.
 
-12.2.  Informative References
+13.2.  Informative References
 
    [RFC3410]  Case, J., Mundy, R., Partain, D., and B. Stewart,
               "Introduction and Applicability Statements for Internet
@@ -1396,14 +1396,14 @@ Internet-Draft       SNMP Trace Analysis Definitions       February 2008
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 25]
+van den Broek, et al.  Expires September 10, 2008              [Page 25]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 Authors' Addresses
 
-   Gijs van den Broek
+   Jurgen Gijs van den Broek
    University of Twente
    P.O. BOX 217
    7500 AE Enschede
@@ -1452,9 +1452,9 @@ Authors' Addresses
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 26]
+van den Broek, et al.  Expires September 10, 2008              [Page 26]
 
-Internet-Draft       SNMP Trace Analysis Definitions       February 2008
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
 
 Full Copyright Statement
@@ -1508,5 +1508,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.    Expires August 28, 2008               [Page 27]
+van den Broek, et al.  Expires September 10, 2008              [Page 27]
 

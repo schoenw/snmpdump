@@ -23,8 +23,8 @@
       SNMP Trace Analysis Definitions
     </title>
     
-    <author initials="J.G." surname="van den Broek"
-            fullname="Gijs van den Broek">
+    <author initials="J. G." surname="van den Broek"
+            fullname="Jurgen Gijs van den Broek">
       <organization>University of Twente</organization>
       <address>
         <postal>
@@ -79,7 +79,7 @@
       </address>
     </author>
 
-    <date month="February" year="2008"/>
+    <date month="March" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -137,7 +137,7 @@
         experience with SNMP traces has shown that the traces must be
         large enough in order to make proper observations. A more
         detailed motivation for collecting SNMP traces and guidelines
-        how to capture SNMP traces can be found in <xref
+	on how to capture SNMP traces can be found in <xref
         target="ID-IRTF-NMRG-SNMP-MEASURE"/>.
       </t>
       <t>
@@ -215,21 +215,19 @@
         that are related to each other in time and referenced
         information. Splitting a flow into slices makes it possible to
         separate SNMP messages within traces that belong to each
-        other, like for example all messages that belong to a single
-        polling instance involving a single manager and a single
-        agent.
+        other.
       </t>
       <t>
-        A slice may contain, for instance, the exchanged SNMP messages
-        between an agent and a manager, which polls that agent in a
-        single polling instance.  The manager may be configured to
-        poll that agent every once in a while. If the requested
-        information from the agent remains unchanged, then the
-        respective slices of SNMP traffic occurring between this
-        manager and agent will be highly comparable.  In such a case
-        the slices will be of the same slice type. Similar slices will
-        thus be considered of the same slice type and incomparable
-        slices will not be of the same slice type.
+	For example, a slice may contain the exchanged SNMP messages
+	between an agent and a manager, which polls that agent in a
+	single polling instance.  The manager may be configured to
+	poll that agent every once in a while. If the requested
+	information from the agent remains unchanged, then the
+	respective slices of SNMP traffic occurring between this
+	manager and agent will be highly comparable.  In such a case
+	the slices will be of the same slice type. Similar slices will
+	thus be considered of the same slice type and incomparable
+	slices will not be of the same slice type.
       </t>
       <t>
         Besides the fact that each slice is of specific slice type,
@@ -252,8 +250,8 @@
         in this document.
       </t>
       <t>
-        Notation: Let M be an SNMP message. We denote the properties
-        of M as follows:
+        Notation: Let M be an SNMP message. The properties of M are
+        denoted as follows:
       </t>
       <figure>
       <artwork><![CDATA[
@@ -314,8 +312,8 @@
         only as an error reporting mechanism, always triggered by the
         processing of some request messages. In case future SNMP
         versions or extensions use Report messages without having a
-        request triggering the generation of Report messages, we may
-        have to revisit the definition above.
+        request triggering the generation of Report messages, the
+        definition above may need to be revisted.
       </t>
 
       <t>
@@ -363,8 +361,8 @@
         send responses from different transport endpoints. While
         sending response messages from a different transport endpoint
         is legal, it is also considered bad practice causing
-        interoperability problems since several management systems do
-        not accept such messages.
+        interoperability problems since some management systems do not
+        accept such messages.
       </t>
       <t>
         It was decided to require matching transport endpoints since
@@ -373,9 +371,9 @@
         Implementations responding from different transport endpoints
         will lead to (a) a larger number of requests without related
         responses (and likely no retries) and (b) a similarly large
-        number of response messages without a matching request. If
-        such behavior can be detected, the traces should be
-        investigated and if needed the transport endpoints corrected.
+        number of responses without a matching request. If such
+        behavior can be detected, the traces should be investigated
+        and if needed the transport endpoints corrected.
       </t>
 
       <t>
@@ -421,7 +419,7 @@
         loss.
       </t>
       <t>
-        Definition (trace): An SNMP trace (or short trace) T is an
+        Definition (trace): An SNMP trace (or short "trace") T is an
         ordered set of zero or more SNMP messages M. All messages M in
         T are chronologically ordered according to the capture time
         stamp M.time.
@@ -430,8 +428,8 @@
 
     <section anchor="flows" title="Flows">
       <t>
-        Definition (flow): A flow F is the set of messages of an SNMP
-        trace T with the following properties:
+        Definition (flow): A flow F with parameter t is the set of
+        messages of an SNMP trace T with the following properties:
       </t>
       <t>
         <list style='format (F%d) ' counter='flow'>
@@ -444,8 +442,9 @@
             endpoint.
           </t>
           <t>
-            All messages are either command group messages or
-            notification group messages.
+            All messages are either command group messages with
+            parameter t or notification group messages with parameter
+            t.
           </t>
         </list>
       </t>
@@ -479,6 +478,7 @@
    F.ndst  = network layer destination endpoint of F
    F.start = time stamp of the first message in F
    F.end   = time stamp of the last message in F
+   F.t     = parameter t of F (maximum timeout for response messages)
    ]]></artwork>
       </figure>
       <t>
@@ -500,8 +500,9 @@
         will be considered a slice of a flow.
       </t>
       <t>
-        Definition (slice): A slice S is a subset of messages in a
-        flow F for which the following properties hold:
+        Definition (slice): A slice S with parameter e is a subset of
+        SNMP messages in a flow F for which the following properties
+        hold:
       </t>
       <t>
         <list style='format (S%d) ' counter='slice'>
@@ -527,7 +528,7 @@
           </t>
           <t>
             All Response messages must follow a previous request
-            message that is part of the same slice.
+            message.
           </t>
           <t>
             For any two subsequent request messages Q1 and Q2 with
@@ -542,7 +543,7 @@
       </t>
 
       <t>
-        The parameter e defines the maximum time between two
+        The parameter e in S6 defines the maximum time between two
         non-response messages that belong to a slice. This parameter
         should be chosen such that unrelated requests within a flow
         are not considered to be of the same slice. Unrelated requests
@@ -557,7 +558,7 @@
         Definition (slice initiator): A slice initiator is one of the
         two transport endpoints involved in a slice, which is
         responsible for sending the chronologically first non-response
-        class message.
+        message.
       </t>
 
       <t>
@@ -571,24 +572,12 @@
    S.tdst     = transport layer endpoint of non-initiator of S
    S.start    = time stamp of the chronologically first message in S
    S.end      = time stamp of the chronologically last message in S
+   S.e        = parameter e of S (maximum time between two 
+                non-response messages)
    S.prefix   = prefix of S (see below)
+   S.sig      = signature of S (see below)
    ]]></artwork>
       </figure>
-      <t>
-        Definition (concurrency): Two slides A and B of a given flow F
-        are concurrent at time t if A.start &lt;= t &lt;= A.end and
-        B.start &lt;= t &lt;= B.end. The concurrency level F.clevel(t)
-        of a flow F at time t is given by the number of concurrent
-        slices of F at time t. The concurrency level of a manager
-        identified by the network address addr at time t is given by
-        the sum of the flow currency levels F.clevel(t) for all flows
-        originating from addr, that is F.nsrc = addr.
-      </t>
-      <t>
-        Definition (delta time serial): Two slides A and B of a given
-        flow F are called delta time serial if (B.start - A.end) &lt;
-        delta.
-      </t>
 
     </section>
 
@@ -606,7 +595,7 @@
       </t>
       <t>
         The slice prefix is a set of OIDs. This set is constructed
-        based on the messages that make up a single slice. So, for
+        from the messages that make up a single slice. So, for
         example, a slice that is the result of a manager requesting
         the contents of a particular table (with OID alpha) on an
         agent using a simple single varbind GetNext walk, starting at
@@ -691,125 +680,58 @@
       </t>
       <t>
         The previous example now makes it possible to give a more
-        formal definition of a slice prefix.
-      </t>
-      <t>
-        Assume the following: Mnon_resp1 and Mnon_resp2 are two
-        consecutive non-response messages of a slice (which have
-        unequal request identifiers) and that Mresp1 and Mresp2
-        represent any response message to each of the respective
-        non-response messages.
+        formal definition of a slice prefix. This is accomplished by
+        first defining a slice signature which then leads to the
+        definition of a slice prefix.
       </t>
 
       <t>
-        Definition (slice prefix): A slice prefix P is a set of OID
-        prefixes derived from the OIDs contained in the non-response
-        messages of a single slice. This set P consists of the
-        following OIDs:
-        <list style='format (SP%d) ' counter='sliceprefix'>
-          <t>
-            Each OID x in Mnon_resp2 of a slice that is not in any
-            response Mresp1 to the previous non-response message
-            Mnon_resp1 (where Mresp1.time < Mnon_resp2.time for each
-            of these response messages in Mnon_resp1) and x is not
-            already in P and there exists no OID in P that makes up a
-            part (starting from the beginning) of x.
-          </t>
-        </list>
+	Definition (slice signature): A slice signature S.sig of a
+	slice S is a set of OIDs derived from the OIDs contained in
+	the non-response messages of a slice.  This set S.sig consists
+	of the following OIDs:
+            <figure>
+              <artwork><![CDATA[
+case S.type = GetNext or S.type = GetBulk:
+
+     S.sig =       U    (N.oids)  -      U    (R.oids)
+                 N in S                R in S
+             N is non-response      R is response
+
+otherwise:
+
+     S.sig =       U   (N.oids)
+                 N in S
+             N is non-response
+		]]></artwork>
+            </figure>
       </t>
+
       <t>
-        TODO: The definition is not precise enough. Gijs posted a
-        proposal for a better definition, however it also has some
-        issues. This needs further discussion. Ideally, we would find
-        a way to define this which allows us to get rid of the pseudo
-        code.
+	Definition (slice prefix): The slice prefix S.slice of a slice
+	S is the set of OID prefixes found in the slice signature
+	S.sig. /* xxx */
       </t>
+
+<!--
+   Note that this definition is equal to the definition of the slice
+   prefix with the additional requirement that no OID in S.sig is a
+   child of any other OID in S.sig.
+
+   This definition states that all OIDs in the first non-response
+   message are considered part of the resulting slice signature S.sig.
+   In addition to that, S.sig also contains those OIDs that have been
+   newly introduced in non-response messages (that occurred later than
+   the first one). Newly introduced OIDs are considered as such if they
+   were not included in any of the responses. Besides that, all newly
+   introduced OIDs that are a child OID of any of the OIDs in S.sig,
+   shall not be considered part of S.sig. An example where this would
+   be the case is newly introduced OID 1.2.3.4 where 1.2.3 is already
+   in S.sig. The reason for this will become apparent in the sequel.
+-->
+
       <t>
-        This definition states that all OIDs in the first non-response
-        message are considered part of the resulting slice prefix
-        P. In addition to that, P also contains those OIDs that have
-        been newly introduced in non-response messages (that occurred
-        later than the first one). Newly introduced OIDs are
-        considered as such if they were not included in any of the
-        responses (that occurred before the non-response message in
-        consideration) to the chronologically last preceding
-        non-response message.
-      </t>
-      <t>
-        The following outlines a few lines of pseudo-code in which the
-        algorithm for determining the slice prefix of a particular
-        slice is summarized.
-      </t>
-      <figure>
-        <artwork><![CDATA[
-/*
- * compute the prefix of a given slice
- */
-
-getPrefix(Slice S)
-{
-    Prefix p = {};          // prefix for this slice, initially empty
-    Message prevNonRespMsg; // previous non-response message
-    Message R[];
-
-    foreach Message M in S {
-
-      if (M.type == Response || M.type == Report) continue;
-
-      R = getLinkedPreviousResponseMessages(M, prevNonRespMsg);
-
-      foreach OID o in M.oids {
-         if (o NOT IN ANY R) {        // test whether o is in any of 
-                                      // the selected response messages
-                                      // to the previous non-response
-                                      // message
-             addPrefix(p, o);
-         }
-      }
-
-      prevNonRespMsg = M;
-   }
-
-   return p;
-}
-
-/*
- * Retrieves the linked response message(s) to the previous non-response
- * message (if any)
- */
-
-getLinkedPreviousResponseMessages(Slice S, Message M, 
-                                  Message prevNonRespMsg)
-{
-   Message R[] = {};        // set of previous response messages
-
-   if (prevNonRespMsg) {
-       foreach Message M2 in S {
-           if (M2.time < M.time 
-               && M2.time > prevNonRespMsg.time 
-               && M2.reqid == prevNonRespMsg.reqid 
-               && M2.type == Response) R.add(M2);
-       }
-   }
-
-   return R;
-}
-
-/*
- * add OID oto the prefix p if not yet present in the prefix p
- */
-
-addPrefix(Prefix p, OID o)
-{
-    foreach OID x in p {
-        if (x == o) return;
-    }
-    p.add(o);
-}
-   ]]></artwork>
-      </figure>
-      <t>
-        Following is an example to illustrate the algorithm just
+        Following is an example to illustrate the definitions just
         described: Consider the case that a single manager A polling
         an agent B. More specifically, the manager A is programmed to
         retrieve the complete contents of two single column tables
@@ -832,38 +754,63 @@ addPrefix(Prefix p, OID o)
    ]]></artwork>
       </figure>
       <t>
-        Determining the slice prefix for this slice goes as follows:
+        The slice prefix is determined as follows:
+	<list style="numbers">
+	  <t>
+	    The union of all OIDs in non-response messages is the
+	    following set:
+	    <figure>
+	      <artwork><![CDATA[
+       N = { sysUpTime, alpha, beta, 
+             alpha.1, beta.1, alpha.2, beta.2 }
+              ]]></artwork>
+            </figure>
+          </t>
+          <t>
+            The union of the OIDs in response messages is the the
+            following set:
+            <figure>
+              <artwork><![CDATA[
+       R = { sysUpTime.0, alpha.1, beta.1,
+             alpha.2, beta.2, gamma.1, delta.1 }
+              ]]></artwork>
+            </figure>
+          </t>
+          <t>
+            Substracting the two sets results in the slice signature
+            S.sig:
+            <figure>
+              <artwork><![CDATA[
+       S.sig = N - R = { sysUpTime, alpha, beta }
+              ]]></artwork>
+            </figure>
+          </t>
+	  <t>
+	    Since none of the OIDs in S.sig is a prefix of any other
+	    OID in S.sig, the slice prefix is equal to the slice
+	    signature:
+            <figure>
+              <artwork><![CDATA[
+       S.prefix = { sysUpTime, alpha, beta }
+              ]]></artwork>
+            </figure>
+	  </t>
+	</list>
       </t>
       <t>
-        At the start, the slice prefix P is empty.  The algorithm
-        starts looking for the first non-response message, which is
-        message 0. Then, it tests the OIDs contained in message 0 for
-        equality with any OIDs in P. Since no matching OIDs can be
-        found in P and the three referenced OIDs in message 0 are all
-        different, the algorithm adds the three OIDs of message 0 to
-        P.
+	This set of OIDs describes the behavior of the initiating
+	party of this particular slice. Within the context of the
+	described configuration of the initiating party is it apparent
+	that a subsequent polling instance of the mentioned manager A
+	polling agent B will result in the same slice signature.
       </t>
-      <t>
-        The algorithm then goes on with the message 1, which is a
-        response. So it proceeds to look at message 2. Since message 2
-        contains only OIDs that can be found in message 1 (a response
-        to the previous non-response), the algorithm will not consider
-        the OIDs in message 2 any further. The same goes for the
-        remainder of the non-response messages in this slice.
-      </t>
-      <t>
-        This example slice would therefore result in a slice prefix
-        consisting of the OID prefixes sysUpTime, alpha, beta.
-      </t>
+
       <t>
         Following is a more elaborate slice for which the slice prefix
         is determined. Consider again the case that a single manager A
         is set to poll a specific agent B. Manager A is programmed to
-        retrieve some values from B. However, in this case the
-        referenced tables do not have an equal length. Besides that,
-        the manager also requests the sysUpTime in every few requests
-        the manager sends to B. The resulting set of messages within a
-        single slice of this flow may contain the following messages:
+        retrieve some values from B. A single slice may contain the
+        following messages:
       </t>
       <figure>
         <artwork><![CDATA[
@@ -871,72 +818,123 @@ addPrefix(Prefix p, OID o)
  Message | Direction | PDU type        | OIDs
  -------------------------------------------------------------------
     0        A -> B    GetNext Request   alpha, beta
-    1        B -> A    Response          alpha.0, beta.0
-    2        A -> B    GetNext Request   alpha, beta
-    3        B -> A    Response          alpha.0, beta.1
-    4        A -> B    GetNext Request   beta.1, alpha.0,
+    1        B -> A    Response          alpha.1, beta.1
+    2        A -> B    GetNext Request   alpha.1, beta.1
+    3        B -> A    Response          alpha.2, beta.3
+    4        A -> B    GetNext Request   beta.2, alpha.2,
                                          sysUpTime
-    5        B -> A    Response          gamma.0, alpha.1
+    5        B -> A    Response          beta.3, alpha.3
                                          sysUpTime.0
-    6        A -> B    GetNext Request   alpha.1
-    7        B -> A    Response          delta.0
+    6        A -> B    GetNext Request   beta.3, alpha.3
+    7        B -> A    Response          gamma.1, alpha.4
+    8        A -> B    GetNext Response  alpha.4
+    9        B -> A    Response          delta.1
  -------------------------------------------------------------------
    ]]></artwork>
       </figure>
       <t>
-        Determining the slice prefix for this slice goes as follows:
+	This slice has a number of interesting properties:
+	<list style="symbols">
+	  <t>Not all columns in the table have an equal length.</t>
+	  <t>The manager is set to request the sysUpTime on an
+	  irregular basis (i.e., every few requests).</t>
+	  <t>The manager attempts to 'fill' holes in the table.</t>
+	  <t>The order of referenced OIDs in GetNext messages changes.</t>
+	</list>
       </t>
       <t>
-        At the start, the slice prefix P is empty. Just as in the
-        previous example, the algorithm analyses the first
-        non-response message (message 0) first. Since P is empty at
-        this point and the two OIDs alpha and beta are different, the
-        OIDs alpha and beta will be added to P.
+	All of these properties do not influence the process for
+	determining the slice signature. The slice prefix is
+	constructed as follows:
+	<list style="numbers">
+	  <t>
+	    The union of all OIDs in non-response messages is the
+	    following set:
+	    <figure>
+	      <artwork><![CDATA[
+       N = { alpha, beta, alpha.1, beta.1, 
+             beta.2, alpha.2, sysUpTime, beta.3, alpha.3, alpha.4 }
+              ]]></artwork>
+            </figure>
+          </t>
+          <t>
+            The union of the OIDs in response messages is the the
+            following set:
+            <figure>
+              <artwork><![CDATA[
+       R = { alpha.1, beta.1, alpha.2, beta.3, alpha.3,
+             sysUpTime.0, gamma.1, alpha.4, delta.1 }
+              ]]></artwork>
+            </figure>
+          </t>
+          <t>
+            Substracting the two sets results in the slice signature
+            S.sig:
+            <figure>
+              <artwork><![CDATA[
+       S.sig = N - R = { alpha, beta, beta.2, sysUpTime }
+              ]]></artwork>
+            </figure>
+	    The element beta.2 exists because the manager was trying
+	    to 'fill' a 'hole' in a table. Since these holes reside in
+	    the tables on the agent side and may change dynamically,
+	    they do not really help in describing the behavior of the
+	    initiating party.
+          </t>
+	  <t>
+	    Since beta is a prefix of beta.2, the slice prefix becomes
+	    the following set:
+            <figure>
+              <artwork><![CDATA[
+       S.prefix = { alpha, beta, sysUpTime }
+              ]]></artwork>
+            </figure>
+	    The slice prefix does not include beta.2 anymore and thus
+	    a manager retrieving the same columns alpha and beta with
+	    and without holes will produce slices with the same slice
+	    prefix.
+	  </t>
+	</list>
       </t>
       <t>
-        The second non-response message (message 2) contains two OIDs
-        that cannot be found in the response to the first
-        non-response; they may therefore be added to P. However, P
-        already contains both OIDs, so they will not be added. It
-        should be noted here that this non-response message is
-        probably a retransmission of the first one.  Also, it appears
-        that the response to this non-response yields a different
-        result compared to the response to the initial non-response
-        message. This may be caused by a change in the data at the
-        agent side.
+	Finally, consider a slice where s.type is not GetBulk or
+	GetNext. Manager A is programmed to poll some values from B. A
+	single slice may contain the following messages:
       </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Direction | PDU type        | OIDs 
+ ------------------------------------------------------------------- 
+    0        A -> B    Get Request       alpha.1, beta.1
+    1        B -> A    Response          alpha.1, beta.1
+   ]]></artwork>
+      </figure>
       <t>
-        Message 4 is the next non-response message. It contains three
-        OIDs, of which two are exactly the same compared to the
-        previous response message (message 3), even though the order
-        is different. A third OID (sysUpTime) in this message cannot
-        be found in message 3, neither can it be found in P. Hence,
-        OID sysUpTime is added to P.
+	The slice prefix is determined as follows:
+	<list style="numbers">
+	  <t>
+	    The slice signature is the union of all OIDs in
+	    non-response messages:
+            <figure>
+              <artwork><![CDATA[
+       S.sig = { alpha.1, beta.1 }
+              ]]></artwork>
+            </figure>
+	  </t>
+	  <t>
+	    Since none of the OIDs in S.sig is a prefix of any other
+	    OID in S.sig, the slice prefix is equal to the slice
+	    signature:
+            <figure>
+              <artwork><![CDATA[
+       S.prefix = { alpha.1, beta.1 }
+              ]]></artwork>
+            </figure>
+	  </t>
+	</list>
       </t>
-      <t>
-        Message 6 is the last non-response message and contains just a
-        single OID that can also be found in message 5, the response
-        to the previous non-response message. Therefore, the single
-        OID in message 6 is not considered any further. It should be
-        noted here that the data retrieval process has apparently
-        reached the end of the table with OID beta, which has resulted
-        in a response containing the lexicographically next data item
-        gamma.0.
-      </t>
-      <t>
-        After message 6 have all non-response messages been considered
-        in this slice. Even though the order of comparable OIDs within
-        a certain non-response and the previous response may be
-        different (like in non-response message 4 and response message
-        3), the listed messages still comprise a single slice. The
-        slice also shows the possibility of a manager (A) referencing
-        OIDs that are new compared to a previous response message
-        (like the sysUpTime OID in message 4).
-      </t>
-      <t>
-        This example slice therefore has a slice prefix P consisting
-        of the OIDs alpha, beta and sysUpTime.
-      </t>
+
     </section>
 
     <section anchor="slice-type" title="Slice Type">
@@ -957,7 +955,7 @@ addPrefix(Prefix p, OID o)
         <list style='format (EQ%d) ' counter='sliceequiv'>
           <t>
             All messages in A and B have been exchanged between the
-            same network endpoints.
+            same two network endpoints.
           </t>
           <t>
             All read request messages, write request messages, and
@@ -995,8 +993,8 @@ addPrefix(Prefix p, OID o)
       <t>
         <list style='format (W%d) ' counter='walk'>
           <t>
-            The type of the slice S is either get-next-request or
-            get-bulk-request.
+            The type of the slice S is either GetNext request or
+            GetBulk request.
           </t>
           <t>
             At least one object identifier in the sequence of requests
@@ -1024,6 +1022,36 @@ addPrefix(Prefix p, OID o)
 
     </section>
 
+    <section anchor="concurrency" title="Concurrency">
+
+      <t>
+        Definition (concurrency): Two slices A and B of a given flow F
+        are concurrent at time t if A.start &lt;= t &lt;= A.end and
+        B.start &lt;= t &lt;= B.end.
+      </t>
+      <t>
+        Definition (flow concurrency level): The concurrency level of
+        a flow F at time t is given by the number of concurrent slices
+        of F at time t.
+      </t>
+      <t>
+	Definition (slice initiator concurrency level): The
+	concurrency level of a slice initiator I at time t is given by
+	the number of concurrent slices initiated by the slice
+	initiator I at time t.
+      </t>
+      <t>
+	Definition (overlapping): Two slices A and B of a given flow F
+	are called overlapping if there exists a time t where A and B
+	are concurrent.
+      </t>
+      <t>
+        Definition (delta time serial): Two slices A and B of a given
+        flow F with B.start > A.end are called delta time serial if
+        (B.start - A.end) &lt; delta.
+      </t>
+
+    </section>
 
     <section anchor="security" title="Security Considerations">
       <t>
