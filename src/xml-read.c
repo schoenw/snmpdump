@@ -4,8 +4,8 @@
  * A simple C program to deserialize XML representation of SNMP
  * traffic traces.
  *
- * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
- * (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
+ * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@jacobs-university.de>
+ * (c) 2006 Matus Harvan <m.harvan@jacobs-university.de>
  *
  * $Id$
  */

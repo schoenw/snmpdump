@@ -3,7 +3,8 @@
  *
  * Filter SNMP traffic traces using a filter-out approach.
  *
- * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
+ * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@jacobs-university.de>
+ * (c) 2008 Juergen Schoenwaelder <j.schoenwaelder@jacobs-university.de>
  *
  * $Id$
  */

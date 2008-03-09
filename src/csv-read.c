@@ -4,8 +4,8 @@
  * A simple C program to deserialize CSV representation of SNMP
  * traffic traces.
  *
- * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@iu-bremen.de>
- * (c) 2006 Matus Harvan <m.harvan@iu-bremen.de>
+ * (c) 2006 Juergen Schoenwaelder <j.schoenwaelder@jacobs-university.de>
+ * (c) 2006 Matus Harvan <m.harvan@jacobs-university.de>
  *
  * $Id: csv-read.c 1960 2006-06-14 16:15:34Z schoenw $
  */
