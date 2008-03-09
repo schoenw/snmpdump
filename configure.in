@@ -4,22 +4,17 @@ dnl $Id$
 
 AC_INIT(src/snmpdump.c)
 
-LIBANON_MAJOR=0
-LIBANON_MINOR=1
-LIBANON_PATCHLEVEL=0
-LIBTOOL_VERSION=0
-LIBTOOL_REVISION=0
-LIBTOOL_AGE=0
+SNMPDUMP_MAJOR=0
+SNMPDUMP_MINOR=4
+SNMPDUMP_PATCHLEVEL=6
 
-VERSION_STRING="$LIBANON_MAJOR.$LIBANON_MINOR.$LIBANON_PATCHLEVEL"
-VERSION_LIBTOOL="$LIBTOOL_VERSION:$LIBTOOL_REVISION:$LIBTOOL_AGE"
+VERSION="$SNMPDUMP_MAJOR.$SNMPDUMP_MINOR.$SNMPDUMP_PATCHLEVEL"
+AC_SUBST(VERSION)
 
-AM_INIT_AUTOMAKE(snmpdump, $VERSION_STRING)
+AM_INIT_AUTOMAKE(snmpdump, $VERSION)
 
 dnl create a config.h file (Automake will add -DHAVE_CONFIG_H)
 AM_CONFIG_HEADER(src/config.h)
-
-AC_SUBST(VERSION)
 
 ISODATE=`date +%Y-%m-%d`
 AC_SUBST(ISODATE)
@@ -29,13 +24,15 @@ AC_CANONICAL_HOST
 dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_CC
-AM_PROG_LIBTOOL
 
 dnl Checks for libraries.
 AM_PATH_XML2(2.0.0, [], AC_MSG_ERROR(snmpdump requires libxml2))
 PKG_CHECK_MODULES(OPENSSL, openssl)
 AC_SUBST(OPENSSL_CFLAGS)
 AC_SUBST(OPENSSL_LIBS)
+PKG_CHECK_MODULES(LIBANON, libanon)
+AC_SUBST(LIBANON_CFLAGS)
+AC_SUBST(LIBANON_LIBS)
 
 #----------------------------------------------------------------------------
 #       Checking for the libnids library.
@@ -108,7 +105,4 @@ dnl Checks for library functions.
 
 dnl Further substitutions
 
-AC_SUBST(VERSION_STRING)
-AC_SUBST(VERSION_LIBTOOL)
-
-AC_OUTPUT(Makefile libanon/Makefile src/Makefile scripts/Makefile doc/Makefile test/Makefile libanon.pc)
+AC_OUTPUT(Makefile src/Makefile scripts/Makefile doc/Makefile test/Makefile)

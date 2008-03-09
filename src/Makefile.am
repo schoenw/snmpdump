@@ -1,4 +1,5 @@
-INCLUDES		= -I../libanon $(XML_CFLAGS) $(XML_CPPFLAGS) $(OPENSSL_CFLAGS) $(NIDSINC)
+INCLUDES		= $(LIBANON_CFLAGS) $(XML_CFLAGS) $(XML_CPPFLAGS) \
+			  $(OPENSSL_CFLAGS) $(NIDSINC)
 
 EXTRA_DIST		= snmp.h anon.h \
 			  scanner.l parser.y \
@@ -16,7 +17,7 @@ snmpdump_SOURCES	= snmpdump.c \
 			  flow.c \
 			  scanner.c \
 			  parser.c
-snmpdump_LDADD		= ../libanon/libanon.la $(OPENSSL_LIBS) \
+snmpdump_LDADD		= $(LIBANON_LIBS) $(OPENSSL_LIBS) \
 			  $(NIDSLIB) -lpcap $(XML_LIBS) -ll
 
 man_MANS		= snmpdump.1
