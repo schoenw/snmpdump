@@ -13,7 +13,7 @@ Expires: September 10, 2008                     Jacobs University Bremen
 
 
                     SNMP Trace Analysis Definitions
-            draft-schoenw-nmrg-snmp-trace-definitions-01.txt
+            draft-schoenw-nmrg-snmp-trace-definitions-02.txt
 
 Status of this Memo
 
@@ -624,8 +624,8 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
       S.end      = time stamp of the chronologically last message in S
       S.e        = parameter e of S (maximum time between two
                    non-response messages)
-      S.prefix   = prefix of S (see below)
-      S.sig      = signature of S (see below)
+
+
 
 
 
@@ -797,8 +797,16 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
                     N in S
                 N is non-response
 
-   Definition (slice prefix): The slice prefix S.slice of a slice S is
-   the set of OID prefixes found in the slice signature S.sig. /* xxx */
+   Definition (OID prefix): An OID a = a_1.a_2...a_n is a prefix of OID
+   b = b_1.b_2...b_m if and only if
+
+   (P1)   n < m and
+
+   (P2)   a_i = b_i for 1 <= i <= n.
+
+   Definition (slice prefix): The slice prefix S.slice is the set of all
+   OIDs o in S.sig for which there is no p in S.sig such that p is a
+   prefix of o.
 
    Following is an example to illustrate the definitions just described:
    Consider the case that a single manager A polling an agent B. More
@@ -825,14 +833,6 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
        set:
 
           N = { sysUpTime, alpha, beta,
-                alpha.1, beta.1, alpha.2, beta.2 }
-
-   2.  The union of the OIDs in response messages is the the following
-       set:
-
-          R = { sysUpTime.0, alpha.1, beta.1,
-                alpha.2, beta.2, gamma.1, delta.1 }
-
 
 
 
@@ -840,6 +840,14 @@ van den Broek, et al.  Expires September 10, 2008              [Page 15]
 
 Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
+
+                alpha.1, beta.1, alpha.2, beta.2 }
+
+   2.  The union of the OIDs in response messages is the the following
+       set:
+
+          R = { sysUpTime.0, alpha.1, beta.1,
+                alpha.2, beta.2, gamma.1, delta.1 }
 
    3.  Substracting the two sets results in the slice signature S.sig:
 
@@ -880,14 +888,6 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
    This slice has a number of interesting properties:
 
-   o  Not all columns in the table have an equal length.
-
-   o  The manager is set to request the sysUpTime on an irregular basis
-      (i.e., every few requests).
-
-   o  The manager attempts to 'fill' holes in the table.
-
-   o  The order of referenced OIDs in GetNext messages changes.
 
 
 
@@ -896,6 +896,15 @@ van den Broek, et al.  Expires September 10, 2008              [Page 16]
 
 Internet-Draft       SNMP Trace Analysis Definitions          March 2008
 
+
+   o  Not all columns in the table have an equal length.
+
+   o  The manager is set to request the sysUpTime on an irregular basis
+      (i.e., every few requests).
+
+   o  The manager attempts to 'fill' holes in the table.
+
+   o  The order of referenced OIDs in GetNext messages changes.
 
    All of these properties do not influence the process for determining
    the slice signature.  The slice prefix is constructed as follows:
@@ -934,6 +943,16 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
    Manager A is programmed to poll some values from B. A single slice
    may contain the following messages:
 
+
+
+
+
+
+van den Broek, et al.  Expires September 10, 2008              [Page 17]
+
+Internet-Draft       SNMP Trace Analysis Definitions          March 2008
+
+
     -------------------------------------------------------------------
     Message | Direction | PDU type        | OIDs
     -------------------------------------------------------------------
@@ -945,31 +964,12 @@ Internet-Draft       SNMP Trace Analysis Definitions          March 2008
    1.  The slice signature is the union of all OIDs in non-response
        messages:
 
-
-
-
-van den Broek, et al.  Expires September 10, 2008              [Page 17]
-
-Internet-Draft       SNMP Trace Analysis Definitions          March 2008
-
-
           S.sig = { alpha.1, beta.1 }
 
    2.  Since none of the OIDs in S.sig is a prefix of any other OID in
        S.sig, the slice prefix is equal to the slice signature:
 
           S.prefix = { alpha.1, beta.1 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

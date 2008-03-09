@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <!-- full3978 -->
 <rfc ipr='full3978' 
-     docName="draft-schoenw-nmrg-snmp-trace-definitions-01.txt"
+     docName="draft-schoenw-nmrg-snmp-trace-definitions-02.txt"
      category="info">
 
   <!--
@@ -574,8 +574,6 @@
    S.end      = time stamp of the chronologically last message in S
    S.e        = parameter e of S (maximum time between two 
                 non-response messages)
-   S.prefix   = prefix of S (see below)
-   S.sig      = signature of S (see below)
    ]]></artwork>
       </figure>
 
@@ -706,11 +704,20 @@ otherwise:
 		]]></artwork>
             </figure>
       </t>
+      
+      <t>
+	Definition (OID prefix): An OID a = a_1.a_2...a_n is a prefix
+	of OID b = b_1.b_2...b_m if and only if
+	<list style='format (P%d) ' counter='prefix'>
+	  <t>n &lt; m and</t>
+	  <t>a_i = b_i for 1 &lt;= i &lt;= n.</t>
+	</list>
+      </t>
 
       <t>
-	Definition (slice prefix): The slice prefix S.slice of a slice
-	S is the set of OID prefixes found in the slice signature
-	S.sig. /* xxx */
+	Definition (slice prefix): The slice prefix S.slice is the set
+	of all OIDs o in S.sig for which there is no p in S.sig such
+	that p is a prefix of o.
       </t>
 
 <!--
