@@ -3,8 +3,8 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                                  Jacobs University Bremen
-Intended status: Informational                         February 28, 2008
-Expires: August 31, 2008
+Intended status: Informational                             February 2008
+Expires: August 4, 2008
 
 
           SNMP Traffic Measurements and Trace Exchange Formats
@@ -33,7 +33,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on August 31, 2008.
+   This Internet-Draft will expire on August 4, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Abstract
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 1]
+Schoenwaelder            Expires August 4, 2008                 [Page 1]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 2]
+Schoenwaelder            Expires August 4, 2008                 [Page 2]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -164,7 +164,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 3]
+Schoenwaelder            Expires August 4, 2008                 [Page 3]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -220,7 +220,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 4]
+Schoenwaelder            Expires August 4, 2008                 [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -276,7 +276,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 5]
+Schoenwaelder            Expires August 4, 2008                 [Page 5]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -332,7 +332,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 6]
+Schoenwaelder            Expires August 4, 2008                 [Page 6]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -388,7 +388,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 7]
+Schoenwaelder            Expires August 4, 2008                 [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -444,7 +444,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 8]
+Schoenwaelder            Expires August 4, 2008                 [Page 8]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -500,7 +500,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008                [Page 9]
+Schoenwaelder            Expires August 4, 2008                 [Page 9]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -556,7 +556,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 10]
+Schoenwaelder            Expires August 4, 2008                [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -612,7 +612,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 11]
+Schoenwaelder            Expires August 4, 2008                [Page 11]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -625,169 +625,169 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
    used to convert RELAX NG compact syntax to other XML schema
    notations.
 
- # Relax NG grammar for the XML SNMP trace format.
- #
- # Published as part of RFC XXXX.
- #
- # $Id: measure.xml 2782 2008-02-12 20:07:59Z schoenw $
+# Relax NG grammar for the XML SNMP trace format.
+#
+# Published as part of RFC XXXX.
+#
+# $Id: measure.xml 2813 2008-02-28 01:11:04Z schoenw $
 
- default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
+default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
- start =
-   element snmptrace {
-     packet.elem*
-   }
+start =
+  element snmptrace {
+    packet.elem*
+  }
 
- packet.elem =
-   element packet {
-     element time-sec  { xsd:unsignedInt },
-     element time-usec { xsd:unsignedInt },
-     element src-ip    { ipaddress.type },
-     element src-port  { xsd:unsignedInt },
-     element dst-ip    { ipaddress.type },
-     element dst-port  { xsd:unsignedInt },
-     snmp.elem
-   }
+packet.elem =
+  element packet {
+    element time-sec  { xsd:unsignedInt },
+    element time-usec { xsd:unsignedInt },
+    element src-ip    { ipaddress.type },
+    element src-port  { xsd:unsignedInt },
+    element dst-ip    { ipaddress.type },
+    element dst-port  { xsd:unsignedInt },
+    snmp.elem
+  }
 
- snmp.elem =
-   element snmp {
-     length.attrs?,
-     message.elem
-   }
+snmp.elem =
+  element snmp {
+    length.attrs?,
+    message.elem
+  }
 
- message.elem =
-   element version   { length.attrs, xsd:int },
-   element community { length.attrs, xsd:hexBinary },
-   pdu.elem
+message.elem =
+  element version   { length.attrs, xsd:int },
+  element community { length.attrs, xsd:hexBinary },
+  pdu.elem
 
- message.elem |=
-   element version { length.attrs, xsd:int },
-   element message {
-     length.attrs,
-     element msg-id         { length.attrs, xsd:unsignedInt },
+message.elem |=
+  element version { length.attrs, xsd:int },
+  element message {
+    length.attrs,
+    element msg-id         { length.attrs, xsd:unsignedInt },
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 12]
+Schoenwaelder            Expires August 4, 2008                [Page 12]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
-     element max-size       { length.attrs, xsd:unsignedInt },
-     element flags          { length.attrs, xsd:hexBinary },
-     element security-model { length.attrs, xsd:unsignedInt }
-   },
-   usm.elem?,
-   element scoped-pdu {
-     length.attrs,
-     element context-engine-id { length.attrs, xsd:hexBinary },
-     element context-name      { length.attrs, xsd:string },
-     pdu.elem
-   }
+    element max-size       { length.attrs, xsd:unsignedInt },
+    element flags          { length.attrs, xsd:hexBinary },
+    element security-model { length.attrs, xsd:unsignedInt }
+  },
+  usm.elem?,
+  element scoped-pdu {
+    length.attrs,
+    element context-engine-id { length.attrs, xsd:hexBinary },
+    element context-name      { length.attrs, xsd:string },
+    pdu.elem
+  }
 
- usm.elem =
-   element usm {
-     length.attrs,
-     element auth-engine-id    { length.attrs, xsd:hexBinary },
-     element auth-engine-boots { length.attrs, xsd:unsignedInt },
-     element auth-engine-time  { length.attrs, xsd:unsignedInt },
-     element user              { length.attrs, xsd:hexBinary },
-     element auth-params       { length.attrs, xsd:hexBinary },
-     element priv-params       { length.attrs, xsd:hexBinary }
-   }
+usm.elem =
+  element usm {
+    length.attrs,
+    element auth-engine-id    { length.attrs, xsd:hexBinary },
+    element auth-engine-boots { length.attrs, xsd:unsignedInt },
+    element auth-engine-time  { length.attrs, xsd:unsignedInt },
+    element user              { length.attrs, xsd:hexBinary },
+    element auth-params       { length.attrs, xsd:hexBinary },
+    element priv-params       { length.attrs, xsd:hexBinary }
+  }
 
- pdu.elem =
-   element trap {
-     length.attrs,
-     element enterprise        { length.attrs, oid.type },
-     element agent-addr        { length.attrs, ipv4address.type },
-     element generic-trap      { length.attrs, xsd:int },
-     element specific-trap     { length.attrs, xsd:int },
-     element time-stamp        { length.attrs, xsd:int },
-     element variable-bindings { length.attrs, varbind.elem* }
-   }
+pdu.elem =
+  element trap {
+    length.attrs,
+    element enterprise        { length.attrs, oid.type },
+    element agent-addr        { length.attrs, ipv4address.type },
+    element generic-trap      { length.attrs, xsd:int },
+    element specific-trap     { length.attrs, xsd:int },
+    element time-stamp        { length.attrs, xsd:int },
+    element variable-bindings { length.attrs, varbind.elem* }
+  }
 
- pdu.elem |=
-   element (get-request | get-next-request | get-bulk-request |
-            set-request | inform-request | snmpV2-trap |
-            response | report) {
-     length.attrs,
-     element request-id        { length.attrs, xsd:int },
-     element error-status      { length.attrs, xsd:int },
-     element error-index       { length.attrs, xsd:int },
-     element variable-bindings { length.attrs, varbind.elem* }
-   }
+pdu.elem |=
+  element (get-request | get-next-request | get-bulk-request |
+           set-request | inform-request | snmpV2-trap |
+           response | report) {
+    length.attrs,
+    element request-id        { length.attrs, xsd:int },
+    element error-status      { length.attrs, xsd:int },
+    element error-index       { length.attrs, xsd:int },
+    element variable-bindings { length.attrs, varbind.elem* }
+  }
 
- varbind.elem =
-   element varbind { length.attrs, name.elem, value.elem }
-
-
+varbind.elem =
+  element varbind { length.attrs, name.elem, value.elem }
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 13]
+
+
+Schoenwaelder            Expires August 4, 2008                [Page 13]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
- name.elem =
-   element name { length.attrs, oid.type }
+name.elem =
+  element name { length.attrs, oid.type }
 
- value.elem =
-   element null              { length.attrs, empty } |
-   element integer32         { length.attrs, xsd:int } |
-   element unsigned32        { length.attrs, xsd:unsignedInt } |
-   element counter32         { length.attrs, xsd:unsignedInt } |
-   element counter64         { length.attrs, xsd:unsignedLong } |
-   element timeticks         { length.attrs, xsd:unsignedInt } |
-   element ipaddress         { length.attrs, ipv4address.type } |
-   element octet-string      { length.attrs, xsd:hexBinary } |
-   element object-identifier { length.attrs, oid.type } |
-   element opaque            { length.attrs, xsd:hexBinary } |
-   element no-such-object    { length.attrs, empty } |
-   element no-such-instance  { length.attrs, empty } |
-   element end-of-mib-view   { length.attrs, empty }
+value.elem =
+  element null              { length.attrs, empty } |
+  element integer32         { length.attrs, xsd:int } |
+  element unsigned32        { length.attrs, xsd:unsignedInt } |
+  element counter32         { length.attrs, xsd:unsignedInt } |
+  element counter64         { length.attrs, xsd:unsignedLong } |
+  element timeticks         { length.attrs, xsd:unsignedInt } |
+  element ipaddress         { length.attrs, ipv4address.type } |
+  element octet-string      { length.attrs, xsd:hexBinary } |
+  element object-identifier { length.attrs, oid.type } |
+  element opaque            { length.attrs, xsd:hexBinary } |
+  element no-such-object    { length.attrs, empty } |
+  element no-such-instance  { length.attrs, empty } |
+  element end-of-mib-view   { length.attrs, empty }
 
- # The blen attribute indicates the number of octets used by the BER
- # encoded tag / length / value triple. The vlen attribute indicates
- # the number of octets used by the BER encoded value alone.
+# The blen attribute indicates the number of octets used by the BER
+# encoded tag / length / value triple. The vlen attribute indicates
+# the number of octets used by the BER encoded value alone.
 
- length.attrs =
-   ( attribute blen { xsd:unsignedShort },
-     attribute vlen { xsd:unsignedShort } )?
+length.attrs =
+  ( attribute blen { xsd:unsignedShort },
+    attribute vlen { xsd:unsignedShort } )?
 
- oid.type =
-   xsd:string {
-     pattern =
-       """[0-2](\.[1-3]?[0-9])(\.(0|([1-9]\d*))){0,126}"""
-   }
+oid.type =
+  xsd:string {
+    pattern =
+      "[0-2](\.[1-3]?[0-9])(\.(0|([1-9]\d*))){0,126}"
+  }
 
- # The types below are for IP addresses. Note that SNMP's buildin
- # IpAddress type only supports IPv4 addresses; IPv6 addresses are only
- # introduced to cover SNMP over IPv6 endpoints.
+# The types below are for IP addresses. Note that SNMP's buildin
+# IpAddress type only supports IPv4 addresses; IPv6 addresses are only
+# introduced to cover SNMP over IPv6 endpoints.
 
- ipv4address.type =
-   xsd:string {
-     pattern =
-    """((0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)\.){3}
-        (0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)"""
-   }
+ipv4address.type =
+  xsd:string {
+    pattern =
+   "((0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)\.){3}" ~
+   "(0|1[0-9]{0,2}|2([0-4][0-9]?|5[0-5]?|[6-9])?|[3-9][0-9]?)"
+  }
 
- ipv6address.type =
-   xsd:string {
-     pattern =
-       """(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|
-     (([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"""
+ipv6address.type =
+  xsd:string {
+    pattern =
+      "(([0-9a-fA-F]+:){7}[0-9a-fA-F]+)|" ~
+      "(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?::(([0-9a-fA-F]+:)*[0-9a-fA-F]+)?"
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 14]
+Schoenwaelder            Expires August 4, 2008                [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
-   }
+  }
 
- ipaddress.type = ipv4address.type | ipv6address.type
+ipaddress.type = ipv4address.type | ipv6address.type
 
    The following example shows an SNMP trace file in XML format
    containing an SNMPv1 get-next-request message for the OID
@@ -836,7 +836,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 15]
+Schoenwaelder            Expires August 4, 2008                [Page 15]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -892,7 +892,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 16]
+Schoenwaelder            Expires August 4, 2008                [Page 16]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -948,7 +948,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 17]
+Schoenwaelder            Expires August 4, 2008                [Page 17]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -995,7 +995,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
    Anonymization techniques can be applied to keep information in traces
    which could otherwise reveal sensitive information.  When using
-   anonymization, values should only be added when the underlying data
+   anonymization, values should only be kept when the underlying data
    type is known and an appropriate anonymization transformation is
    available (filter-in principle).  For values appearing in instance
    identifiers, it is usually desirable to maintain the lexicographic
@@ -1004,7 +1004,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 18]
+Schoenwaelder            Expires August 4, 2008                [Page 18]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -1060,7 +1060,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 19]
+Schoenwaelder            Expires August 4, 2008                [Page 19]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -1116,7 +1116,7 @@ Internet-Draft          SNMP Traffic Measurements          February 2008
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 20]
+Schoenwaelder            Expires August 4, 2008                [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -1172,7 +1172,7 @@ URIs
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 21]
+Schoenwaelder            Expires August 4, 2008                [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -1228,7 +1228,7 @@ Author's Address
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 22]
+Schoenwaelder            Expires August 4, 2008                [Page 22]
 
 Internet-Draft          SNMP Traffic Measurements          February 2008
 
@@ -1284,5 +1284,5 @@ Acknowledgment
 
 
 
-Schoenwaelder            Expires August 31, 2008               [Page 23]
+Schoenwaelder            Expires August 4, 2008                [Page 23]
 
