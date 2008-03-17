@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <?rfc compact="yes"?>
 <rfc ipr='full3978'
-     docName="draft-irtf-nmrg-snmp-measure-03.txt"
+     docName="draft-irtf-nmrg-snmp-measure-04.txt"
      category="info">
 
   <!--
@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date month="February" year="2008"/>
+    <date month="March" year="2008"/>
 
       <area>Operations and Management</area>
 
