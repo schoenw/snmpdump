@@ -25,6 +25,16 @@ dnl Checks for programs.
 AC_PROG_INSTALL
 AC_PROG_CC
 
+AC_PATH_PROG(FLEX, "flex")
+if test -z "${FLEX}" ; then
+  echo "NOTE: We will not be able to build scanner C code from flex sources."
+fi
+
+AC_PATH_PROG(BISON, "bison")
+if test -z "${BISON}" ; then
+  echo "NOTE: We will not be able to build parser C code from bison sources."
+fi
+
 dnl Checks for libraries.
 AM_PATH_XML2(2.0.0, [], AC_MSG_ERROR(snmpdump requires libxml2))
 PKG_CHECK_MODULES(OPENSSL, openssl)
@@ -33,6 +43,14 @@ AC_SUBST(OPENSSL_LIBS)
 PKG_CHECK_MODULES(LIBANON, libanon)
 AC_SUBST(LIBANON_CFLAGS)
 AC_SUBST(LIBANON_LIBS)
+
+#----------------------------------------------------------------------------
+#       Checking for the libpcap library.
+#----------------------------------------------------------------------------
+
+AC_CHECK_HEADER([pcap.h],,
+    [AC_MSG_ERROR([cannot find pcap headers])])
+AC_CHECK_LIB([pcap],[pcap_dispatch],,AC_MSG_ERROR(canot find pcap library))
 
 #----------------------------------------------------------------------------
 #       Checking for the libnids library.
