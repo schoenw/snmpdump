@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <!-- full3978 -->
 <rfc ipr='full3978' 
-     docName="draft-schoenw-nmrg-snmp-trace-definitions-02.txt"
+     docName="draft-schoenw-nmrg-snmp-trace-definitions-02.txt ($Rev: 2846 $)"
      category="info">
 
   <!--
@@ -79,7 +79,7 @@
       </address>
     </author>
 
-    <date month="March" year="2008"/>
+    <date month="April" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -373,7 +373,11 @@
         responses (and likely no retries) and (b) a similarly large
         number of responses without a matching request. If such
         behavior can be detected, the traces should be investigated
-        and if needed the transport endpoints corrected.
+        and if needed the transport endpoints corrected. Note that the
+        requirement for matching transport endpoints only affects
+        request / response pairs. It is perfectly fine for a manager
+        use different transport layer endpoints in different polling
+        instances.
       </t>
 
       <t>
@@ -428,6 +432,14 @@
 
     <section anchor="flows" title="Flows">
       <t>
+	Traces may contain SNMP messages that have been exchanged
+	between possibly many different network layer endpoints. One
+	way of making an initial separation of such a trace into more
+	manageable pieces is by splitting the messages into flows.
+	Each flow contains only messages that have occurred between
+	two network layer endpoints.
+      </t>
+      <t>
         Definition (flow): A flow F with parameter t is the set of
         messages of an SNMP trace T with the following properties:
       </t>
@@ -449,18 +461,30 @@
         </list>
       </t>
       <t>
+	Parameter t defines the maximum timeout for response messages
+	and is the same for both the notification group messages and
+	the command group messages which a flow may consist of.
+	Parameter t is the same for both cases, because they each may
+	contain non-response messages that originate from a single
+	network endpoint with one timeout characteristic. The value of
+	t should be chosen such that only response messages to the
+	respective non-response messages are considered part of the
+	same flow. Analysis of a large number of traces shows that 25
+	seconds is a proper default value for t.
+      </t>
+      <t>
+        It is possible that response messages of a trace cannot be
+        classified to belong to any flow. This can happen if request
+        messages triggering the response messages were not recorded
+        (for example due to asymmetric routing) or because response
+        messages were originating from transport endpoints different
+        from the endpoint used to receive the associated request
+        message.
+      </t>
+      <t>
         Subsequently, we call flows containing only command group
         messages command flows. Similarly, we call flows containing
         only notification group messages notification flows.
-      </t>
-      <t>
-        Note that it is possible that response messages of a trace
-        cannot be classified to belong to any flow. This can happen if
-        request messages triggering the response messages were not
-        recorded (for example due to asymmetric routing) or because
-        response messages were originating from transport endpoints
-        different from the endpoint used to receive the associated
-        request message.
       </t>
       <t>
         Definition (flow initiator): A flow initiator is the network
@@ -482,22 +506,131 @@
    ]]></artwork>
       </figure>
       <t>
-        This definition of a flow is mostly consistent with the
-        definition of a flow used in <xref target="SPHSM07"/>. The
+	This definition of a flow is different from other flow
+	definitions, for example, the NetFlow definition <xref
+	target="RFC3954"/>. In particular, SNMP flows can be
+	unidirectional (e.g., a manager sending non-response messages
+	to a non-responding agent) and bidirectional (e.g., a manager
+	reading a table from an agent).
+      </t>
+      <t>
+        This flow definition is mostly consistent with the definition
+        of an SNMP flow used in <xref target="SPHSM07"/>. The
         difference is that the tool used to generate the data reported
         in <xref target="SPHSM07"/> did only require that the network
         layer source endpoint of the response messages matches the
         destination network layer endpoint of the associated request
         messages.
       </t>
+
+      <t>
+	Following is an example of a trace consisting of SNMP messages
+	that were sent between different network layer endpoints. The
+	network layer endpoints are represented by A, B, C and D. This
+	trace will be separated into flows.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ ----------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type        | Req. ID.
+ ----------------------------------------------------------------
+    0      0.0         A -> B     GetNext Request    1
+    1      0.04        C -> D     Get Request       10
+    2      0.05        B -> A     Response           1
+    3      0.08        D -> C     Response          10
+    4      0.11        A -> B     GetNext Request    2
+    5      0.15        B -> A     Response           2
+    6      0.18        A -> B     GetNext Request    3
+    7      0.22        D -> C     Trap              14
+    8      0.25        B -> A     Response           3
+ ----------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	This trace contains SNMP messages that have been exchanged
+	between different network layer endpoints. One flow will
+	consist of SNMP messages that have been exchanged between
+	network layer endpoints A and B, where all response messages
+	originate from B and all non-response messages originate from
+	A.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ ----------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type        | Req. ID.
+ ----------------------------------------------------------------
+    0      0.0         A -> B     GetNext Request    1
+    2      0.05        B -> A     Response           1
+    4      0.11        A -> B     GetNext Request    2
+    5      0.15        B -> A     Response           2
+    6      0.18        A -> B     GetNext Request    3
+    8      0.25        B -> A     Response           3
+ ----------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	A minimum value of parameter t of this flow is 0.07 seconds,
+	since that is the longest time between a request and its
+	subsequent response message.
+      </t>
+      <t>
+	The second flow contains SNMP messages exchanged between
+	network layer endpoints C and D, where all response messages
+	originate from D and all non-response messages originate from
+	C.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ ----------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type        | Req. ID.
+ ----------------------------------------------------------------
+    1      0.04        C -> D     Get Request       10
+    3      0.08        D -> C     Response          10
+ ----------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	A minimum value of parameter t for this flow is 0.04 seconds.
+      </t>
+      <t>
+	The third and final flow contains the remaining SNMP messages
+	of the trace that occurred between network layer endpoints C
+	and D. In this case the non-response message originates from
+	D.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ ----------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type        | Req. ID.
+ ----------------------------------------------------------------
+    7      0.22        D -> C     Trap              14
+ ----------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	There is no parameter t applicable to this flow, because there
+	are no response messages.
+      </t>
+
     </section>
 
     <section anchor="slices" title="Slices">
 
       <t>
-        Flows are made up of smaller sets of messages that are related
-        to each other. Such a subset of messages from a single flow
-        will be considered a slice of a flow.
+	Flows can still contain a large amount of SNMP messages. A
+	flow should therefore be split up into even smaller sets of
+	messages.  One way of identifying meaningful subsets of
+	messages of a flow would be by considering the behavior of
+	managers and agents. In the case of managers, they are usually
+	configured to perform regular polling instances. In such a
+	polling instance, the manager might poll a number of
+	agents. Since a flow contains only the messages exchanged
+	between two network layer endpoints, a flow therefore probably
+	consists of only a subset of the messages that are part of a
+	polling instance. So, one option of finding smaller,
+	meaningful subsets of messages within flows, would be by
+	looking for messages that belong to a particular polling
+	instance. Such a smaller set of messages is called a slice.
       </t>
       <t>
         Definition (slice): A slice S with parameter e is a subset of
@@ -543,15 +676,41 @@
       </t>
 
       <t>
+	S1 requires that the messages of a single slice are exchanged
+	between a single transport layer endpoint pair. This is
+	different from the flow definition, which requires a single
+	network layer endpoint pair.  The choice of looking at the
+	transport layer endpoints in the case of slices is based on
+	the assumption that, for instance, multiple managers and
+	agents might be operating from the same respective network
+	layer endpoint. Another assumption is that a manager and an
+	agent will only use a single transport layer endpoint
+	respectively when they communicate for the duration of a slice
+	(i.e., polling instance). A previous section already mentioned
+	some issues when a manager or agent uses different transport
+	layer endpoints within a single polling instance.
+      </t>
+      <t>
         The parameter e in S6 defines the maximum time between two
         non-response messages that belong to a slice. This parameter
         should be chosen such that unrelated requests within a flow
-        are not considered to be of the same slice. Unrelated requests
-        are those that, for instance, belong to different polling
-        instances. The parameter e should therefore be larger than the
-        retransmission interval in order to keep retransmissions
-        within a slice and smaller than the polling interval used by
-        the slice initiator.
+        are not considered to be of the same slice (i.e., it is used
+        to detect the end of a slice). Unrelated requests are those
+        that, for instance, belong to different polling instances. The
+        parameter e should therefore be larger than the retransmission
+        interval in order to keep retransmissions within a slice and
+        smaller than the polling interval used by the slice initiator.
+      </t>
+      <t>
+	The value of parameter e might be closely related to parameter
+	t of the respective flow the slice is part of. For instance,
+	if parameter e is very large, than t is likely to be also very
+	large and vice versa. Also, if parameter e is very small, than
+	t is probably also very small. However, it is not possible to
+	strictly state that e and t are always closely related to each
+	other, because parameter e is specific for a slice. This is in
+	contrast with parameter t which is specific for a much larger
+	set of messages, a flow.
       </t>
 
       <t>
@@ -575,6 +734,277 @@
    S.e        = parameter e of S (maximum time between two 
                 non-response messages)
    ]]></artwork>
+      </figure>
+      <t>
+	Following is an example of a flow F consisting of SNMP
+	messages that have taken place between transport later
+	endpoints A, B, C and D.  Note that even though there are
+	multiple transport layer endpoints, it still means that within
+	this single flow only two network layer endpoints can be
+	identified.
+      </t>
+      <figure>
+	<artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    GetNext Request   1        alpha
+    1         0.05      B -> A    Response          1        alpha.1
+    2         0.11      A -> B    GetNext Request   2        alpha.1
+    3         0.15      B -> A    Response          2        alpha.2
+    4         0.18      A -> B    GetNext Request   3        alpha.2
+    5         0.25      B -> A    Response          3        beta.1
+    6       300.0       C -> D    GetNext Request   4        alpha
+    7       300.06      D -> C    Response          4        alpha.1
+    8       300.14      C -> D    GetNext Request   5        alpha.1
+    9       300.21      D -> C    Response          5        alpha.2
+   10       300.28      C -> D    GetNext Request   6        alpha.2
+   11       300.32      D -> C    Response          6        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <t>
+	This flow contains SNMP messages that have been exchanged
+	between two different pairs of transport layer endpoints.
+	According to S1, this means that the set of messages in this
+	flow can be separated into at least two sets of messages that
+	might be slices:
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    GetNext Request   1        alpha
+    1         0.05      B -> A    Response          1        alpha.1
+    2         0.11      A -> B    GetNext Request   2        alpha.1
+    3         0.15      B -> A    Response          2        alpha.2
+    4         0.18      A -> B    GetNext Request   3        alpha.2
+    5         0.25      B -> A    Response          3        beta.1
+ -------------------------------------------------------------------
+        ]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    6       300.0       C -> D    GetNext Request   4        alpha
+    7       300.06      D -> C    Response          4        alpha.1
+    8       300.14      C -> D    GetNext Request   5        alpha.1
+    9       300.21      D -> C    Response          5        alpha.2
+   10       300.28      C -> D    GetNext Request   6        alpha.2
+   11       300.32      D -> C    Response          6        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <t>
+	S2 does not result in a further separation of these sets into
+	smaller sets of SNMP messages that might be slices. This,
+	because all the listed non-response messages are of the same
+	PDU type. Neither is S3 affecting the current sets.
+      </t>
+      <t>
+	S4 also does not result in a further subdivision of these two
+	sets, because in each of the two sets the non-response
+	messages, that have preceding response messages, have the same
+	OID in their varbind list as the respective preceding
+	response. For example, the second and third non-response
+	message in both sets have the same OID compared to the
+	respective preceding response message (i.e., these
+	non-response messages are a part of a single polling
+	instance).
+      </t>
+      <t>
+	S5 also does not affect these two sets, because both sets
+	already contain only response messages that are the result of
+	a non-response message that occurred before each response
+	message respectively (i.e., each response has a request
+	identifier that is the same as the request identifier of a
+	non-response messages listed before that response message).
+      </t>
+      <t>
+	S6 states that parameter e should be chosen such that
+	unrelated requests within a flow are not considered to be of
+	the same slice.  Considering the given flow and its messages,
+	a proper value for e should be 0.14 &lt;= e &lt; 299.82
+	seconds. Such a value for parameter e will separate the flow
+	into two apparent polling instances, which each contain the
+	same set of messages as those two listed above.
+      </t>
+      <t>
+	As a result, the two listed sets are also slices. The given
+	flow thus consists of the following two slices with the value
+	of parameter e as defined above.
+      </t>
+      <t>
+	Following is an example of a flow F consisting of SNMP
+	messages that have taken place between transport later
+	endpoints A, B and C.  Note again that even though there are
+	multiple transport layer endpoints, it still means that within
+	this single flow only two network layer endpoints can be
+	identified.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    Get Request       1        alpha.1
+    1         0.06      B -> A    Response          1        alpha.1
+    2         0.12      A -> B    Get Request       2        beta.1
+    3         0.17      B -> A    Response          2        beta.1
+    4       300.0       A -> B    Get Request       3        alpha.1
+    5       300.05      B -> C    Trap             10        gamma.1
+    6       300.07      B -> A    Response          3        alpha.1
+    7       300.14      A -> B    Get Request       4        beta.1
+    8       300.19      B -> A    Response          4        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <t>
+	This flow contains messages that are exchanged between
+	different pairs of transport layer endpoints. Two different
+	pairs of transport layer endpoints are used within this
+	flow. According to S1, this means that at least two sets of
+	messages might be slices:
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    Get Request       1        alpha.1
+    1         0.06      B -> A    Response          1        alpha.1
+    2         0.12      A -> B    Get Request       2        beta.1
+    3         0.17      B -> A    Response          2        beta.1
+    4       300.0       A -> B    Get Request       3        alpha.1
+    6       300.07      B -> A    Response          3        alpha.1
+    7       300.14      A -> B    Get Request       4        beta.1
+    8       300.19      B -> A    Response          4        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    5       300.05      B -> C    Trap             10        gamma.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <t>
+	Applying S2 to each of the two sets does not result in more
+	sets, because each set only contains non-response messages of
+	one PDU type respectively.
+      </t>
+      <t>
+	S3 requires separating the first set of SNMP messages into two
+	sets, because the Get Request messages must have the same set
+	of OIDs.  This results in the following three sets of SNMP
+	messages.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    Get Request       1        alpha.1
+    1         0.06      B -> A    Response          1        alpha.1
+    4       300.0       A -> B    Get Request       3        alpha.1
+    6       300.07      B -> A    Response          3        alpha.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    2         0.12      A -> B    Get Request       2        beta.1
+    3         0.17      B -> A    Response          2        beta.1
+    7       300.14      A -> B    Get Request       4        beta.1
+    8       300.19      B -> A    Response          4        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    5       300.05      B -> C    Trap             10        gamma.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <t>
+	S4 is not applicable to either of these sets.
+      </t>
+      <t>
+	S5 does not affect these sets, because these sets already
+	contain only response messages that are the result of a
+	non-response message that occurred before each response
+	message respectively.
+      </t>
+      <t>
+	Finally, S6 states that parameter e should be chosen such that
+	unrelated requests within a flow are not considered to be of
+	the same slice. The messages in the given flow suggest that
+	two polling instances might have occurred. Therefore, an
+	appropriate value for parameter e would be &lt; 300 seconds.
+	The determination of parameter e results in the separation of the
+	first two sets into two sets each. Following are the resulting
+	slices.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    0         0.0       A -> B    Get Request       1        alpha.1
+    1         0.06      B -> A    Response          1        alpha.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    2         0.12      A -> B    Get Request       2        beta.1
+    3         0.17      B -> A    Response          2        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    4       300.0       A -> B    Get Request       3        alpha.1
+    6       300.07      B -> A    Response          3        alpha.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    7       300.14      A -> B    Get Request       4        beta.1
+    8       300.19      B -> A    Response          4        beta.1
+ -------------------------------------------------------------------
+	]]></artwork>
+      </figure>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
+ -------------------------------------------------------------------
+    5       300.05      B -> C    Trap             10        gamma.1
+ -------------------------------------------------------------------
+	]]></artwork>
       </figure>
 
     </section>
@@ -644,11 +1074,11 @@
  Message | Direction | PDU type        | OIDs
  -------------------------------------------------------------------
     0        A -> B    GetNext Request   alpha, beta
-    1        B -> A    Response          alpha.0, beta.0
-    2        A -> B    GetNext Request   alpha.0, beta.0
-    3        B -> A    Response          alpha.1, beta.1
-    4        A -> B    GetNext Request   alpha.1, beta.1
-    5        B -> A    Response          gamma.0, delta.0
+    1        B -> A    Response          alpha.1, beta.1
+    2        A -> B    GetNext Request   alpha.1, beta.1
+    3        B -> A    Response          alpha.2, beta.2
+    4        A -> B    GetNext Request   alpha.2, beta.2
+    5        B -> A    Response          gamma.1, delta.1
  -------------------------------------------------------------------
    ]]></artwork>
       </figure>
@@ -752,11 +1182,11 @@ otherwise:
  Message | Direction | PDU type        | OIDs
  -------------------------------------------------------------------
     0        A -> B    GetNext Request   sysUpTime, alpha, beta
-    1        B -> A    Response          sysUpTime.0, alpha.0, beta.0
-    2        A -> B    GetNext Request   alpha.0, beta.0
-    3        B -> A    Response          alpha.1, beta.1
-    4        A -> B    GetNext Request   alpha.1, beta.1
-    5        B -> A    Response          gamma.0, delta.0
+    1        B -> A    Response          sysUpTime.0, alpha.1, beta.1
+    2        A -> B    GetNext Request   alpha.1, beta.1
+    3        B -> A    Response          alpha.2, beta.2
+    4        A -> B    GetNext Request   alpha.2, beta.2
+    5        B -> A    Response          gamma.1, delta.1
  -------------------------------------------------------------------
    ]]></artwork>
       </figure>
@@ -962,12 +1392,12 @@ otherwise:
         <list style='format (EQ%d) ' counter='sliceequiv'>
           <t>
             All messages in A and B have been exchanged between the
-            same two network endpoints.
+            same two network layer endpoints.
           </t>
           <t>
             All read request messages, write request messages, and
             notification messages in A and B originate from the same
-            network endpoint.
+            network layer endpoint.
           </t>
           <t>
             All non-response messages in A and B are of the same type.
@@ -988,7 +1418,74 @@ otherwise:
 	slices in the equivalence class [A] = {s in S | s ~ A} with A
 	in S, are of the same slice type.
       </t>
-
+      <t>
+	Following are two slices that are of the same equivalence
+	class and are therefore of the same slice type.
+      </t>
+      <t>
+	The first slice contains messages that have been exchanged
+	between transport layer endpoints A and B.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Direction | PDU type        | OIDs
+ -------------------------------------------------------------------
+    0        A -> B    GetNext Request   alpha, beta
+    1        B -> A    Response          alpha.1, beta.1
+    2        A -> B    GetNext Request   alpha.1, beta.1
+    3        B -> A    Response          alpha.2, beta.2
+    4        A -> B    GetNext Request   alpha.2, beta.2
+    5        B -> A    Response          gamma.1, delta.1
+ -------------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	The second slice contains messages that have been exchanged
+	between transport layer endpoints C and D. However, the
+	network layer endpoints of this slice are the same as the
+	first slice and all non-response messages in both slices
+	originate from the same network layer endpoint.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Direction | PDU type        | OIDs
+ -------------------------------------------------------------------
+    0        C -> D    GetNext Request   alpha, beta
+    1        D -> C    Response          alpha.1, beta.1
+    2        C -> D    GetNext Request   alpha.1, beta.1
+    3        D -> C    Response          alpha.2, beta.2
+    4        C -> D    GetNext Request   alpha.2, beta.2
+    3        D -> C    Response          alpha.3, beta.3
+    4        C -> D    GetNext Request   alpha.3, beta.3
+    5        D -> C    Response          gamma.1, delta.1
+ -------------------------------------------------------------------	
+	]]></artwork>
+      </figure>
+      <t>
+	EQ1 requires that both slices have occurred between the same
+	two network layer endpoints, which is the case here.
+      </t>
+      <t>
+	EQ2 requires that all read request messages, write request
+	messages, and notification messages (i.e., all non-response
+	messages) originate from the same network layer endpoint,
+	which is the case.
+      </t>
+      <t>
+	EQ3 is met, because all non-response messages are of PDU type
+	GetNext Request in both cases.
+      </t>
+      <t>
+	Using the definition of a slice prefix as stated in the
+	previous chapter, it can be determined that both slices have
+	the prefix { alpha, beta }. As a result, also EQ4 is met.
+      </t>
+      <t>
+	Both slices are therefore part of the same equivalence class
+	and are therefore of the same slice type.
+      </t>
     </section>
 
     <section anchor="walks" title="Walks">
@@ -1000,31 +1497,71 @@ otherwise:
       <t>
         <list style='format (W%d) ' counter='walk'>
           <t>
-            The type of the slice S is either GetNext request or
-            GetBulk request.
+            The type S.type of the slice S is either GetNext request
+            or GetBulk request.
           </t>
           <t>
-            At least one object identifier in the sequence of requests
-            at the same varbind index must be increasing
-            lexicographically while all object identifiers at the same
-            varbind index have to be non-decreasing.
+            At least one OID in the sequence of requests at the same
+            varbind index must be increasing lexicographically while
+            all OIDs at the same varbind index have to be
+            non-decreasing.
           </t>
         </list>
       </t>
 
       <t>
         Definition (strict walk): A walk W is a strict walk if all
-        object identifiers in the sequence of requests at the same
-        varbind index are strictly increasing lexicographically.
-        Furthermore, the object identifiers at the same index of a
-        response and a subsequent request must be identical.
+        OIDs in the sequence of requests at the same varbind index are
+        strictly increasing lexicographically.  Furthermore, the OIDs
+        at the same index of a response and a subsequent request must
+        be identical.
       </t>
 
       <t>
         Definition (prefix constrained walk): A walk W is a prefix
-        constrained walk if all object identifiers at the same index
-        have the same object identifier prefix.  This prefix is
-        established by the first request within the walk.
+        constrained walk if all OIDs at the same index in the request
+        have the same OID prefix.  This prefix is established by the
+        first request within the walk.
+      </t>
+      <t>
+	Following is an example of a slice that is also a walk.
+      </t>
+      <figure>
+        <artwork><![CDATA[
+ -------------------------------------------------------------------
+ Message | Direction | PDU type        | OIDs
+ -------------------------------------------------------------------
+    0        A -> B    GetNext Request   alpha, beta
+    1        B -> A    Response          alpha.1, beta.1
+    2        A -> B    GetNext Request   alpha.1, beta.1
+    3        B -> A    Response          alpha.2, beta.2
+    4        A -> B    GetNext Request   alpha.2, beta.2
+    5        B -> A    Response          gamma.1, delta.1
+ -------------------------------------------------------------------
+   ]]></artwork>
+      </figure>
+      <t>
+	This slice is a walk, because it adheres to W1, since it
+	contains only requests that are of PDU type GetNext
+	Request. W2 is also met, because there are always two object
+	identifiers at the same varbind index that are increasing
+	lexicographically in the sequence of requests. Also, none of
+	the object identifiers at the same varbind index is
+	lexicographically decreasing.
+      </t>
+      <t>
+	This slice is also a strict walk, because all object
+	identifiers in the sequence of requests at the same varbind
+	index are strictly increasing lexicographically. Secondly, the
+	object identifiers at the same index of a response and a
+	subsequent request are always identical.
+      </t>
+      <t>
+	Finally, this walk is also a prefix constrained walk, because
+	all object identifiers at the same index in the request have
+	the same object identifier prefix. The first varbind index in
+	the requests always has alpha as prefix and the second varbind
+	index always has beta as prefix.
       </t>
 
     </section>
@@ -1153,6 +1690,19 @@ otherwise:
           <date month="December" year="2002"/>
         </front>
         <seriesInfo name="RFC" value="3410"/>
+      </reference>
+
+      <reference anchor="RFC3954">
+        <front>
+          <title>
+	    Cisco Systems NetFlow Services Export Version 9
+          </title>
+          <author initials="B." surname="Claise" fullname="B. Claise">
+            <organization>Cisco Systems, Inc.</organization>
+          </author>
+          <date month="October" year="2004"/>
+        </front>
+        <seriesInfo name="RFC" value="3954"/>
       </reference>
 
       <reference anchor="ID-IRTF-NMRG-SNMP-MEASURE">
