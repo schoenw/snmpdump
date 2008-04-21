@@ -120,14 +120,14 @@
     <section anchor="introduction" title="Introduction">
       <t>
         The Simple Network Management Protocol (SMMP) was introduced
-        in the late 1980s. Since then, several protocol changes have
-        taken place, which have eventually led to what is known today
-        as the SNMP version 3 framework (SNMPv3) <xref
-        target="RFC3410"/><xref target="RFC3411"/>. Extensive use of
-        SNMP has led to significant practical experience by both
-        network operators and researchers. However, up until now only
-        little research has been done on characterizing and modeling
-        SNMP traffic.
+        in the late 1980s. Since then, several evolutionary protocol
+        changes have taken place, resulting in the SNMP version 3
+        framework (SNMPv3) <xref target="RFC3410"/><xref
+        target="RFC3411"/>, published as full standard in
+        2002. Extensive use of SNMP has led to significant practical
+        experience by both network operators and researchers. However,
+        up until now only little research has been done on
+        characterizing and modeling SNMP traffic.
       </t>
       <t>
         Since recently, network researchers are in the possession of
@@ -218,7 +218,7 @@
         other.
       </t>
       <t>
-	For example, a slice may contain the exchanged SNMP messages
+	For example, a slice may contain the SNMP messages exchanged
 	between an agent and a manager, which polls that agent in a
 	single polling instance.  The manager may be configured to
 	poll that agent every once in a while. If the requested
@@ -250,8 +250,8 @@
         in this document.
       </t>
       <t>
-        Notation: Let M be an SNMP message. The properties of M are
-        denoted as follows:
+        Notation: The properties of an SNMP message M are denoted as
+        follows:
       </t>
       <figure>
       <artwork><![CDATA[
@@ -268,9 +268,9 @@
    ]]></artwork>
       </figure>
       <t>
-        Note that the properties of a message can be easily extracted
-        from the exchange formats defined in RFC XXXX
-        <xref target="ID-IRTF-NMRG-SNMP-MEASURE"/>.
+        The properties of a message can be easily extracted from the
+        exchange formats defined in RFC XXXX <xref
+        target="ID-IRTF-NMRG-SNMP-MEASURE"/>.
       </t>
 
       <t>
@@ -307,13 +307,13 @@
       </t>
 
       <t>
-        Note that Report messages are treated like Response messages
-        since the SNMPv3 specifications currently use Report messages
-        only as an error reporting mechanism, always triggered by the
-        processing of some request messages. In case future SNMP
-        versions or extensions use Report messages without having a
-        request triggering the generation of Report messages, the
-        definition above may need to be revisted.
+        Report messages are treated like Response messages since the
+        SNMPv3 specifications currently use Report messages only as an
+        error reporting mechanism, always triggered by the processing
+        of some request messages. In case future SNMP versions or
+        extensions use Report messages without having a request
+        triggering the generation of Report messages, the definition
+        above may need to be revisited.
       </t>
 
       <t>
@@ -376,8 +376,9 @@
         and if needed the transport endpoints corrected. Note that the
         requirement for matching transport endpoints only affects
         request / response pairs. It is perfectly fine for a manager
-        use different transport layer endpoints in different polling
-        instances.
+        to use different transport layer endpoints in different
+        polling instances or even for different operations (e.g.,
+        slices) within the same polling instance.
       </t>
 
       <t>
@@ -406,7 +407,7 @@
       </t>
 
       <t>
-        We again require that the transport endpoints match
+        This definition again requires matching transport endpoints
         for notification group messages.
       </t>
 
@@ -482,18 +483,12 @@
         message.
       </t>
       <t>
-        Subsequently, we call flows containing only command group
-        messages command flows. Similarly, we call flows containing
-        only notification group messages notification flows.
+        Subsequently, flows containing only command group messages are
+        called command flows. Similarly, flows containing only
+        notification group messages are called notification flows.
       </t>
       <t>
-        Definition (flow initiator): A flow initiator is the network
-        endpoint of the two endpoints involved in a flow, which is
-        responsible for sending the first non-response message.
-      </t>
-      <t>
-        Notation: Let F be a flow as defined above. We denote the
-        properties of F as follows:
+        Notation: The properties of a flow F are denoted as follows:
       </t>
       <figure>
       <artwork><![CDATA[
@@ -506,15 +501,15 @@
    ]]></artwork>
       </figure>
       <t>
-	This definition of a flow is different from other flow
-	definitions, for example, the NetFlow definition <xref
-	target="RFC3954"/>. In particular, SNMP flows can be
+	This definition of a flow indicates that it can be either
 	unidirectional (e.g., a manager sending non-response messages
-	to a non-responding agent) and bidirectional (e.g., a manager
-	reading a table from an agent).
+	to a non-responding agent), or bidirectional (e.g., a manager
+	reading a table from an agent). This is different from other
+	flow definitions, like the NetFlow definition <xref
+	target="RFC3954"/>.
       </t>
       <t>
-        This flow definition is mostly consistent with the definition
+        The flow definition is mostly consistent with the definition
         of an SNMP flow used in <xref target="SPHSM07"/>. The
         difference is that the tool used to generate the data reported
         in <xref target="SPHSM07"/> did only require that the network
@@ -522,7 +517,11 @@
         destination network layer endpoint of the associated request
         messages.
       </t>
-
+      <t>
+        Definition (flow initiator): A flow initiator is the network
+        endpoint of the two endpoints involved in a flow, which is
+        responsible for sending the first non-response message.
+      </t>
       <t>
 	Following is an example of a trace consisting of SNMP messages
 	that were sent between different network layer endpoints. The
@@ -533,7 +532,7 @@
         <artwork><![CDATA[
  ----------------------------------------------------------------
  Message | Time [s] | Direction | PDU type        | Req. ID.
- ----------------------------------------------------------------
+ ---------------------------------------------------------------
     0      0.0         A -> B     GetNext Request    1
     1      0.04        C -> D     Get Request       10
     2      0.05        B -> A     Response           1
@@ -569,7 +568,7 @@
    ]]></artwork>
       </figure>
       <t>
-	A minimum value of parameter t of this flow is 0.07 seconds,
+	The minimum value of parameter t of this flow is 0.07 seconds,
 	since that is the longest time between a request and its
 	subsequent response message.
       </t>
@@ -590,10 +589,10 @@
    ]]></artwork>
       </figure>
       <t>
-	A minimum value of parameter t for this flow is 0.04 seconds.
+	The minimum value of parameter t for this flow is 0.04 seconds.
       </t>
       <t>
-	The third and final flow contains the remaining SNMP messages
+	The third and last flow contains the remaining SNMP messages
 	of the trace that occurred between network layer endpoints C
 	and D. In this case the non-response message originates from
 	D.
@@ -629,8 +628,9 @@
 	consists of only a subset of the messages that are part of a
 	polling instance. So, one option of finding smaller,
 	meaningful subsets of messages within flows, would be by
-	looking for messages that belong to a particular polling
-	instance. Such a smaller set of messages is called a slice.
+	looking for messages that belong to a particular operation of
+	a polling instance. Such a smaller set of messages is called a
+	slice.
       </t>
       <t>
         Definition (slice): A slice S with parameter e is a subset of
@@ -650,15 +650,15 @@
             All messages with a PDU of type Get, Set, Trap, or Inform
             must contain the same set of OIDs.
           </t>
-          <t>
-            Each GetNext or GetBulk message must either contain the
-            same set of OIDs or they must be linked to the
-            chronologically last response of the previous request,
-            that is the request must contain at least one OID that has
-            been contained in the (repeater) varbind list of the
-            chronologically last response message of a previous
-            request message.
-          </t>
+	  <t>
+	    Each GetNext or GetBulk message must either contain the
+	    same set of OIDs as the preceding request or it must be
+	    linked to a response of the last previously answered
+	    request (i.e., the request must contain at least one OID
+	    that has been contained in the (repeater) varbind list of
+	    a preceding response message of the last answered request
+	    message).
+	  </t>
           <t>
             All Response messages must follow a previous request
             message.
@@ -685,10 +685,10 @@
 	agents might be operating from the same respective network
 	layer endpoint. Another assumption is that a manager and an
 	agent will only use a single transport layer endpoint
-	respectively when they communicate for the duration of a slice
-	(i.e., polling instance). A previous section already mentioned
-	some issues when a manager or agent uses different transport
-	layer endpoints within a single polling instance.
+	respectively when they communicate for the duration of a
+	slice. A previous section already mentioned some issues when a
+	manager or agent uses different transport layer endpoints
+	within a single slice.
       </t>
       <t>
         The parameter e in S6 defines the maximum time between two
@@ -721,8 +721,7 @@
       </t>
 
       <t>
-        Notation: A slice S has several properties. We introduce the
-        following notation:
+        Notation: The properties of a slice S are denoted as follows:
       </t>
       <figure>
         <artwork><![CDATA[
@@ -737,7 +736,7 @@
       </figure>
       <t>
 	Following is an example of a flow F consisting of SNMP
-	messages that have taken place between transport later
+	messages that have taken place between transport layer
 	endpoints A, B, C and D.  Note that even though there are
 	multiple transport layer endpoints, it still means that within
 	this single flow only two network layer endpoints can be
@@ -821,7 +820,7 @@
 	a non-response message that occurred before each response
 	message respectively (i.e., each response has a request
 	identifier that is the same as the request identifier of a
-	non-response messages listed before that response message).
+	non-response message listed before that response message).
       </t>
       <t>
 	S6 states that parameter e should be chosen such that
@@ -1011,15 +1010,15 @@
 
     <section anchor="slice-prefix" title="Slice Prefix">
       <t>
-        As noted in the beginning of this document, it is desired that
-        slices can be tested for equality/comparability. This is where
-        the slice prefix comes in. The slice prefix has as a sole
-        purpose to provide one of the means to compare slices. Using
-        the slice prefix and a few other parameters (which will be
-        discussed later on in this document) of a number of slices,
-        one can determine which slices should be considered 'equal'
-        and which of them are incomparable. This will assist in the
-        process of finding potentially other relations.
+        As noted in the beginning of this document, it is desirable
+        that slices can be tested for equality/comparability. This is
+        where the slice prefix comes in. The slice prefix provides one
+        of the means to compare slices. Using the slice prefix and a
+        few other parameters (which will be discussed later on in this
+        document) of a number of slices, one can determine which
+        slices should be considered 'equal' and which of them are
+        incomparable. This will assist in the process of finding
+        potentially other relations.
       </t>
       <t>
         The slice prefix is a set of OIDs. This set is constructed
@@ -1036,7 +1035,7 @@
         implicitly suggests the need to know whether a number of
         slices are the result of the same behaviour (i.e., specific
         configuration) of the initiating party of these slices. For
-        example, one may want to know whether a number slices that
+        example, one may want to know whether a number of slices that
         involve a single manager and a single agent were the result of
         just one specific configuration of that manager. Multiple
         slices, that may all be initiated by that same manager and
@@ -1204,7 +1203,7 @@ otherwise:
             </figure>
           </t>
           <t>
-            The union of the OIDs in response messages is the the
+            The union of the OIDs in response messages is the
             following set:
             <figure>
               <artwork><![CDATA[
@@ -1214,7 +1213,7 @@ otherwise:
             </figure>
           </t>
           <t>
-            Substracting the two sets results in the slice signature
+            Subtracting the two sets results in the slice signature
             S.sig:
             <figure>
               <artwork><![CDATA[
@@ -1295,7 +1294,7 @@ otherwise:
             </figure>
           </t>
           <t>
-            The union of the OIDs in response messages is the the
+            The union of the OIDs in response messages is the
             following set:
             <figure>
               <artwork><![CDATA[
@@ -1305,7 +1304,7 @@ otherwise:
             </figure>
           </t>
           <t>
-            Substracting the two sets results in the slice signature
+            Subtracting the two sets results in the slice signature
             S.sig:
             <figure>
               <artwork><![CDATA[
@@ -1345,6 +1344,7 @@ otherwise:
  ------------------------------------------------------------------- 
     0        A -> B    Get Request       alpha.1, beta.1
     1        B -> A    Response          alpha.1, beta.1
+ ------------------------------------------------------------------- 
    ]]></artwork>
       </figure>
       <t>
