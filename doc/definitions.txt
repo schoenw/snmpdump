@@ -379,11 +379,11 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
    requests without related responses (and likely no retries) and (b) a
    similarly large number of responses without a matching request.  If
    such behavior can be detected, the traces should be investigated and
-   if needed the transport endpoints corrected.  Note that the
-   requirement for matching transport endpoints only affects request /
-   response pairs.  It is perfectly fine for a manager to use different
-   transport layer endpoints in different polling instances or even for
-   different operations (e.g., slices) within the same polling instance.
+   if needed the transport endpoints corrected.  The requirement for
+   matching transport endpoints only affects request / response pairs.
+   It is perfectly fine for a manager to use different transport layer
+   endpoints in different polling instances or even for different
+   operations (i.e., slices) within the same polling instance.
 
 
 
@@ -546,13 +546,13 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
    command flows.  Similarly, flows containing only notification group
    messages are called notification flows.
 
-   Notation: The properties of a flow F are denoted as follows:
+   This definition of a flow indicates that it can be either
+   unidirectional (e.g., a manager sending non-response messages to a
+   non-responding agent), or bidirectional (e.g., a manager reading a
+   table from an agent).  This is different from other flow definitions,
+   like the NetFlow definition [RFC3954].
 
-      F.type  = type of the flow F (command/notification)
-      F.nsrc  = network layer source endpoint of F
-      F.ndst  = network layer destination endpoint of F
-      F.start = time stamp of the first message in F
-      F.end   = time stamp of the last message in F
+   The flow definition is mostly consistent with the definition of an
 
 
 
@@ -561,15 +561,6 @@ van den Broek, et al.   Expires October 23, 2008               [Page 10]
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
-      F.t     = parameter t of F (maximum timeout for response messages)
-
-   This definition of a flow indicates that it can be either
-   unidirectional (e.g., a manager sending non-response messages to a
-   non-responding agent), or bidirectional (e.g., a manager reading a
-   table from an agent).  This is different from other flow definitions,
-   like the NetFlow definition [RFC3954].
-
-   The flow definition is mostly consistent with the definition of an
    SNMP flow used in [SPHSM07].  The difference is that the tool used to
    generate the data reported in [SPHSM07] did only require that the
    network layer source endpoint of the response messages matches the
@@ -579,6 +570,16 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
    Definition (flow initiator): A flow initiator is the network endpoint
    of the two endpoints involved in a flow, which is responsible for
    sending the first non-response message.
+
+   Notation: The properties of a flow F are denoted as follows:
+
+      F.type  = type of the flow F (command/notification)
+      F.nsrc  = network layer source endpoint of F
+      F.ndst  = network layer destination endpoint of F
+      F.start = time stamp of the first message in F
+      F.end   = time stamp of the last message in F
+      F.init  = initiator of the flow F
+      F.t     = parameter t of F (maximum timeout for response messages)
 
    Following is an example of a trace consisting of SNMP messages that
    were sent between different network layer endpoints.  The network
@@ -604,7 +605,6 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
    messages that have been exchanged between network layer endpoints A
    and B, where all response messages originate from B and all non-
    response messages originate from A.
-
 
 
 
@@ -709,8 +709,8 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    (S5)   All Response messages must follow a previous request message.
 
-   (S6)   For any two subsequent request messages Q1 and Q2 with Q1.time
-          < Q2.time, the following condition must hold:
+   (S6)   For any two subsequent non-response messages Q1 and Q2 with
+          Q1.time < Q2.time, the following condition must hold:
 
                (Q2.time - Q1.time) < e
 
@@ -736,13 +736,13 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    The parameter e in S6 defines the maximum time between two non-
    response messages that belong to a slice.  This parameter should be
-   chosen such that unrelated requests within a flow are not considered
-   to be of the same slice (i.e., it is used to detect the end of a
-   slice).  Unrelated requests are those that, for instance, belong to
-   different polling instances.  The parameter e should therefore be
-   larger than the retransmission interval in order to keep
-   retransmissions within a slice and smaller than the polling interval
-   used by the slice initiator.
+   chosen such that unrelated non-response messages within a flow are
+   not considered to be of the same slice (i.e., it is used to detect
+   the end of a slice).  Unrelated requests are those that, for
+   instance, belong to different polling instances.  The parameter e
+   should therefore be larger than the retransmission interval in order
+   to keep retransmissions within a slice and smaller than the polling
+   interval used by the slice initiator.
 
    The value of parameter e might be closely related to parameter t of
    the respective flow the slice is part of.  For instance, if parameter
@@ -764,15 +764,15 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
       S.tdst     = transport layer endpoint of non-initiator of S
       S.start    = time stamp of the chronologically first message in S
       S.end      = time stamp of the chronologically last message in S
+      S.init     = initiator of slice S
       S.e        = parameter e of S (maximum time between two
                    non-response messages)
 
    Following is an example of a flow F consisting of SNMP messages that
-   have taken place between transport layer endpoints A, B, C and D.
-   Note that even though there are multiple transport layer endpoints,
-   it still means that within this single flow only two network layer
-   endpoints can be identified.
-
+   have been exchange place between transport layer endpoints A, B, C
+   and D. Note that even though there are multiple transport layer
+   endpoints, it still means that within this single flow only two
+   network layer endpoints can be identified.
 
 
 
@@ -870,10 +870,10 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
    e as defined above.
 
    Following is an example of a flow F consisting of SNMP messages that
-   have taken place between transport later endpoints A, B and C. Note
-   again that even though there are multiple transport layer endpoints,
-   it still means that within this single flow only two network layer
-   endpoints can be identified.
+   have been exchanged between transport layer endpoints A, B and C.
+   Note again that even though there are multiple transport layer
+   endpoints, it still means that within this single flow only two
+   network layer endpoints can be identified.
 
     -------------------------------------------------------------------
     Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
@@ -883,7 +883,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
        2         0.12      A -> B    Get Request       2        beta.1
        3         0.17      B -> A    Response          2        beta.1
        4       300.0       A -> B    Get Request       3        alpha.1
-       5       300.05      B -> C    Trap             10        gamma.1
+       5       300.05      B -> C    Set              10        gamma.1
        6       300.07      B -> A    Response          3        alpha.1
        7       300.14      A -> B    Get Request       4        beta.1
        8       300.19      B -> A    Response          4        beta.1
@@ -919,7 +919,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
     -------------------------------------------------------------------
     Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
     -------------------------------------------------------------------
-       5       300.05      B -> C    Trap             10        gamma.1
+       5       300.05      B -> C    Set              10        gamma.1
     -------------------------------------------------------------------
 
    Applying S2 to each of the two sets does not result in more sets,
@@ -966,7 +966,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
     -------------------------------------------------------------------
     Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
     -------------------------------------------------------------------
-       5       300.05      B -> C    Trap             10        gamma.1
+       5       300.05      B -> C    Set              10        gamma.1
     -------------------------------------------------------------------
 
    S4 is not applicable to either of these sets.
@@ -1028,7 +1028,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
     -------------------------------------------------------------------
     Message | Time [s] | Direction | PDU type       | Req. ID | OIDs
     -------------------------------------------------------------------
-       5       300.05      B -> C    Trap             10        gamma.1
+       5       300.05      B -> C    Set              10        gamma.1
     -------------------------------------------------------------------
 
 
@@ -1159,9 +1159,9 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    Definition (slice signature): A slice signature S.sig of a slice S is
    a set of OIDs derived from the OIDs contained in the non-response
-   messages of a slice.  This set S.sig consists of the following OIDs:
-
-
+   messages of a slice.  Let r(S) denote the set of response messages of
+   slice S and n(S) the set of non-response messages of S. Then the set
+   S.sig consists of the following OIDs:
 
 
 
@@ -1179,15 +1179,13 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    case S.type = GetNext or S.type = GetBulk:
 
-        S.sig =       U    (N.oids)  -      U    (R.oids)
-                    N in S                R in S
-                N is non-response      R is response
+        S.sig =      U      (n.oids)  -      U      (r.oids)
+                  n in n(S)               r in r(S)
 
    otherwise:
 
-        S.sig =       U   (N.oids)
-                    N in S
-                N is non-response
+        S.sig =      U      (n.oids)
+                  n in n(S)
 
    Definition (OID prefix): An OID a = a_1.a_2...a_n is a prefix of OID
    b = b_1.b_2...b_m if and only if
@@ -1225,6 +1223,8 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
        set:
 
           N = { sysUpTime, alpha, beta,
+                alpha.1, beta.1, alpha.2, beta.2 }
+
 
 
 
@@ -1232,8 +1232,6 @@ van den Broek, et al.   Expires October 23, 2008               [Page 22]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
-
-                alpha.1, beta.1, alpha.2, beta.2 }
 
    2.  The union of the OIDs in response messages is the following set:
 
@@ -1281,6 +1279,8 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    o  Not all columns in the table have an equal length.
 
+   o  The manager is set to request the sysUpTime on an irregular basis
+      (i.e., every few requests).
 
 
 
@@ -1288,9 +1288,6 @@ van den Broek, et al.   Expires October 23, 2008               [Page 23]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
-
-   o  The manager is set to request the sysUpTime on an irregular basis
-      (i.e., every few requests).
 
    o  The manager attempts to 'fill' holes in the table.
 
@@ -1337,6 +1334,9 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
     -------------------------------------------------------------------
        0        A -> B    Get Request       alpha.1, beta.1
        1        B -> A    Response          alpha.1, beta.1
+    -------------------------------------------------------------------
+
+   The slice prefix is determined as follows:
 
 
 
@@ -1344,10 +1344,6 @@ van den Broek, et al.   Expires October 23, 2008               [Page 24]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
-
-    -------------------------------------------------------------------
-
-   The slice prefix is determined as follows:
 
    1.  The slice signature is the union of all OIDs in non-response
        messages:
@@ -1358,6 +1354,10 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
        S.sig, the slice prefix is equal to the slice signature:
 
           S.prefix = { alpha.1, beta.1 }
+
+
+
+
 
 
 
