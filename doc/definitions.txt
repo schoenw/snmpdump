@@ -4,12 +4,12 @@
 NMRG                                                    J. van den Broek
 Internet-Draft                                      University of Twente
 Intended status: Informational                          J. Schoenwaelder
-Expires: October 25, 2008                       Jacobs University Bremen
+Expires: October 26, 2008                       Jacobs University Bremen
                                                                  A. Pras
                                                     University of Twente
                                                                M. Harvan
                                                               ETH Zurich
-                                                          April 23, 2008
+                                                          April 24, 2008
 
 
                     SNMP Trace Analysis Definitions
@@ -38,7 +38,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on October 25, 2008.
+   This Internet-Draft will expire on October 26, 2008.
 
 Copyright Notice
 
@@ -52,7 +52,7 @@ Copyright Notice
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 1]
+van den Broek, et al.   Expires October 26, 2008                [Page 1]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -108,7 +108,7 @@ Table of Contents
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 2]
+van den Broek, et al.   Expires October 26, 2008                [Page 2]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -164,7 +164,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 3]
+van den Broek, et al.   Expires October 26, 2008                [Page 3]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -220,7 +220,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 4]
+van den Broek, et al.   Expires October 26, 2008                [Page 4]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -276,7 +276,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 5]
+van den Broek, et al.   Expires October 26, 2008                [Page 5]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -332,7 +332,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 6]
+van den Broek, et al.   Expires October 26, 2008                [Page 6]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -388,7 +388,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 7]
+van den Broek, et al.   Expires October 26, 2008                [Page 7]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -444,7 +444,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 8]
+van den Broek, et al.   Expires October 26, 2008                [Page 8]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -500,7 +500,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008                [Page 9]
+van den Broek, et al.   Expires October 26, 2008                [Page 9]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -556,7 +556,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 10]
+van den Broek, et al.   Expires October 26, 2008               [Page 10]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -612,7 +612,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 11]
+van den Broek, et al.   Expires October 26, 2008               [Page 11]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -668,7 +668,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 12]
+van den Broek, et al.   Expires October 26, 2008               [Page 12]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -724,7 +724,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 13]
+van den Broek, et al.   Expires October 26, 2008               [Page 13]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -746,8 +746,8 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
    The value of parameter e might be closely related to parameter t of
    the respective flow the slice is part of.  For instance, if parameter
-   e is very large, than t is likely to be also very large and vice
-   versa.  Also, if parameter e is very small, than t is probably also
+   e is very large, than t is also likely to be very large and vice
+   versa.  Also, if parameter e is very small, then t is probably also
    very small.  However, it is not possible to strictly state that e and
    t are always closely related to each other, because parameter e is
    specific for a slice.  This is in contrast with parameter t which is
@@ -780,7 +780,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 14]
+van den Broek, et al.   Expires October 26, 2008               [Page 14]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -836,7 +836,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 15]
+van den Broek, et al.   Expires October 26, 2008               [Page 15]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -892,7 +892,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 16]
+van den Broek, et al.   Expires October 26, 2008               [Page 16]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -948,7 +948,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 17]
+van den Broek, et al.   Expires October 26, 2008               [Page 17]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1004,7 +1004,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 18]
+van den Broek, et al.   Expires October 26, 2008               [Page 18]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1060,7 +1060,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 19]
+van den Broek, et al.   Expires October 26, 2008               [Page 19]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1116,7 +1116,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 20]
+van den Broek, et al.   Expires October 26, 2008               [Page 20]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1172,7 +1172,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 21]
+van den Broek, et al.   Expires October 26, 2008               [Page 21]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1228,7 +1228,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 22]
+van den Broek, et al.   Expires October 26, 2008               [Page 22]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1284,7 +1284,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 23]
+van den Broek, et al.   Expires October 26, 2008               [Page 23]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1340,7 +1340,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 24]
+van den Broek, et al.   Expires October 26, 2008               [Page 24]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1396,7 +1396,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 25]
+van den Broek, et al.   Expires October 26, 2008               [Page 25]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1452,7 +1452,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 26]
+van den Broek, et al.   Expires October 26, 2008               [Page 26]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1508,7 +1508,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 27]
+van den Broek, et al.   Expires October 26, 2008               [Page 27]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1564,7 +1564,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 28]
+van den Broek, et al.   Expires October 26, 2008               [Page 28]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1620,7 +1620,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 29]
+van den Broek, et al.   Expires October 26, 2008               [Page 29]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1676,7 +1676,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 30]
+van den Broek, et al.   Expires October 26, 2008               [Page 30]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1732,7 +1732,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 31]
+van den Broek, et al.   Expires October 26, 2008               [Page 31]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1788,7 +1788,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 32]
+van den Broek, et al.   Expires October 26, 2008               [Page 32]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1844,7 +1844,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 33]
+van den Broek, et al.   Expires October 26, 2008               [Page 33]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1900,7 +1900,7 @@ Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 34]
+van den Broek, et al.   Expires October 26, 2008               [Page 34]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -1934,7 +1934,7 @@ Authors' Addresses
    Netherlands
 
    Phone: +31 53 4893778
-   Email: a.pras@cs.utwente.nl
+   Email: a.pras@utwente.nl
 
 
    Matus Harvan
@@ -1956,7 +1956,7 @@ Authors' Addresses
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 35]
+van den Broek, et al.   Expires October 26, 2008               [Page 35]
 
 Internet-Draft       SNMP Trace Analysis Definitions          April 2008
 
@@ -2012,5 +2012,5 @@ Acknowledgment
 
 
 
-van den Broek, et al.   Expires October 25, 2008               [Page 36]
+van den Broek, et al.   Expires October 26, 2008               [Page 36]
 

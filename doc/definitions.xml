@@ -61,7 +61,7 @@
           <country>Netherlands</country>
         </postal>
         <phone>+31 53 4893778</phone>
-        <email>a.pras@cs.utwente.nl</email>
+        <email>a.pras@utwente.nl</email>
       </address>
     </author>
 
@@ -708,8 +708,8 @@
       <t>
 	The value of parameter e might be closely related to parameter
 	t of the respective flow the slice is part of. For instance,
-	if parameter e is very large, than t is likely to be also very
-	large and vice versa. Also, if parameter e is very small, than
+	if parameter e is very large, than t is also likely to be very
+	large and vice versa. Also, if parameter e is very small, then
 	t is probably also very small. However, it is not possible to
 	strictly state that e and t are always closely related to each
 	other, because parameter e is specific for a slice. This is in
