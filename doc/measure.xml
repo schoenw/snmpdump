@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <?rfc compact="yes"?>
 <rfc ipr='full3978'
-     docName="draft-irtf-nmrg-snmp-measure-04.txt"
+     docName="draft-irtf-nmrg-snmp-measure-05.txt"
      category="info">
 
   <!--
@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date month="March" year="2008"/>
+    <date month="June" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -56,11 +56,12 @@
           in practice and what typical SNMP usage patterns are.
         </t>
         <t>
-          This document proposes to carry out large scale SNMP traffic
-          measurements in order to develop a better understanding how
-          SNMP is used in real world production networks. It describes
-          the motivation, the measurement approach, and the tools and
-          data formats needed to carry out such a study.
+          This document describes an approach to carrying out large
+          scale SNMP traffic measurements in order to develop a better
+          understanding how SNMP is used in real world production
+          networks. It describes the motivation, the measurement
+          approach, and the tools and data formats needed to carry out
+          such a study.
         </t>
         <t>
           This document was produced within the IRTF's Network
@@ -103,10 +104,10 @@
         because authors typically assume certain SNMP interaction
         patterns without having experimental evidence that the
         assumptions are correct. In fact, there are many speculations
-        how SNMP is being used in real world production networks and
-        performance comparisons are based on limited test cases, but
-        no systematic measurements have been performed and published
-        so far.
+        on how SNMP is being used in real world production networks
+        and performance comparisons are based on limited test cases,
+        but no systematic measurements have been performed and
+        published so far.
       </t>
       <t>
         Many authors use the ifTable of the IF-MIB <xref
@@ -126,12 +127,12 @@
         networks, enterprise networks).
       </t>
       <t>
-        This document describes an effort to collect SNMP traffic
-        traces in order to find answers to some of these questions. It
-        describes the tools that have been developed to allow network
-        operators to collect traffic traces and to share them with
-        research groups interested in analyzing and modeling network
-        management interactions.
+	This document recommends an approach to collecting, codifying,
+	and handling SNMP traffic traces in order to find answers to
+	some of these questions. It describes the tools that have been
+	developed to allow network operators to collect traffic traces
+	and to share them with research groups interested in analyzing
+	and modeling network management interactions.
       </t>
       <t>
 	While the SNMP trace collection and analysis effort was
@@ -266,15 +267,17 @@
         <t>
           For each captured trace, some meta data should be recorded
           and made available. The meta data should include information
-          such as where the trace was collected, when it was
-          collected, contact information, the size of the trace, any
-          known special events, equipment failures, or major
-          infrastructure changes during the data collection period and
-          so on. It is also extremely useful to provide a unique
-          identification. There are special online services such as
-          <eref target="http://www.datcat.org/">DatCat</eref> where
-          meta data can be stored and which provide unique
-          identifiers.
+          such as where the trace was collected (name of the network
+          and name of the organization owning the network, description
+          of the measurement point in the network topology where the
+          trace was collected), when it was collected, contact
+          information, the size of the trace, any known special
+          events, equipment failures, or major infrastructure changes
+          during the data collection period and so on. It is also
+          extremely useful to provide a unique identification. There
+          are special online services such as <eref
+          target="http://www.datcat.org/">DatCat</eref> where meta
+          data can be stored and which provide unique identifiers.
         </t>
       </section>
 
@@ -320,7 +323,7 @@
           incorrect checksums caused by TCP/IP offloading. In
           addition, analysis programs which process raw pcap files
           should be able to perform IP reassembly for SNMP messages
-          that got fragmented at the IP layer.
+          that were fragmented at the IP layer.
         </t>
         <t>
           The <eref
@@ -395,7 +398,7 @@
           original pcap traces in addition to the XML / CSV formatted
           traces since the pcap traces are the most authentic source
           of information.  Improvements in the tool chain may require
-          to go back to the original pcap traces and to rebuild all
+          going back to the original pcap traces and rebuilding all
           intermediate formats from them.
         </t>
       </section>
@@ -404,12 +407,12 @@
         <t>
           Scripts that analyze traffic traces must be verified for
           correctness. Ideally, all scripts used to analyze traffic
-          traces would be publically accessible so that third parties
+          traces will be publically accessible so that third parties
           can verify them. Furthermore, sharing scripts will enable
           other parties to repeat an analysis on other traffic traces
-          and to extend such analysis scripts. A common versioned
-          repository for analysis scripts might be useful to
-          establish.
+          and to extend such analysis scripts. It might be useful to
+          establish and common, versioning repository for analysis
+          scripts.
         </t>
         <t>
           Due to the availability of XML parsers and the simplicity of
@@ -417,22 +420,23 @@
           written in almost any programming language. However, in
           order to facilitate a common vocabulary and to allow
           operators to easily read scripts they execute on trace
-          files, it is suggested that analysis scripts are written in
-          scripting languages such as Perl using suitable <eref
-          target="http://perl-xml.sourceforge.net/faq/">Perl modules
-          to manipulate XML documents</eref>. Using a scripting
-          language such as Perl instead of system programming
-          languages such as C or C++ has the advantage to reduce
-          development time and to make scripts more accessible to
-          operators who may want to verify scripts before running them
-          on trace files which potentially contain sensitive data.
+          files, it is suggested that analysis scripts be written is
+          scripting languages such as Perl using suitable Perl modules
+          to manipulate XML documents <eref
+          target="http://perl-xml.sourceforge.net/faq/"/>.  Using a
+          scripting language such as Perl instead of system
+          programming languages such as C or C++ has the advantage of
+          reducing development time and making scripts more accessible
+          to operators who may want to verify scripts before running
+          them on trace files which may contain sensitive data.
         </t>
         <t>
           The snmpdump tool provides an API to process SNMP messages
           in C/C++. While the coding of trace analysis programs in
           C/C++ should in general be avoided for code readability,
           verifiability and portability reasons, using C/C++ might be
-          the only option to deal with very large traces efficiently.
+          the only option in dealing with very large traces
+          efficiently.
         </t>
 	<t>
 	  Any results produced by analyzing a trace must be
@@ -475,21 +479,21 @@
 
         <section title="Periodic vs. Aperiodic Traffic">
           <t>
-            SNMP is used to periodically poll devices as well as to
-            retrieve information on request of an operator or
-            application. The periodic polling leads to periodic
-            traffic patterns while the on demand information retrieval
-            causes more aperiodic traffic patterns. It is worthwhile
-            to understand what the relationship is between the amount
-            of periodic and aperiodic traffic. It will be interesting
-            to research whether there are multiple levels of
-            periodicity at different time scales.
-          </t>
+	    SNMP is used to periodically poll devices as well as to
+	    retrieve information at the request of an operator or
+	    application.  The periodic polling leads to periodic
+	    traffic patterns while on-demand information retrieval
+	    causes more aperiodic traffic patterns.  It is worthwhile
+	    to understand what the relationship is between the amount
+	    of periodic and aperiodic traffic.  It will be interesting
+	    to understand whether there are multiple levels of
+	    periodicity at different time scales.
+	  </t>
 	  <t>
-	    The periodic polling behavior may dependent on the
-	    application and the polling engine it uses. For example,
-	    some management platforms allow applications to specify
-	    how long polled values may be kept in a cache before it is
+	    Periodic polling behavior may be dependent on the
+	    application and polling engine it uses.  For example, some
+	    management platforms allow applications to specify how
+	    long polled values may be kept in a cache before they are
 	    polled again. Such optimizations needs to be considered
 	    when analyzing traces for periodic and aperiodic traffic.
 	  </t>
@@ -554,7 +558,7 @@
             polling.  Management applications are responsible to
             periodically poll SNMP agents to determine their
             status. SNMP agents can in addition send traps to notify
-            SNMP managers about events so that SNMP managers can adopt
+            SNMP managers about events so that SNMP managers can adapt
             their polling strategy and basically react faster than
             normal polling would allow to do.
           </t>
@@ -791,7 +795,8 @@ length.attrs =
 oid.type =
   xsd:string {
     pattern =
-      "[0-2](\.[1-3]?[0-9])(\.(0|([1-9]\d*))){0,126}"
+      "([0-1](\.[1-3]?[0-9]))|(2.(0|([1-9]\d*)))" ~
+      "(\.(0|([1-9]\d*))){0,126}"
   }
 
 # The types below are for IP addresses. Note that SNMP's buildin
