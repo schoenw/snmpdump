@@ -641,7 +641,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 #
 # Published as part of RFC XXXX.
 #
-# $Id: measure.xml 2832 2008-03-17 17:25:36Z schoenw $
+# $Id: measure.xml 2872 2008-05-16 12:28:02Z schoenw $
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -1040,7 +1040,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    Last call reviews have been received from Bert Wijnen, Aiko Pras,
    Frank Strauss, Remco van de Meent, Giorgio Nunzi, Wes Hardacker, Liam
    Fallon, Sharon Chisholm, David Perkins, Deep Medhi, Randy Bush, David
-   Harrington, Dan Romascanu, Luca Deri, and Marc Burgess.
+   Harrington, Dan Romascanu, Luca Deri, and Marc Burgess.  Karen R.
+   Sollins reviewed the document for the Internet Research Steering
+   Group (IRSG).
 
    Part of this work was funded by the European Commission under grant
    FP6-2004-IST-4-EMANICS-026854-NOE.
@@ -1055,8 +1057,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
               STD 58, RFC 2578, April 1999.
 
    [OASISRNG]
-              Clark, J. and M. Makoto, "RELAX NG Specification",
-              OASIS Committee Specification, December 2001.
 
 
 
@@ -1064,6 +1064,9 @@ Schoenwaelder           Expires December 3, 2008               [Page 19]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+              Clark, J. and M. Makoto, "RELAX NG Specification",
+              OASIS Committee Specification, December 2001.
 
    [OASISRNC]
               Clark, J., "RELAX NG Compact Syntax", OASIS Committee
@@ -1110,9 +1113,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
    [Pat01]    Pattinson, C., "A Study of the Behaviour of the Simple
               Network Management Protocol", Proc. 12th IFIP/IEEE
-              Workshop on Distributed Systems: Operations and
-              Management , October 2001.
-
 
 
 
@@ -1120,6 +1120,9 @@ Schoenwaelder           Expires December 3, 2008               [Page 20]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+              Workshop on Distributed Systems: Operations and
+              Management , October 2001.
 
    [DSR01]    Du, X., Shayman, M., and M. Rozenblit, "Implementation and
               Performance Analysis of SNMP on a TLS/TCP Base", Proc. 7th
@@ -1166,9 +1169,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 URIs
 
-   [1]  <http://en.wikipedia.org/wiki/Pcap>
-
-   [2]  <http://www.tcpdump.org/>
 
 
 
@@ -1176,6 +1176,10 @@ Schoenwaelder           Expires December 3, 2008               [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+   [1]  <http://en.wikipedia.org/wiki/Pcap>
+
+   [2]  <http://www.tcpdump.org/>
 
    [3]  <http://www.wireshark.org/>
 
@@ -1203,10 +1207,6 @@ Author's Address
 
    Phone: +49 421 200-3587
    Email: j.schoenwaelder@jacobs-university.de
-
-
-
-
 
 
 
