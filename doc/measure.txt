@@ -645,7 +645,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 #
 # Published as part of RFC XXXX.
 #
-# $Id: measure.xml 2874 2008-05-19 09:46:28Z schoenw $
+# $Id: measure.xml 2875 2008-05-19 18:38:41Z schoenw $
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -1194,8 +1194,7 @@ URIs
 
    [5]  <http://www.datcat.org/>
 
-   [6]  <https://subversion.eecs.jacobs-university.de/svn/schoenw/src/
-        snmpdump>
+   [6]  <https://svn.eecs.jacobs-university.de/svn/schoenw/src/snmpdump>
 
    [7]  <http://xmlsoft.org/XSLT/>
 
@@ -1214,6 +1213,7 @@ Author's Address
 
    Phone: +49 421 200-3587
    Email: j.schoenwaelder@jacobs-university.de
+
 
 
 

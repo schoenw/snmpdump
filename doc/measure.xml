@@ -335,7 +335,7 @@
         </t>
         <t>
           The <eref
-          target="https://subversion.eecs.jacobs-university.de/svn/schoenw/src/snmpdump">snmpdump</eref>
+          target="https://svn.eecs.jacobs-university.de/svn/schoenw/src/snmpdump">snmpdump</eref>
           package has been developed to convert raw pcap files into
           XML and CSV format. The snmpdump program reads pcap, XML, or
           CSV files as input and produces XML files or CSV files as
