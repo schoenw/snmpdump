@@ -72,7 +72,7 @@ Table of Contents
    2.  Measurement Approach . . . . . . . . . . . . . . . . . . . . .  4
      2.1.  Capturing Traffic Traces . . . . . . . . . . . . . . . . .  5
      2.2.  Converting Traffic Traces  . . . . . . . . . . . . . . . .  6
-     2.3.  Filtering Traffic Traces . . . . . . . . . . . . . . . . .  6
+     2.3.  Filtering Traffic Traces . . . . . . . . . . . . . . . . .  7
      2.4.  Storing Traffic Traces . . . . . . . . . . . . . . . . . .  7
      2.5.  Analyzing Traffic Traces . . . . . . . . . . . . . . . . .  8
    3.  Analysis of Traffic Traces . . . . . . . . . . . . . . . . . .  8
@@ -87,7 +87,7 @@ Table of Contents
      3.9.  Encoding Length Distributions  . . . . . . . . . . . . . . 11
      3.10. Counters and Discontinuities . . . . . . . . . . . . . . . 11
      3.11. Spin Locks . . . . . . . . . . . . . . . . . . . . . . . . 11
-     3.12. Row Creation . . . . . . . . . . . . . . . . . . . . . . . 11
+     3.12. Row Creation . . . . . . . . . . . . . . . . . . . . . . . 12
    4.  Trace Exchange Formats . . . . . . . . . . . . . . . . . . . . 12
      4.1.  XML Representation . . . . . . . . . . . . . . . . . . . . 12
      4.2.  CSV Representation . . . . . . . . . . . . . . . . . . . . 17
@@ -174,6 +174,11 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    then be used to improve the efficiency and scalability of management
    systems.
 
+   The measurement approach described in this document is by design
+   limited to the study of SNMP traffic.  Studies of other management
+   protocols or the impact of management protocols such as SNMP on other
+   traffic sharing the same network resources is left to future efforts.
+
    This is an informational document, produced within the IRTF's Network
    Management Research Group (NMRG) and represents the consensus of all
    of the active contributors to this group.
@@ -212,11 +217,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
    This section provides some advice and concrete hints how the steps
    listed above can be carried out efficiently.  Some special tools have
-   been developed to assist network operators and researchers so that
-   the time spent on supporting SNMP traffic measurement projects is
-   limited.  The following sections describe the five steps and some
-   tools in more detail.
-
 
 
 
@@ -224,6 +224,11 @@ Schoenwaelder           Expires December 3, 2008                [Page 4]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+   been developed to assist network operators and researchers so that
+   the time spent on supporting SNMP traffic measurement projects is
+   limited.  The following sections describe the five steps and some
+   tools in more detail.
 
 2.1.  Capturing Traffic Traces
 
@@ -243,10 +248,11 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    concerning their monitoring capabilities and this should be
    investigated and documented where necessary.
 
-   It is recommended to capture at least a full week of data.  Operators
-   are encouraged to capture traces over even longer periods of time.
-   Tools such as tcpslice [2] or pcapmerge [4] can be used to split or
-   merge pcap trace files as needed.
+   It is recommended to capture at least a full week of data to capture
+   diurnal patterns and one cycle of weekly behavior.  Operators are
+   strongly encouraged to capture traces over even longer periods of
+   time.  Tools such as tcpslice [2] or pcapmerge [4] can be used to
+   split or merge pcap trace files as needed.
 
    Several operating systems can offload some of the TCP/IP processing
    such as the calculation of transport layer checksum to network
@@ -267,12 +273,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    For each captured trace, some meta data should be recorded and made
    available.  The meta data should include information such as where
    the trace was collected (name of the network and name of the
-   organization owning the network, description of the measurement point
-   in the network topology where the trace was collected), when it was
-   collected, contact information, the size of the trace, any known
-   special events, equipment failures, or major infrastructure changes
-   during the data collection period and so on.  It is also extremely
-   useful to provide a unique identification.  There are special online
 
 
 
@@ -281,6 +281,12 @@ Schoenwaelder           Expires December 3, 2008                [Page 5]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+   organization owning the network, description of the measurement point
+   in the network topology where the trace was collected), when it was
+   collected, contact information, the size of the trace, any known
+   special events, equipment failures, or major infrastructure changes
+   during the data collection period and so on.  It is also extremely
+   useful to provide a unique identification.  There are special online
    services such as DatCat [5] where meta data can be stored and which
    provide unique identifiers.
 
@@ -324,12 +330,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    Specific elements can be filtered as required to protect sensitive
    data.
 
-2.3.  Filtering Traffic Traces
-
-   Filtering sensitive data (e.g., access control lists or community
-   strings) can be achieved by manipulating the XML representation of an
-   SNMP trace.  Standard XSLT processors (e.g., xsltproc [7]) can be
-
 
 
 Schoenwaelder           Expires December 3, 2008                [Page 6]
@@ -337,6 +337,11 @@ Schoenwaelder           Expires December 3, 2008                [Page 6]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+2.3.  Filtering Traffic Traces
+
+   Filtering sensitive data (e.g., access control lists or community
+   strings) can be achieved by manipulating the XML representation of an
+   SNMP trace.  Standard XSLT processors (e.g., xsltproc [7]) can be
    used for this purpose.  People familiar with the scripting language
    Perl might be interested in choosing a suitable Perl module to
    manipulate XML documents [8].
@@ -380,11 +385,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    pcap traces in addition to the XML / CSV formatted traces since the
    pcap traces are the most authentic source of information.
    Improvements in the tool chain may require going back to the original
-   pcap traces and rebuilding all intermediate formats from them.
-
-
-
-
 
 
 
@@ -392,6 +392,8 @@ Schoenwaelder           Expires December 3, 2008                [Page 7]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+   pcap traces and rebuilding all intermediate formats from them.
 
 2.5.  Analyzing Traffic Traces
 
@@ -437,8 +439,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    analyzing SNMP traffic traces.  The questions raised in the following
    subsections are meant to be illustrative and no attempt has been made
    to provide a complete list.
-
-
 
 
 
@@ -513,8 +513,11 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    networks or whether management applications prefer more sequential
    ways of retrieving data.
 
-   It will be interesting to analyze how many redundant requests coming
-   from applications are processed almost simultaneously by a device.
+   Furthermore, it will be interesting to analyze how many redundant
+   requests coming from applications are processed almost simultaneously
+   by a device.  The concurrency level and the amount of redundant
+   requests has implications on caching strategies employed by SNMP
+   agents.
 
 3.5.  Table Retrieval Approaches
 
@@ -524,7 +527,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    row-by-row or even multiple-rows-by-multiple-rows.  The retrieval of
    index elements can be suppressed in most cases or only a subset of
    columns of a table are retrieved.  It will be useful to know which of
-   these approaches are actually used on production networks.
+   these approaches are used on production networks since this has a
+   direct implication on agent implementation techniques and caching
+   strategies.
 
 3.6.  Trap-Directed Polling - Myths or Reality?
 
@@ -548,11 +553,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    An analysis of object identifier prefixes can identify the most
    popular MIB modules and the most important object types or
    notification types defined by these modules.  Such information would
-   be very valuable for the further maintenance and development of these
-   and related MIB modules.
-
-
-
 
 
 
@@ -560,6 +560,9 @@ Schoenwaelder           Expires December 3, 2008               [Page 10]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+   be very valuable for the further maintenance and development of these
+   and related MIB modules.
 
 3.8.  Usage of Obsolete Objects
 
@@ -605,10 +608,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    object.  It will be interesting to find out whether there are command
    generators which coordinate themselves using these spin locks.
 
-3.12.  Row Creation
 
-   Row creation is an operation not natively supported by the protocol
-   operations.  Instead, conceptual tables supporting row creation
 
 
 
@@ -617,6 +617,10 @@ Schoenwaelder           Expires December 3, 2008               [Page 11]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+3.12.  Row Creation
+
+   Row creation is an operation not natively supported by the protocol
+   operations.  Instead, conceptual tables supporting row creation
    typically provide a control column which uses the RowStatus textual
    convention defined in the SNMPv2-TC [RFC2579] module.  The RowStatus
    itself supports different row creation modes, namely createAndWait
@@ -641,7 +645,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 #
 # Published as part of RFC XXXX.
 #
-# $Id: measure.xml 2872 2008-05-16 12:28:02Z schoenw $
+# $Id: measure.xml 2873 2008-05-16 12:30:19Z schoenw $
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -661,10 +665,6 @@ packet.elem =
     snmp.elem
   }
 
-snmp.elem =
-  element snmp {
-    length.attrs?,
-    message.elem
 
 
 
@@ -673,6 +673,10 @@ Schoenwaelder           Expires December 3, 2008               [Page 12]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+snmp.elem =
+  element snmp {
+    length.attrs?,
+    message.elem
   }
 
 message.elem =
@@ -717,10 +721,6 @@ pdu.elem =
     element specific-trap     { length.attrs, xsd:int },
     element time-stamp        { length.attrs, xsd:int },
     element variable-bindings { length.attrs, varbind.elem* }
-  }
-
-pdu.elem |=
-  element (get-request | get-next-request | get-bulk-request |
 
 
 
@@ -729,6 +729,10 @@ Schoenwaelder           Expires December 3, 2008               [Page 13]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+  }
+
+pdu.elem |=
+  element (get-request | get-next-request | get-bulk-request |
            set-request | inform-request | snmpV2-trap |
            response | report) {
     length.attrs,
@@ -774,16 +778,16 @@ oid.type =
       "(\.(0|([1-9]\d*))){0,126}"
   }
 
-# The types below are for IP addresses. Note that SNMP's buildin
-# IpAddress type only supports IPv4 addresses; IPv6 addresses are only
-# introduced to cover SNMP over IPv6 endpoints.
-
 
 
 Schoenwaelder           Expires December 3, 2008               [Page 14]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+# The types below are for IP addresses. Note that SNMP's buildin
+# IpAddress type only supports IPv4 addresses; IPv6 addresses are only
+# introduced to cover SNMP over IPv6 endpoints.
 
 ipv4address.type =
   xsd:string {
@@ -805,10 +809,6 @@ ipaddress.type = ipv4address.type | ipv6address.type
    containing an SNMPv1 get-next-request message for the OID
    1.3.6.1.2.1.1.3 (sysUpTime) and the response message returned by the
    agent.
-
-
-
-
 
 
 

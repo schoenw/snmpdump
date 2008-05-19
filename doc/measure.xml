@@ -144,6 +144,13 @@
 	improve the efficiency and scalability of management systems.
       </t>
       <t>
+	The measurement approach described in this document is by
+	design limited to the study of SNMP traffic. Studies of other
+	management protocols or the impact of management protocols
+	such as SNMP on other traffic sharing the same network
+	resources is left to future efforts.
+      </t>
+      <t>
         This is an informational document, produced within the IRTF's
         Network Management Research Group (NMRG) and represents the
         consensus of all of the active contributors to this group.
@@ -237,9 +244,10 @@
           necessary.
         </t>
         <t>
-          It is recommended to capture at least a full week of data.
-          Operators are encouraged to capture traces over even longer
-          periods of time. Tools such as <eref
+          It is recommended to capture at least a full week of data to
+          capture diurnal patterns and one cycle of weekly behavior.
+          Operators are strongly encouraged to capture traces over
+          even longer periods of time. Tools such as <eref
           target="http://www.tcpdump.org/">tcpslice</eref> or <eref
           target="http://indev.insu.com/Fwctl/pcapmerge.html">pcapmerge</eref>
           can be used to split or merge pcap trace files as needed.
@@ -532,9 +540,11 @@
             data.
           </t>
 	  <t>
-	    It will be interesting to analyze how many redundant
-	    requests coming from applications are processed almost
-	    simultaneously by a device.
+	    Furthermore, it will be interesting to analyze how many
+	    redundant requests coming from applications are processed
+	    almost simultaneously by a device.  The concurrency level
+	    and the amount of redundant requests has implications on
+	    caching strategies employed by SNMP agents.
 	  </t>
         </section>
 
@@ -547,8 +557,9 @@
             multiple-rows-by-multiple-rows. The retrieval of index
             elements can be suppressed in most cases or only a subset
             of columns of a table are retrieved. It will be useful to
-            know which of these approaches are actually used on
-            production networks.
+            know which of these approaches are used on production
+            networks since this has a direct implication on agent
+            implementation techniques and caching strategies.
           </t>
         </section>
 
