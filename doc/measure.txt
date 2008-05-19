@@ -94,8 +94,8 @@ Table of Contents
    5.  Security Considerations  . . . . . . . . . . . . . . . . . . . 18
    6.  IANA Considerations  . . . . . . . . . . . . . . . . . . . . . 19
    7.  Acknowledgements . . . . . . . . . . . . . . . . . . . . . . . 19
-   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 19
-     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 19
+   8.  References . . . . . . . . . . . . . . . . . . . . . . . . . . 20
+     8.1.  Normative References . . . . . . . . . . . . . . . . . . . 20
      8.2.  Informative References . . . . . . . . . . . . . . . . . . 20
    Author's Address . . . . . . . . . . . . . . . . . . . . . . . . . 22
    Intellectual Property and Copyright Statements . . . . . . . . . . 23
@@ -645,7 +645,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 #
 # Published as part of RFC XXXX.
 #
-# $Id: measure.xml 2873 2008-05-16 12:30:19Z schoenw $
+# $Id: measure.xml 2874 2008-05-19 09:46:28Z schoenw $
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -984,14 +984,14 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
    available for analysis.  It is recommended to encrypt traces when
    they are archived.
 
-   Implementations that generate XML traces from raw pcap files should
-   have an option to suppress or anonymize values.  Note that instance
-   identifiers of tables also include values and it might therefore be
-   necessary to suppress or anonymize (parts of) the instance
-   identifiers.  Similarly, the packet and message headers typically
-   contain sensitive information about the source and destination of
-   SNMP messages as well as authentication information (community
-   strings or user names).
+   Implementations that generate CSV or XML traces from raw pcap files
+   should have an option to suppress or anonymize values.  Note that
+   instance identifiers of tables also include values and it might
+   therefore be necessary to suppress or anonymize (parts of) the
+   instance identifiers.  Similarly, the packet and message headers
+   typically contain sensitive information about the source and
+   destination of SNMP messages as well as authentication information
+   (community strings or user names).
 
    Anonymization techniques can be applied to keep information in traces
    which could otherwise reveal sensitive information.  When using
@@ -1011,6 +1011,12 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
    is usually reduced compared to transformations that do not preserve
    lexicographic ordering [HS06].
+
+   The meta data associated with traces and in particular information
+   about the organization owning a network and the description of the
+   measurement point in the network topology where a trace was collected
+   may be misused to decide/pinpoint where and how to attack a network.
+   Meta data therefore needs to be properly protected.
 
 
 6.  IANA Considerations
@@ -1050,13 +1056,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 8.  References
 
-8.1.  Normative References
 
-   [RFC2578]  McCloghrie, K., Perkins, D., and J. Schoenwaelder,
-              "Structure of Management Information Version 2 (SMIv2)",
-              STD 58, RFC 2578, April 1999.
-
-   [OASISRNG]
 
 
 
@@ -1065,6 +1065,13 @@ Schoenwaelder           Expires December 3, 2008               [Page 19]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+8.1.  Normative References
+
+   [RFC2578]  McCloghrie, K., Perkins, D., and J. Schoenwaelder,
+              "Structure of Management Information Version 2 (SMIv2)",
+              STD 58, RFC 2578, April 1999.
+
+   [OASISRNG]
               Clark, J. and M. Makoto, "RELAX NG Specification",
               OASIS Committee Specification, December 2001.
 
@@ -1106,13 +1113,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
               Transmission  Control Protocol (TCP)", RFC 4022,
               March 2005.
 
-   [PDMQ04]   Pras, A., Drevers, T., van de Meent, R., and D. Quartel,
-              "Comparing the Performance of SNMP and Web Services based
-              Management", IEEE electronic Transactions on Network and
-              Service Management 1(2), November 2004.
-
-   [Pat01]    Pattinson, C., "A Study of the Behaviour of the Simple
-              Network Management Protocol", Proc. 12th IFIP/IEEE
 
 
 
@@ -1121,6 +1121,13 @@ Schoenwaelder           Expires December 3, 2008               [Page 20]
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
+   [PDMQ04]   Pras, A., Drevers, T., van de Meent, R., and D. Quartel,
+              "Comparing the Performance of SNMP and Web Services based
+              Management", IEEE electronic Transactions on Network and
+              Service Management 1(2), November 2004.
+
+   [Pat01]    Pattinson, C., "A Study of the Behaviour of the Simple
+              Network Management Protocol", Proc. 12th IFIP/IEEE
               Workshop on Distributed Systems: Operations and
               Management , October 2001.
 
@@ -1162,13 +1169,6 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
               and Packet Trace Anonymization", Computer Communication
               Review 36(1), January 2006.
 
-   [RW07]     Ramaswamy, R. and T. Wolf, "High-Speed Prefix-Preserving
-              {IP} Address Anonymization for Passive Measurement
-              Systems", IEEE Transactions on Networking 15(1),
-              February 2007.
-
-URIs
-
 
 
 
@@ -1176,6 +1176,13 @@ Schoenwaelder           Expires December 3, 2008               [Page 21]
 
 Internet-Draft          SNMP Traffic Measurements              June 2008
 
+
+   [RW07]     Ramaswamy, R. and T. Wolf, "High-Speed Prefix-Preserving
+              {IP} Address Anonymization for Passive Measurement
+              Systems", IEEE Transactions on Networking 15(1),
+              February 2007.
+
+URIs
 
    [1]  <http://en.wikipedia.org/wiki/Pcap>
 
@@ -1207,13 +1214,6 @@ Author's Address
 
    Phone: +49 421 200-3587
    Email: j.schoenwaelder@jacobs-university.de
-
-
-
-
-
-
-
 
 
 

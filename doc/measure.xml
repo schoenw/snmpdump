@@ -1022,11 +1022,11 @@ ipaddress.type = ipv4address.type | ipv6address.type
         encrypt traces when they are archived.
       </t>
       <t>
-        Implementations that generate XML traces from raw pcap files
-        should have an option to suppress or anonymize values. Note
-        that instance identifiers of tables also include values and it
-        might therefore be necessary to suppress or anonymize (parts
-        of) the instance identifiers. Similarly, the packet and
+        Implementations that generate CSV or XML traces from raw pcap
+        files should have an option to suppress or anonymize values.
+        Note that instance identifiers of tables also include values
+        and it might therefore be necessary to suppress or anonymize
+        (parts of) the instance identifiers. Similarly, the packet and
         message headers typically contain sensitive information about
         the source and destination of SNMP messages as well as
         authentication information (community strings or user names).
@@ -1043,6 +1043,14 @@ ipaddress.type = ipv4address.type | ipv6address.type
         developed, although their anonymization strength is usually
         reduced compared to transformations that do not preserve
         lexicographic ordering <xref target="HS06"/>.
+      </t>
+      <t>
+	The meta data associated with traces and in particular
+	information about the organization owning a network and the
+	description of the measurement point in the network topology
+	where a trace was collected may be misused to decide/pinpoint
+	where and how to attack a network. Meta data therefore needs
+	to be properly protected.
       </t>
     </section>
 
