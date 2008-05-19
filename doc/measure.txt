@@ -3,8 +3,8 @@
 
 NMRG                                                    J. Schoenwaelder
 Internet-Draft                                  Jacobs University Bremen
-Intended status: Informational                                 June 2008
-Expires: December 3, 2008
+Intended status: Informational                              May 19, 2008
+Expires: November 20, 2008
 
 
           SNMP Traffic Measurements and Trace Exchange Formats
@@ -33,7 +33,7 @@ Status of this Memo
    The list of Internet-Draft Shadow Directories can be accessed at
    http://www.ietf.org/shadow.html.
 
-   This Internet-Draft will expire on December 3, 2008.
+   This Internet-Draft will expire on November 20, 2008.
 
 Copyright Notice
 
@@ -52,9 +52,9 @@ Abstract
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 1]
+Schoenwaelder           Expires November 20, 2008               [Page 1]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    SNMP is used in real world production networks.  It describes the
@@ -108,9 +108,9 @@ Table of Contents
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 2]
+Schoenwaelder           Expires November 20, 2008               [Page 2]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 1.  Introduction
@@ -164,9 +164,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 3]
+Schoenwaelder           Expires November 20, 2008               [Page 3]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    this effort that can be used to capture and analyze the traffic
@@ -220,9 +220,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 4]
+Schoenwaelder           Expires November 20, 2008               [Page 4]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    been developed to assist network operators and researchers so that
@@ -276,9 +276,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 5]
+Schoenwaelder           Expires November 20, 2008               [Page 5]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    organization owning the network, description of the measurement point
@@ -332,9 +332,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 6]
+Schoenwaelder           Expires November 20, 2008               [Page 6]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 2.3.  Filtering Traffic Traces
@@ -388,9 +388,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 7]
+Schoenwaelder           Expires November 20, 2008               [Page 7]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    pcap traces and rebuilding all intermediate formats from them.
@@ -444,9 +444,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 8]
+Schoenwaelder           Expires November 20, 2008               [Page 8]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 3.1.  Basic Statistics
@@ -500,9 +500,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008                [Page 9]
+Schoenwaelder           Expires November 20, 2008               [Page 9]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 3.4.  Concurrency Levels
@@ -556,9 +556,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 10]
+Schoenwaelder           Expires November 20, 2008              [Page 10]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    be very valuable for the further maintenance and development of these
@@ -612,9 +612,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 11]
+Schoenwaelder           Expires November 20, 2008              [Page 11]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 3.12.  Row Creation
@@ -645,7 +645,7 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 #
 # Published as part of RFC XXXX.
 #
-# $Id: measure.xml 2875 2008-05-19 18:38:41Z schoenw $
+# $Id: measure.xml 2876 2008-05-19 18:47:22Z schoenw $
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -668,9 +668,9 @@ packet.elem =
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 12]
+Schoenwaelder           Expires November 20, 2008              [Page 12]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 snmp.elem =
@@ -724,9 +724,9 @@ pdu.elem =
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 13]
+Schoenwaelder           Expires November 20, 2008              [Page 13]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
   }
@@ -780,9 +780,9 @@ oid.type =
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 14]
+Schoenwaelder           Expires November 20, 2008              [Page 14]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 # The types below are for IP addresses. Note that SNMP's buildin
@@ -836,9 +836,9 @@ ipaddress.type = ipv4address.type | ipv6address.type
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 15]
+Schoenwaelder           Expires November 20, 2008              [Page 15]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    <snmptrace>
@@ -892,9 +892,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 16]
+Schoenwaelder           Expires November 20, 2008              [Page 16]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 4.2.  CSV Representation
@@ -948,9 +948,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 17]
+Schoenwaelder           Expires November 20, 2008              [Page 17]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
             value is printed in dotted decimal notation.  In case of an
@@ -1004,9 +1004,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 18]
+Schoenwaelder           Expires November 20, 2008              [Page 18]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    is usually reduced compared to transformations that do not preserve
@@ -1060,9 +1060,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 19]
+Schoenwaelder           Expires November 20, 2008              [Page 19]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 8.1.  Normative References
@@ -1116,9 +1116,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 20]
+Schoenwaelder           Expires November 20, 2008              [Page 20]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    [PDMQ04]   Pras, A., Drevers, T., van de Meent, R., and D. Quartel,
@@ -1172,9 +1172,9 @@ Internet-Draft          SNMP Traffic Measurements              June 2008
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 21]
+Schoenwaelder           Expires November 20, 2008              [Page 21]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
    [RW07]     Ramaswamy, R. and T. Wolf, "High-Speed Prefix-Preserving
@@ -1228,9 +1228,9 @@ Author's Address
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 22]
+Schoenwaelder           Expires November 20, 2008              [Page 22]
 
-Internet-Draft          SNMP Traffic Measurements              June 2008
+Internet-Draft          SNMP Traffic Measurements               May 2008
 
 
 Full Copyright Statement
@@ -1284,5 +1284,5 @@ Acknowledgment
 
 
 
-Schoenwaelder           Expires December 3, 2008               [Page 23]
+Schoenwaelder           Expires November 20, 2008              [Page 23]
 
