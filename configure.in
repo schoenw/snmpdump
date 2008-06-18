@@ -48,8 +48,7 @@ AC_SUBST(LIBANON_LIBS)
 #       Checking for the libpcap library.
 #----------------------------------------------------------------------------
 
-AC_CHECK_HEADER([pcap.h],,
-    [AC_MSG_ERROR([cannot find pcap headers])])
+AC_CHECK_HEADER([pcap.h],, [AC_MSG_ERROR([cannot find pcap headers])])
 AC_CHECK_LIB([pcap],[pcap_dispatch],,AC_MSG_ERROR(canot find pcap library))
 
 #----------------------------------------------------------------------------
@@ -93,9 +92,12 @@ AC_ARG_WITH(libnids,
 )
 save_cppflags="$CPPFLAGS"
 CPPFLAGS="$NIDSINC"
-AC_MSG_CHECKING(whether libnids version is good)
+AC_MSG_CHECKING(whether libnids has pcap_filter)
 AC_EGREP_HEADER(pcap_filter, nids.h, AC_MSG_RESULT(yes), 
    [ AC_MSG_RESULT(no); AC_ERROR(libnids version 1.13 or greater required) ])
+AC_MSG_CHECKING(whether libnids has nids_last_pcap_header)
+AC_EGREP_HEADER(pcap_filter, nids.h, AC_MSG_RESULT(yes), 
+   [ AC_MSG_RESULT(no); AC_ERROR(libnids version 1.20 or greater required) ])
 CPPFLAGS="$save_cppflags"
 AC_SUBST(NIDSINC)
 AC_SUBST(NIDSLIB)
