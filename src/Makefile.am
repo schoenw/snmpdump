@@ -18,7 +18,7 @@ snmpdump_SOURCES	= snmpdump.c \
 			  scanner.c \
 			  parser.c
 snmpdump_LDADD		= $(LIBANON_LIBS) $(OPENSSL_LIBS) \
-			  $(NIDSLIB) -lpcap $(XML_LIBS) -ll
+			  $(NIDSLIB) -lpcap $(XML_LIBS)
 
 man_MANS		= snmpdump.1
 

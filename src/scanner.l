@@ -4,6 +4,7 @@
 
 %option   warn nodefault
 %option   yylineno
+%option	  noyywrap
 
 ID       [a-zA-Z][a-zA-Z0-9\-]*
 
