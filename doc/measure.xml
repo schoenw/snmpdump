@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <?rfc compact="yes"?>
 <rfc ipr='full3978'
-     docName="draft-irtf-nmrg-snmp-measure-05.txt"
+     docName="draft-irtf-nmrg-snmp-measure-06.txt"
      category="info">
 
   <!--
@@ -37,7 +37,7 @@
       </address>
     </author>
 
-    <date month="May" year="2008"/>
+    <date month="September" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -687,13 +687,19 @@
         target="http://www.relaxng.org/">trang</eref> can be used to
         convert RELAX NG compact syntax to other XML schema notations.
       </t>
+      <t>
+	The XML format can represent SNMPv1, SNMPv2c, and SNMPv3
+	messages. In case a new version of SNMP is introduced in the
+	future or existing SNMP versions are extended in ways that
+	require changes to the XML format, a new XML format with a
+	different namespace needs to be defined (e.g., by incrementing
+	the version number included in the namespace URI).
+      </t>
       <figure>
         <artwork><![CDATA[
 # Relax NG grammar for the XML SNMP trace format.
 #
 # Published as part of RFC XXXX.
-#
-# $Id$
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
