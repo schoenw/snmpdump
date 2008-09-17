@@ -11,12 +11,6 @@
   $Id$
   -->
 
-  <!--
-      TODO:
-      - Validate against the test cases we have (do we have an
-        SNMP over IPv6 test case? If not, add one.)
-  -->
-
   <front>
 
     <title abbrev="SNMP Traffic Measurements">
@@ -1098,7 +1092,9 @@ ipaddress.type = ipv4address.type | ipv6address.type
 	Hardacker, Liam Fallon, Sharon Chisholm, David Perkins, Deep
 	Medhi, Randy Bush, David Harrington, Dan Romascanu, Luca Deri,
 	and Marc Burgess. Karen R. Sollins reviewed the document for
-	the Internet Research Steering Group (IRSG).
+	the Internet Research Steering Group (IRSG). Jari Arkko, Pasi
+	Eronen, Chris Newman, and Tim Polk provided helpful comments
+	during the Internet Engineering Steering Group (IESG) review.
       </t>
       <t>
         Part of this work was funded by the European Commission under
