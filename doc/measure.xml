@@ -4,7 +4,7 @@
 <?rfc symrefs="yes"?> 
 <?rfc compact="yes"?>
 <rfc ipr='full3978'
-     docName="draft-irtf-nmrg-snmp-measure-06.txt"
+     docName="draft-irtf-nmrg-snmp-measure-07.txt"
      category="info">
 
   <!--
@@ -14,7 +14,8 @@
   <front>
 
     <title abbrev="SNMP Traffic Measurements">
-      SNMP Traffic Measurements and Trace Exchange Formats
+      Simple Network Management Protocol (SNMP) Traffic Measurements
+      and Trace Exchange Formats
     </title>
     
     <author initials="J." surname="Schoenwaelder"
@@ -31,7 +32,7 @@
       </address>
     </author>
 
-    <date month="September" year="2008"/>
+    <date month="October" year="2008"/>
 
       <area>Operations and Management</area>
 
@@ -44,22 +45,22 @@
       <abstract>
         <t>
           The Simple Network Management Protocol (SNMP) is widely
-          deployed to monitor, control and (sometimes also) configure
+          deployed to monitor, control, and (sometimes also) configure
           network elements.  Even though the SNMP technology is well
           documented, it remains relatively unclear how SNMP is used
           in practice and what typical SNMP usage patterns are.
         </t>
         <t>
-          This document describes an approach to carrying out large
-          scale SNMP traffic measurements in order to develop a better
-          understanding how SNMP is used in real world production
-          networks. It describes the motivation, the measurement
-          approach, and the tools and data formats needed to carry out
-          such a study.
+          This document describes an approach to carrying out
+          large-scale SNMP traffic measurements in order to develop a
+          better understanding of how SNMP is used in real-world
+          production networks. It describes the motivation, the
+          measurement approach, and the tools and data formats needed
+          to carry out such a study.
         </t>
         <t>
           This document was produced within the IRTF's Network
-          Management Research Group (NMRG) and represents the
+          Management Research Group (NMRG), and it represents the
           consensus of all of the active contributors to this group.
         </t>
       </abstract>
@@ -83,7 +84,7 @@
         used, which protocol features are being used, how SNMP usage
         differs in different types of networks or organizations, which
         information is frequently queried, and what typical SNMP
-        interactions patterns occur in real world production networks.
+        interaction patterns occur in real-world production networks.
       </t>
       <t>
         There have been several publications in the recent past
@@ -98,7 +99,7 @@
         because authors typically assume certain SNMP interaction
         patterns without having experimental evidence that the
         assumptions are correct. In fact, there are many speculations
-        on how SNMP is being used in real world production networks
+        on how SNMP is being used in real-world production networks,
         and performance comparisons are based on limited test cases,
         but no systematic measurements have been performed and
         published so far.
@@ -110,7 +111,7 @@
         comparison. Despite the fact that there is no evidence that
         operations on these tables dominate SNMP traffic, it is even
         more unclear how these tables are read and which optimizations
-        are done (or not done) by real world applications. It is also
+        are done (or not done) by real-world applications. It is also
         unclear what the actual traffic trade-off between periodic
         polling and more aperiodic bulk data retrieval is.
         Furthermore, we do not generally understand how much traffic
@@ -145,9 +146,9 @@
 	resources is left to future efforts.
       </t>
       <t>
-        This is an informational document, produced within the IRTF's
-        Network Management Research Group (NMRG) and represents the
-        consensus of all of the active contributors to this group.
+        This is an Informational document, produced within the IRTF's
+        Network Management Research Group (NMRG), and it represents
+        the consensus of all of the active contributors to this group.
       </t>
 
     </section>
@@ -168,10 +169,10 @@
           </t>
           <t>
             Convert the raw traffic traces into a structured machine
-            and human readable format. A suitable XML schema has been
-            developed for this purpose which captures all SNMP message
-            details. Another more compact comma separated values (CSV)
-            format has been developed which only keeps key information
+            and human-readable format. A suitable XML schema has been
+            developed for this purpose that captures all SNMP message
+            details. Another more compact comma-separated values (CSV)
+            format has been developed that only keeps key information
             about SNMP messages.
           </t>
           <t>
@@ -183,15 +184,15 @@
           </t>
           <t>
             Submit the filtered traffic traces to a repository from
-            where they can be retrieved and analyzed. Such a
-            repository may be public, it may be under the control of a
-            research group, or it may be under the control of a
-            network operator who commits to run analysis scripts on
-            the repository on behalf of researchers.
+            which they can be retrieved and analyzed. Such a
+            repository may be public, under the control of a research
+            group, or under the control of a network operator who
+            commits to run analysis scripts on the repository on
+            behalf of researchers.
           </t>
           <t>
             Analyze the traces by creating and executing analysis
-            scripts which extract and aggregate information.
+            scripts that extract and aggregate information.
           </t>
         </list>
       </t>
@@ -201,8 +202,8 @@
         In many cases, the filtered XML and CSV representation of the
         SNMP traces will be the interface between the researchers
         writing analysis scripts and the operators involved in the
-        measurement activity. It is therefore important to have a well
-        defined specification of these interfaces.
+        measurement activity. It is therefore important to have a
+        well-defined specification of these interfaces.
       </t>
       <t>
         This section provides some advice and concrete hints how the
@@ -231,9 +232,9 @@
           important to ensure that all management traffic is captured
           and that the probe has access to all virtual LANs carrying
           management traffic. This usually requires placing the
-          probe(s) close to the management system(s) and to configure
+          probe(s) close to the management system(s) and configuring
           dedicated monitoring ports on bridged networks. Some bridges
-          have restrictions concerning their monitoring capabilities
+          have restrictions concerning their monitoring capabilities,
           and this should be investigated and documented where
           necessary.
         </t>
@@ -250,7 +251,7 @@
           Several operating systems can offload some of the TCP/IP
           processing such as the calculation of transport layer
           checksum to network interface cards. Traces that include
-          traffic to/from a capturing interface which supports TCP/IP
+          traffic to/from a capturing interface that supports TCP/IP
           offloading can include incorrect transport layer checksums.
           The simplest solution is of course to turn checksum
           offloading off while capturing traces (if that is feasible
@@ -286,7 +287,7 @@
       <section title="Converting Traffic Traces">
         <t>
           Raw traces in pcap format must be converted into a format
-          that is human readable while remaining also machine readable
+          that is human readable while also remaining machine readable
           for efficient post-processing. Human readability makes it
           easy for an operator to verify that no sensitive data is
           left in a trace while machine readability is needed to
@@ -298,9 +299,9 @@
           and high-level scripting language application programming
           interfaces (APIs) that can be used to process XML documents
           and to extract meaningful information. However, XML is also
-          pretty verbose which increases processing overhead. In
+          pretty verbose, which increases processing overhead. In
           particular, the usage of XML streaming APIs is strongly
-          suggested since APIs that require an in memory
+          suggested since APIs that require an in-memory
           representation of XML documents do not handle large traces
           well.
         </t>
@@ -313,17 +314,17 @@
           ASN.1/BER encoding to support message size analysis.
         </t>
         <t>
-          A lightweight alternative to the full blown XML
-          representation based on comma separated values (CSV) is
+          A lightweight alternative to the full-blown XML
+          representation based on comma-separated values (CSV) is
           defined in <xref target="csv"/>. The CSV format only
           captures selected parts of SNMP messages and is thus more
           compact and faster to process.
         </t>
         <t>
           As explained in the previous sections, analysis programs
-          which process raw pcap files should have an option to ignore
+          that process raw pcap files should have an option to ignore
           incorrect checksums caused by TCP/IP offloading. In
-          addition, analysis programs which process raw pcap files
+          addition, analysis programs that process raw pcap files
           should be able to perform IP reassembly for SNMP messages
           that were fragmented at the IP layer.
         </t>
@@ -372,8 +373,8 @@
         <t>
           The raw pcap traces as well as the XML / CSV formatted
           traces should be stored in a stable archive or repository.
-          Such an archive or repository might either be maintained by
-          research groups (e.g., the NMRG) or by network operators or
+          Such an archive or repository might be maintained by
+          research groups (e.g., the NMRG), or network operators, or
           both. It is of key importance that captured traces are not
           lost or modified as they may form the basis of future
           research projects and may also be needed to verify published
@@ -385,7 +386,7 @@
 	  While this document recommends that raw traces should be
 	  kept, it must be noted that there are situations where this
 	  may not be feasible.  The recommendation to keep raw traces
-	  may be ignored for example to comply with data protection
+	  may be ignored, for example, to comply with data-protection
 	  laws or to protect a network operator from being forced to
 	  provide the data to other organizations.
 	</t>
@@ -397,7 +398,7 @@
         </t>
         <t>
           It must be stressed again that it is important to keep the
-          original pcap traces in addition to the XML / CSV formatted
+          original pcap traces in addition to the XML/CSV formatted
           traces since the pcap traces are the most authentic source
           of information.  Improvements in the tool chain may require
           going back to the original pcap traces and rebuilding all
@@ -413,7 +414,7 @@
           can verify them. Furthermore, sharing scripts will enable
           other parties to repeat an analysis on other traffic traces
           and to extend such analysis scripts. It might be useful to
-          establish and common, versioning repository for analysis
+          establish a common, versioning repository for analysis
           scripts.
         </t>
         <t>
@@ -422,7 +423,7 @@
           written in almost any programming language. However, in
           order to facilitate a common vocabulary and to allow
           operators to easily read scripts they execute on trace
-          files, it is suggested that analysis scripts be written is
+          files, it is suggested that analysis scripts be written in
           scripting languages such as Perl using suitable Perl modules
           to manipulate XML documents <eref
           target="http://perl-xml.sourceforge.net/faq/"/>.  Using a
@@ -430,13 +431,13 @@
           programming languages such as C or C++ has the advantage of
           reducing development time and making scripts more accessible
           to operators who may want to verify scripts before running
-          them on trace files which may contain sensitive data.
+          them on trace files that may contain sensitive data.
         </t>
         <t>
           The snmpdump tool provides an API to process SNMP messages
           in C/C++. While the coding of trace analysis programs in
           C/C++ should in general be avoided for code readability,
-          verifiability and portability reasons, using C/C++ might be
+          verifiability, and portability reasons, using C/C++ might be
           the only option in dealing with very large traces
           efficiently.
         </t>
@@ -465,7 +466,7 @@
 
         <section title="Basic Statistics">
           <t>
-	    Basic statistics cover things such as
+	    Basic statistics cover things such as:
 	    <list style="symbols">
 	      <t>protocol version used,</t>
 	      <t>protocol operations used,</t>
@@ -473,13 +474,14 @@
 	      <t>error message type frequency, or</t>
 	      <t>usage of authentication and encryption mechanisms.</t>
 	    </list>
-	    The OID names of the objects manipulated can be
-	    categorized into OID subtrees, for example to identify
-	    'standardized', 'proprietary', and 'experimental' objects.
+	    The Object Identifier (OID) names of the objects
+	    manipulated can be categorized into OID subtrees, for
+	    example, to identify 'standardized', 'proprietary', and
+	    'experimental' objects.
           </t>
         </section>
 
-        <section title="Periodic vs. Aperiodic Traffic">
+        <section title="Periodic versus Aperiodic Traffic">
           <t>
 	    SNMP is used to periodically poll devices as well as to
 	    retrieve information at the request of an operator or
@@ -496,7 +498,7 @@
 	    application and polling engine it uses.  For example, some
 	    management platforms allow applications to specify how
 	    long polled values may be kept in a cache before they are
-	    polled again. Such optimizations needs to be considered
+	    polled again. Such optimizations need to be considered
 	    when analyzing traces for periodic and aperiodic traffic.
 	  </t>
         </section>
@@ -511,12 +513,12 @@
             latency distributions, especially the distribution of the
             processing times by SNMP command responders. Some SNMP
             implementations approximate networking delays by measuring
-            request-response times and it would be useful to
+            request-response times, and it would be useful to
             understand to what extent this is a viable approach.
           </t>
 	  <t>
 	    Some SNMP implementations update their counters from the
-	    underlying instrumentation following adaptive algorthms,
+	    underlying instrumentation following adaptive algorithms,
 	    not necessarily periodically, and not necessarily
 	    on-demand. The granularity of internal counter updates may
 	    impact latency measurements and should be taken into
@@ -562,10 +564,10 @@
             SNMP is built around a concept called trap-directed
             polling.  Management applications are responsible to
             periodically poll SNMP agents to determine their
-            status. SNMP agents can in addition send traps to notify
+            status. In addition, SNMP agents can send traps to notify
             SNMP managers about events so that SNMP managers can adapt
             their polling strategy and basically react faster than
-            normal polling would allow to do.
+            normal polling would allow.
           </t>
           <t>
             Analysis of SNMP traffic traces can identify whether
@@ -594,7 +596,7 @@
           <t>
             Several objects from the early days have been obsoleted
             because they cannot properly represent today's networks. A
-            typical example is the ipRouteTable which was obsoleted
+            typical example is the ipRouteTable that was obsoleted
             because it was not able to represent classless routing,
             introduced and deployed on the Internet in 1993. Some of
             these obsolete objects are still mentioned in popular
@@ -606,7 +608,7 @@
           </t>
 	  <t>
 	    Depending on the data recorded in a trace, it might be
-	    possible to determine the age of devices by looking at
+	    possible to determine the age of devices by looking at the
 	    values of objects such as sysObjectID and sysDecr <xref
 	    target="RFC3418"/>. The age of a device can then be taken
 	    into consideration when analyzing the use of obsolete and
@@ -644,9 +646,9 @@
             Cooperating command generators can use advisory locks to
             coordinate their usage of SNMP write operations. The
             snmpSetSerialNo scalar of the SNMPv2-MIB <xref
-            target="RFC3418"/> is the default course-grain
+            target="RFC3418"/> is the default coarse-grain
             coordination object. It will be interesting to find out
-            whether there are command generators which coordinate
+            whether there are command generators that coordinate
             themselves using these spin locks.
           </t>
         </section>
@@ -655,15 +657,15 @@
           <t>
             Row creation is an operation not natively supported by the
             protocol operations. Instead, conceptual tables supporting
-            row creation typically provide a control column which uses
+            row creation typically provide a control column that uses
             the RowStatus textual convention defined in the SNMPv2-TC
             <xref target="RFC2579"/> module. The RowStatus itself
             supports different row creation modes, namely
             createAndWait (dribble-mode) and createAndGo (one-shot
             mode).  Different approaches can be used to derive the
             instance identifier if it does not have special semantics
-            associated. It will be useful to study which of the
-            various row creation approaches are actually used by
+            associated with it. It will be useful to study which of
+            the various row creation approaches are actually used by
             management applications on production networks.
           </t>
         </section>
@@ -693,7 +695,7 @@
         <artwork><![CDATA[
 # Relax NG grammar for the XML SNMP trace format.
 #
-# Published as part of RFC XXXX.
+# Published as part of RFC 5345.
 
 default namespace = "urn:ietf:params:xml:ns:snmp-trace-1.0"
 
@@ -898,7 +900,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
 
     <section anchor="csv" title="CSV Representation">
       <t>
-        The comma separated values (CSV) format has been designed to
+        The comma-separated values (CSV) format has been designed to
         capture only the most relevant information about an SNMP
         message. In situations where all information about an SNMP
         message must be captured, the XML format defined above must be
@@ -907,36 +909,36 @@ ipaddress.type = ipv4address.type | ipv6address.type
       <t>
         <list style="numbers">
           <t>
-            Time-stamp in the format seconds.microseconds since 1970,
-            for example "1137764769.425484".
+            Timestamp in the format seconds.microseconds since 1970,
+            for example, "1137764769.425484".
           </t>
           <t>
             Source IP address in dotted quad notation (IPv4), for
-            example "192.0.2.1", or compact hexadecimal notation
-            (IPv6), for example "2001:DB8::1".
+            example, "192.0.2.1", or compact hexadecimal notation
+            (IPv6), for example, "2001:DB8::1".
           </t>
           <t>
             Source port number represented as a decimal number, for
-            example "4242".
+            example, "4242".
           </t>
           <t>
             Destination IP address in dotted quad notation (IPv4), for
-            example "192.0.2.1", or compact hexadecimal notation
-            (IPv6), for example "2001:DB8::1".
+            example, "192.0.2.1", or compact hexadecimal notation
+            (IPv6), for example, "2001:DB8::1".
           </t>
           <t>
             Destination port number represented as a decimal number, for
-            example "161".
+            example, "161".
           </t>
           <t>
             Size of the SNMP message (a decimal number) counted in
-            octets, for example "123". The size excludes all transport,
+            octets, for example, "123". The size excludes all transport,
             network, and link-layer headers.
           </t>
           <t>
             SNMP message version represented as a decimal number. The
             version 0 stands for SNMPv1, 1 for SNMPv2c, and 3 for
-            SNMPv3, for example "3".
+            SNMPv3, for example, "3".
           </t>
           <t>
             SNMP protocol operation indicated by one of the keywords
@@ -944,17 +946,17 @@ ipaddress.type = ipv4address.type | ipv6address.type
             trap, snmpV2-trap, inform-request, response, report.
           </t>
           <t>
-            SNMP request-id in decimal notation, for example "1511411010".
+            SNMP request-id in decimal notation, for example, "1511411010".
           </t>
           <t>
-            SNMP error-status in decimal notation, for example "0".
+            SNMP error-status in decimal notation, for example, "0".
           </t>
           <t>
-            SNMP error-index in decimal notation, for example "0".
+            SNMP error-index in decimal notation, for example, "0".
           </t>
           <t>
             Number of variable-bindings contained in the varbind-list in
-            decimal notation, for example "5".
+            decimal notation, for example, "5".
           </t>
           <t>
             For each varbind in the varbind list, three output elements
@@ -962,7 +964,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
             <list>
               <t>
                 Object name given as object identifier in dotted decimal
-                notation, for example "1.3.6.1.2.1.1.3.0".
+                notation, for example, "1.3.6.1.2.1.1.3.0".
               </t>
               <t>
                 Object base type name or exception name, that is one
@@ -988,7 +990,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
       <t>
         Note that the format does not preserve the information needed
         to understand SNMPv1 traps. It is therefore recommended that
-        implementations are able to convert the SNMPv1 trap format
+        implementations be able to convert the SNMPv1 trap format
         into the trap format used by SNMPv2c and SNMPv3, according to
         the rules defined in <xref target="RFC3584"/>. The activation
         of trap format conversion should be the user's choice.
@@ -1026,7 +1028,7 @@ ipaddress.type = ipv4address.type | ipv6address.type
       <t>
         Implementations that generate CSV or XML traces from raw pcap
         files should have an option to suppress or anonymize values.
-        Note that instance identifiers of tables also include values
+        Note that instance identifiers of tables also include values,
         and it might therefore be necessary to suppress or anonymize
         (parts of) the instance identifiers. Similarly, the packet and
         message headers typically contain sensitive information about
@@ -1035,13 +1037,13 @@ ipaddress.type = ipv4address.type | ipv6address.type
       </t>
       <t>
         Anonymization techniques can be applied to keep information in
-        traces which could otherwise reveal sensitive information.
+        traces that could otherwise reveal sensitive information.
         When using anonymization, values should only be kept when the
         underlying data type is known and an appropriate anonymization
         transformation is available (filter-in principle). For values
         appearing in instance identifiers, it is usually desirable to
         maintain the lexicographic order. Special anonymization
-        transformations which preserve this property have been
+        transformations that preserve this property have been
         developed, although their anonymization strength is usually
         reduced compared to transformations that do not preserve
         lexicographic ordering <xref target="HS06"/>.
@@ -1058,20 +1060,20 @@ ipaddress.type = ipv4address.type | ipv6address.type
 
     <section title="IANA Considerations">
       <t>
-	This document requests that IANA register a URI for the SNMP
+	For this document, IANA has registered a URI for the SNMP
 	XML trace format namespace in the IETF XML registry <xref
 	target="RFC3688"/>.  Following the format in RFC 3688, the
-	following registration is requested.
+	following registration has been made:
       </t>
       <t>
-	URI: Please assign the URI "urn:ietf:params:xml:ns:snmp-trace-1.0"
+	URI: "urn:ietf:params:xml:ns:snmp-trace-1.0"
 	for use by the SNMP trace format.
       </t>
       <t>
 	Registrant Contact: The NMRG of the IRTF.
       </t>
       <t>
-	XML: N/A, the requested URI is an XML namespace.
+	XML: N/A, the URI is an XML namespace.
       </t>
     </section>
 
@@ -1204,8 +1206,8 @@ ipaddress.type = ipv4address.type | ipv6address.type
       <reference anchor="RFC1052">
         <front>
           <title>
-            IAB Recommendations for the Development of
-            Internet Network Management Standards
+            IAB Recommendations for the development of
+            Internet network management standards
           </title>
           <author initials="V." surname="Cerf" fullname="V. Cerf">
             <organization>NRI</organization>
