@@ -4,7 +4,7 @@
   
   Published as part of RFC XXXX.
   
-  $Id: measure.xml 2877 2008-05-19 18:52:29Z schoenw $
+  $Id: snmptrace.rnc 2966 2008-08-26 19:14:32Z schoenw $
 -->
 <grammar ns="urn:ietf:params:xml:ns:snmp-trace-1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <start>
