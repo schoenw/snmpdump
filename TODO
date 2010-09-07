@@ -1,7 +1,6 @@
 TODOs:
 
 - we should deal with opaque values correctly
-- there should be a null anonymization transform
 - anon.c should filter-out all message fields
 - anon.c should read a config file which defines the filters to apply
 - more regression tests for libanon

@@ -73,3 +73,6 @@ To access the database, you most likely need to pass -u <user> and
 documentation for creating users and dealing with passwords and
 access control.
 
+=========
+
+select t2.cg_ip, t2.cr_ip, t1.oid, count(*) from snmp_walk_oid as t1, snmp_walk as t2 where t1.walk_id = t2.id group by t2.cg_ip, t2.cr_ip, t1.oid limit 50;

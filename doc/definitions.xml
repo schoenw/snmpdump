@@ -101,7 +101,7 @@
         <t>
           This document provides some common definitions that have
           been found useful for implementing tools to support trace
-          analysis. This document mainly serves as a reference for the
+          analysis. This document mainly serves as a reference for
           definitions underlying these tools and it is not meant to
           explain all the motivation and reasoning behind the
           definitions. Some of this background information can be

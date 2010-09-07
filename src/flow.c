@@ -481,6 +481,12 @@ snmp_cache_find(snmp_cache_elem_t *list, snmp_packet_t *pkt)
 {
     snmp_cache_elem_t *p;
 
+    /*
+     * Some agents (most notably older NET-SNMP agents) may send
+     * reponses from different IP addresses on multihomed
+     * devices. Should we relax the rules here???
+     */
+
     for (p = list; p; p = p->next) {
 	if (snmp_int32_equal(&p->pkt->snmp.scoped_pdu.pdu.req_id,
 			     &pkt->snmp.scoped_pdu.pdu.req_id)
