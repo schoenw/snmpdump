@@ -1719,6 +1719,10 @@ snmp_pcap_read_file(const char *file, const char *filter,
     nids_params.device = NULL;
     nids_params.pcap_filter = (char *) filter;
 
+#if 1
+    static struct nids_chksum_ctl ctl;
+#endif
+
     user_callback = func;
     user_data = data;
 	
@@ -1726,6 +1730,14 @@ snmp_pcap_read_file(const char *file, const char *filter,
 	fprintf(stderr, "libnids initialization failed: %s\n", nids_errbuf);
 	exit(1);
     }
+
+#if 1
+    /* this code discables checksum checking in libnids */
+    ctl.netaddr = inet_addr("0.0.0.0");
+    ctl.mask = inet_addr("0.0.0.0");
+    ctl.action = NIDS_DONT_CHKSUM;
+    nids_register_chksum_ctl(&ctl, 1);
+#endif
 
     nids_register_udp(udp_callback);
     nids_run();
